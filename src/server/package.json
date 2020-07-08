@@ -1,0 +1,30 @@
+{
+  "name": "boptest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack",
+    "start:dev": "NODE_ENV=development webpack",
+    "run:dev": "NODE_ENV=development rm -rf ../build/server/node_modules && cp -R node_modules ../build/server && nodemon ../build/server/index.js",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^4.17.7",
+    "@types/jest": "^26.0.4",
+    "express": "^4.17.1",
+    "jest": "^26.1.0",
+    "nodemon": "^2.0.4",
+    "supertest": "^4.0.2",
+    "ts-jest": "^26.1.1",
+    "ts-loader": "^7.0.5",
+    "typescript": "^3.9.6",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-node-externals": "^1.7.2",
+    "webpack-shell-plugin": "^0.5.0"
+  }
+}
