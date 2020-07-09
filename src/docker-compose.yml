@@ -1,0 +1,26 @@
+version: "3"
+services:
+  server:
+    container_name: "server"
+    build: ./server
+    ports:
+      - "8080:8080"
+    depends_on:
+      - pg
+    volumes:
+      - ./server/node_modules:/usr/src/app/build
+  pg:
+    image: "postgres"
+    container_name: "postgres"
+    # port on host : port in Docker
+    ports:
+      - "54320:5432"
+    env_file:
+      - ./pg/database.env
+    volumes:
+      - ./pg/db_data:/var/lib/postgresql/data
+  client:
+    container_name: "client"
+    build: ./client
+    ports:
+      - "3000:3001"
