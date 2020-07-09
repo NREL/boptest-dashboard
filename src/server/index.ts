@@ -1,11 +1,17 @@
+import * as cors from "cors";
 import * as express from "express";
-import { Request, Response } from "express";
+import * as path from "path";
 
 const app = express();
+app.use(cors());
 
 const { PORT = 8080 } = process.env;
 
-app.get("/", (req: Request, res: Response) => {
+// serve static files from the React app
+app.use(express.static(path.join(__dirname, "../build/client")));
+
+// handle api endpoints
+app.get("/", (req: express.Request, res: express.Response) => {
   res.send({
     message: "hello world",
   });
