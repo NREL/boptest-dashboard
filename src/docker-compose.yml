@@ -3,12 +3,15 @@ services:
   server:
     container_name: "server"
     build: ./server
+    environment:
+      DATABASE_URL: postgres://admin:pass@postgres:5432/boptestdb
     ports:
       - "8080:8080"
     depends_on:
       - pg
     volumes:
       - ./server/node_modules:/usr/src/app/build
+      - client-build:/usr/client/build
   pg:
     image: "postgres"
     container_name: "postgres"
@@ -22,5 +25,7 @@ services:
   client:
     container_name: "client"
     build: ./client
-    ports:
-      - "3000:3001"
+    volumes:
+      - client-build:/usr/client/build
+volumes:
+  client-build:
