@@ -1,6 +1,6 @@
 FROM node:13.12.0-alpine
 
-WORKDIR /client
+WORKDIR /usr/client
 
 ENV PATH /client/node_modules/.bin:$PATH
 
@@ -11,4 +11,5 @@ RUN npm install
 
 COPY . .
 
-CMD ["react-scripts", "start"]
+# CMD ["react-scripts", "start"]
+CMD ["npm", "run", "build"]

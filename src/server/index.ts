@@ -8,7 +8,7 @@ app.use(cors());
 const { PORT = 8080 } = process.env;
 
 // serve static files from the React app
-app.use(express.static(path.join(__dirname, "../build/client")));
+app.use(express.static(path.join(__dirname, "/usr/client/build")));
 
 // handle api endpoints
 app.get("/", (req: express.Request, res: express.Response) => {
