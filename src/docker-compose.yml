@@ -10,14 +10,15 @@ services:
     depends_on:
       - pg
     volumes:
-      - ./server/node_modules:/usr/src/app/build
+      - ./server/node_modules:/usr/src/build/server/node_modules
+      - ./server:/usr/src/app/
       - client-build:/usr/client/build
   pg:
     image: "postgres"
     container_name: "postgres"
     # port on host : port in Docker
     ports:
-      - "54320:5432"
+      - "5432:5432"
     env_file:
       - ./pg/database.env
     volumes:
