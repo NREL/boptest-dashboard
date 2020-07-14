@@ -1,12 +1,12 @@
-import * as cors from "cors";
-import * as express from "express";
-import * as path from "path";
-import * as bodyParser from "body-parser";
+import express from "express";
+import cors from "cors";
+import path from "path";
+import bodyParser from "body-parser";
 
-import { Sequelize } from "sequelize";
-import { User } from "./models/user";
+import {getUsers, authDbConnection} from "./db";
 
-const app = express();
+
+const app: express.Application = express();
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -22,39 +22,31 @@ app.get("/", (req, res) => {
 // handle api endpoints
 app.get("/test", (req: express.Request, res: express.Response) => {
   res.send({
-    message: "hello world",
+    message: "hello bhris",
   });
 });
 
-app.get("/users", async (req: express.Request, res: express.Response) => {
-  const users = await User.findAll();
+// app.get("/accounts", async (req: Request, res: Response) => {
+//   const users = await getUsers();
 
-  res.json(users);
-});
+//   res.json(users);
+// });
 
 app.post("/user", async (req, res) => {
   console.log("direct access: " + req.body.name);
   console.log("array access: " + req.body["name"]);
 
   const name = req.body.name;
-  const user = await User.create({ name: name });
+  //const user = await User.create({ name: name });
 
-  res.json(user);
+  //res.json(user);
 });
 
-var models = require("./models");
-models.sequelize.sync().then(function () {
-  if (require.main === module) {
-    app.listen(PORT, () => {
-      console.log("server started at http://localhost:" + PORT);
-    });
-  }
-});
-
-// if (require.main === module) {
-//   app.listen(PORT, () => {
-//     console.log("server started at http://localhost:" + PORT);
-//   });
-// }
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log("server started at http://localhost:" + PORT);
+    authDbConnection();
+  });
+}
 
 export default app;
