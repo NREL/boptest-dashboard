@@ -12,7 +12,7 @@ services:
     volumes:
       - ./server/node_modules:/usr/src/build/server/node_modules:z
       - ./server:/usr/src/app/:z
-      - client-build:/usr/client/build:z
+      - ./client/build:/usr/client/build:z
   pg:
     image: "postgres"
     container_name: "postgres"
@@ -27,6 +27,5 @@ services:
     container_name: "client"
     build: ./client
     volumes:
-      - client-build:/usr/client/build:z
-volumes:
-  client-build:
+      - ./client/build:/usr/client/build:z
+      - ./client/src:/usr/client/src:z
