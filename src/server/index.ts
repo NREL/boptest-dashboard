@@ -22,7 +22,7 @@ app.get("/", (req, res) => {
 // handle api endpoints
 app.get("/test", (req: express.Request, res: express.Response) => {
   res.send({
-    message: "hello bhris",
+    message: "hello world!",
   });
 });
 

@@ -11,5 +11,4 @@ RUN npm install
 
 COPY . .
 
-# CMD ["react-scripts", "start"]
 CMD ["npm", "run", "build"]

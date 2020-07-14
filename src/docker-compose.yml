@@ -10,9 +10,9 @@ services:
     depends_on:
       - pg
     volumes:
-      - ./server/node_modules:/usr/src/build/server/node_modules
-      - ./server:/usr/src/app/
-      - client-build:/usr/client/build
+      - ./server/node_modules:/usr/src/build/server/node_modules:z
+      - ./server:/usr/src/app/:z
+      - client-build:/usr/client/build:z
   pg:
     image: "postgres"
     container_name: "postgres"
@@ -22,11 +22,11 @@ services:
     env_file:
       - ./pg/database.env
     volumes:
-      - ./pg/db_data:/var/lib/postgresql/data
+      - ./pg/db_data:/var/lib/postgresql/data:z
   client:
     container_name: "client"
     build: ./client
     volumes:
-      - client-build:/usr/client/build
+      - client-build:/usr/client/build:z
 volumes:
   client-build:
