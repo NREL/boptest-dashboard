@@ -28,7 +28,7 @@ export function authDbConnection() {
 interface UserAttributes {
     id: number;
     name: string;
-    preferredName: string | null;
+    // preferredName: string | null;
 }
 
 // Some attributes are optional in `User.build` and `User.create` calls
@@ -40,11 +40,11 @@ class User extends Model<UserAttributes, UserCreationAttributes>
 implements UserAttributes {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
     public name!: string;
-    public preferredName!: string | null; // for nullable fields
+    // public preferredName!: string | null; // for nullable fields
 
     // timestamps!
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
+    // public readonly createdAt!: Date;
+    // public readonly updatedAt!: Date;
 
     // Since TS cannot determine model association at compile time
     // we have to declare them here purely virtually
@@ -107,21 +107,22 @@ Project.init(
 User.init(
 {
     id: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    autoIncrement: true,
-    primaryKey: true,
+        type: DataTypes.INTEGER.UNSIGNED,
+        autoIncrement: true,
+        primaryKey: true,
     },
     name: {
-    type: new DataTypes.STRING(128),
-    allowNull: false,
+        type: new DataTypes.STRING(128),
+        allowNull: false,
     },
-    preferredName: {
-    type: new DataTypes.STRING(128),
-    allowNull: true,
-    },
+    // preferredName: {
+    // type: new DataTypes.STRING(128),
+    // allowNull: true,
+    // },
 },
 {
-    tableName: "users",
+    tableName: "accounts",
+    timestamps: false,
     sequelize, // passing the `sequelize` instance is required
 }
 );
@@ -141,9 +142,9 @@ export async function getUsers() {
 async function doStuffWithUser() {
     const newUser = await User.create({
         name: "Johnny",
-        preferredName: "John",
+        //  preferredName: "John",
     });
-    console.log(newUser.id, newUser.name, newUser.preferredName);
+    console.log(newUser.id, newUser.name);
 
     const project = await newUser.createProject({
         name: "first!",
