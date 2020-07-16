@@ -1,9 +1,14 @@
 {
+  "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
     "baseUrl": ".",
     "esModuleInterop": true,
     "sourceMap": true,
     "module": "CommonJS",
     "target": "es6",
-  }
+  },
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ]
 }

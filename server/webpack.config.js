@@ -3,7 +3,7 @@ const nodeExternals = require("webpack-node-externals");
 const WebpackShellPlugin = require("webpack-shell-plugin");
 
 module.exports = {
-  entry: "./index.ts",
+  entry: "./src/index.ts",
   target: "node",
   output: {
     path: path.resolve(__dirname, "../build/server"),
@@ -16,7 +16,14 @@ module.exports = {
     rules: [
       {
         test: /\.ts$/,
-        use: ["ts-loader"],
+        use: [{
+          loader: "ts-loader",
+          options: {
+            compilerOptions: {
+                outDir: path.resolve(__dirname, "../build/server")
+            }
+          }
+        }]
       },
     ],
   },

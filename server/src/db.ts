@@ -10,8 +10,8 @@ import {
     HasManyCreateAssociationMixin,
     Optional,
 } from "sequelize";
-  
-const sequelize = new Sequelize(process.env.DATABASE_URL);
+
+const sequelize = new Sequelize(<string>process.env.DATABASE_URL);
 
 export function authDbConnection() {
     sequelize.authenticate()
