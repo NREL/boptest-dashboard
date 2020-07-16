@@ -16,7 +16,14 @@ module.exports = {
     rules: [
       {
         test: /\.ts$/,
-        use: ["ts-loader"],
+        use: [{
+          loader: "ts-loader",
+          options: {
+            compilerOptions: {
+                outDir: path.resolve(__dirname, "../build/server")
+            }
+          }
+        }]
       },
     ],
   },
