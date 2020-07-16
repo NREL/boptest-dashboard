@@ -3,7 +3,7 @@ const nodeExternals = require("webpack-node-externals");
 const WebpackShellPlugin = require("webpack-shell-plugin");
 
 module.exports = {
-  entry: "./index.ts",
+  entry: "./src/index.ts",
   target: "node",
   output: {
     path: path.resolve(__dirname, "../build/server"),
