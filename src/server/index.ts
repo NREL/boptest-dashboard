@@ -26,11 +26,11 @@ app.get("/test", (req: express.Request, res: express.Response) => {
   });
 });
 
-// app.get("/accounts", async (req: Request, res: Response) => {
-//   const users = await getUsers();
+app.get("/accounts", async (req: express.Request, res: express.Response) => {
+  const users = await getUsers();
 
-//   res.json(users);
-// });
+  res.json(users);
+});
 
 app.post("/user", async (req, res) => {
   console.log("direct access: " + req.body.name);
