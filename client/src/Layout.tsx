@@ -3,7 +3,7 @@ import {BrowserRouter, Link, Route} from 'react-router-dom';
 
 import {Content} from './Content';
 import {Header} from './Header';
-import {NavBar} from './NavBar';
+import {NavBar} from './NavBar/NavBar';
 
 import './layout.css';
 

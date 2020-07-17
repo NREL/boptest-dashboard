@@ -1,0 +1,19 @@
+.navbar-container {
+  flex: 1;
+}
+
+.navbar {
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar-row {
+  padding: 16px;
+  border-bottom: solid thin lightgray;
+  text-decoration: none;
+  color: black;
+}
+
+.navbar-row:hover {
+  background-color: lightgray;
+}
