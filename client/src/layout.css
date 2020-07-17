@@ -1,0 +1,16 @@
+.page-layout {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  margin: -8px;
+}
+
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 8;
+  background-color: blueviolet;
+  width: 100%;
+  padding: 0 16px 16px 0;
+  margin: 0 0 0 -8px;
+}
