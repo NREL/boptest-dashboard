@@ -19,7 +19,7 @@ export const Layout: React.FC = () => {
         <NavBar />
         <div className="main-layout">
           <Header title={title} />
-          <Content path={path} />
+          <Content />
         </div>
       </div>
     </BrowserRouter>
