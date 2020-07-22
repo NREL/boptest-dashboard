@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Dispatch, SetStateAction} from 'react';
 import {Route, Switch} from 'react-router-dom';
 
 import {About} from './Pages/About';
@@ -9,14 +9,26 @@ import {AppRoute} from './enums';
 
 import './content.css';
 
-export const Content: React.FC = () => {
+type ContentProps = {
+  setTitle: Dispatch<SetStateAction<string>>;
+};
+
+export const Content: React.FC<ContentProps> = props => {
   return (
     <div className="content">
       <Switch>
-        <Route path={AppRoute.Docs} component={Docs} />
-        <Route path={AppRoute.Account} component={Account} />
-        <Route path={AppRoute.About} component={About} />
-        <Route path={AppRoute.Home} component={Home} />
+        <Route path={AppRoute.Docs}>
+          <Docs setTitle={props.setTitle} />
+        </Route>
+        <Route path={AppRoute.Account}>
+          <Account setTitle={props.setTitle} />
+        </Route>
+        <Route path={AppRoute.About}>
+          <About setTitle={props.setTitle} />
+        </Route>
+        <Route path={AppRoute.Home}>
+          <Home setTitle={props.setTitle} />
+        </Route>
       </Switch>
     </div>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Dispatch, SetStateAction} from 'react';
 import clsx from 'clsx';
 import {
   createStyles,
@@ -96,6 +96,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 type MiniDrawerProps = {
   title: string;
+  setTitle: Dispatch<SetStateAction<string>>;
 };
 
 export const MiniDrawer: React.FC<MiniDrawerProps> = props => {
@@ -165,7 +166,7 @@ export const MiniDrawer: React.FC<MiniDrawerProps> = props => {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-        <Content />
+        <Content setTitle={props.setTitle} />
       </main>
     </div>
   );

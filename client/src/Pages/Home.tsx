@@ -1,8 +1,16 @@
-import React from 'react';
+import React, {Dispatch, SetStateAction, useEffect} from 'react';
 
+import {Title} from '../enums';
 import './home.css';
 
-export const Home: React.FC = () => {
+type HomeProps = {
+  setTitle: Dispatch<SetStateAction<string>>;
+};
+
+export const Home: React.FC<HomeProps> = props => {
+  useEffect(() => {
+    props.setTitle(Title.Home);
+  });
   return (
     <div className="home-container">
       <div className="b1"> I'm a block </div>

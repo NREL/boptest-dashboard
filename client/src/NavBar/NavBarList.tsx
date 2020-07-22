@@ -36,22 +36,6 @@ export const NavBarList: React.FC = () => {
     setOpen(!open);
   };
 
-  const renderIcon = (rowText: string) => {
-    const text = rowText.toLowerCase();
-    switch (text) {
-      case 'home':
-        return <HomeIcon />;
-      case 'account':
-        return <PersonIcon />;
-      case 'about':
-        return <InfoIcon />;
-      case 'documentation':
-        return <DocsIcon />;
-      case 'rankings':
-        return <TrophyIcon />;
-    }
-  };
-
   return (
     <List
       component="nav"
