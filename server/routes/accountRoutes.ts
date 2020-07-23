@@ -4,7 +4,7 @@ import {User} from '../models/account';
 
 export const accountRouter = express.Router();
 
-accountRouter.get('/', async (req: express.Request, res: express.Response) => {
+accountRouter.get('/', (req: express.Request, res: express.Response) => {
   User.findAll()
     .then(accounts => {
       res.json(accounts);
