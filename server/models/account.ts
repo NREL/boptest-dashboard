@@ -52,9 +52,8 @@ User.init(
   }
 );
 
-export async function getUsers() {
-  const users = await User.findAll();
-  return users;
+export function getUsers(): Promise<User[]> {
+  return User.findAll();
 }
 
 async function doStuffWithUser() {

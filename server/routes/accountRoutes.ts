@@ -1,11 +1,11 @@
 import express from 'express';
 
-import {User} from '../models/account';
+import {getUsers} from '../models/account';
 
 export const accountRouter = express.Router();
 
 accountRouter.get('/', (req: express.Request, res: express.Response) => {
-  User.findAll()
+  getUsers()
     .then(accounts => {
       res.json(accounts);
     })
