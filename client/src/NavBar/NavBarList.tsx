@@ -6,13 +6,13 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import TrophyIcon from '@material-ui/icons/EmojiEvents';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import HomeIcon from '@material-ui/icons/Home';
 import InfoIcon from '@material-ui/icons/Info';
 import DocsIcon from '@material-ui/icons/LibraryBooks';
 import PersonIcon from '@material-ui/icons/Person';
+import ChartIcon from '@material-ui/icons/ShowChart';
 import {Link} from 'react-router-dom';
 
 import {AppRoute} from '../enums';
@@ -58,9 +58,9 @@ export const NavBarList: React.FC = () => {
       </ListItem>
       <ListItem button>
         <ListItemIcon>
-          <TrophyIcon />
+          <ChartIcon />
         </ListItemIcon>
-        <ListItemText primary="Rankings" />
+        <ListItemText primary="Test Results" />
       </ListItem>
       <ListItem
         button

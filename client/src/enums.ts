@@ -1,8 +1,9 @@
 export enum AppRoute {
-  Docs = '/documentation',
-  Account = '/account',
   About = '/about',
+  Account = '/account',
+  Docs = '/documentation',
   Home = '/',
+  Results = '/results',
 }
 
 export enum Title {
