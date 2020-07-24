@@ -8,9 +8,9 @@
     "start:dev": "webpack --watch",
     "run:dev": "nodemon ../build/server/index.js --watch ../build",
     "test": "jest",
-    "check": "gts check ./src/*.ts*",
-    "clean": "gts clean ./src/*.ts*",
-    "fix": "gts fix ./src/*.ts*"
+    "check": "gts check ./*.ts*",
+    "clean": "gts clean ./*.ts*",
+    "fix": "gts fix ./*.ts*"
   },
   "keywords": [],
   "author": "",

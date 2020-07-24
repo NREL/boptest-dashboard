@@ -5,10 +5,7 @@
     "esModuleInterop": true,
     "sourceMap": true,
     "module": "CommonJS",
-    "target": "es6",
+    "target": "es6"
   },
-  "include": [
-    "src/**/*.ts",
-    "test/**/*.ts"
-  ]
+  "include": ["./**/*.ts", "tests/**/*.ts"]
 }
