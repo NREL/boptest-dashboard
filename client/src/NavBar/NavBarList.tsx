@@ -15,6 +15,8 @@ import DocsIcon from '@material-ui/icons/LibraryBooks';
 import PersonIcon from '@material-ui/icons/Person';
 import {Link} from 'react-router-dom';
 
+import {AppRoute} from '../enums';
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -42,13 +44,13 @@ export const NavBarList: React.FC = () => {
       aria-labelledby="nested-list-subheader"
       className={classes.root}
     >
-      <ListItem button component={Link} to="/">
+      <ListItem button component={Link} to={AppRoute.Home}>
         <ListItemIcon>
           <HomeIcon />
         </ListItemIcon>
         <ListItemText primary="Home" />
       </ListItem>
-      <ListItem button component={Link} to="/documentation">
+      <ListItem button component={Link} to={AppRoute.Docs}>
         <ListItemIcon>
           <DocsIcon />
         </ListItemIcon>
@@ -60,7 +62,12 @@ export const NavBarList: React.FC = () => {
         </ListItemIcon>
         <ListItemText primary="Rankings" />
       </ListItem>
-      <ListItem button onClick={handleClick} component={Link} to="/account">
+      <ListItem
+        button
+        onClick={handleClick}
+        component={Link}
+        to={AppRoute.Account}
+      >
         <ListItemIcon>
           <PersonIcon />
         </ListItemIcon>
@@ -73,7 +80,7 @@ export const NavBarList: React.FC = () => {
             button
             className={classes.nested}
             component={Link}
-            to="/account"
+            to={AppRoute.Account}
           >
             <ListItemText primary="My Dashboard" />
           </ListItem>
@@ -85,7 +92,7 @@ export const NavBarList: React.FC = () => {
           </ListItem>
         </List>
       </Collapse>
-      <ListItem button component={Link} to="/about">
+      <ListItem button component={Link} to={AppRoute.About}>
         <ListItemIcon>
           <InfoIcon />
         </ListItemIcon>
