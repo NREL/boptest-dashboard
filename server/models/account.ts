@@ -45,14 +45,3 @@ User.init(
 export function getUsers(): Promise<User[]> {
   return User.findAll();
 }
-
-async function doStuffWithUser() {
-  const newUser = await User.create({
-    name: 'Johnny',
-    //  preferredName: "John",
-  });
-  console.log(newUser.id, newUser.name);
-  const ourUser = await User.findByPk(1, {
-    rejectOnEmpty: true, // Specifying true here removes `null` from the return type!
-  });
-}
