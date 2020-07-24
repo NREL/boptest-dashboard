@@ -56,7 +56,7 @@ export const NavBarList: React.FC = () => {
         </ListItemIcon>
         <ListItemText primary="Documentation" />
       </ListItem>
-      <ListItem button>
+      <ListItem button component={Link} to={AppRoute.Results}>
         <ListItemIcon>
           <ChartIcon />
         </ListItemIcon>
@@ -66,12 +66,12 @@ export const NavBarList: React.FC = () => {
         button
         onClick={handleClick}
         component={Link}
-        to={AppRoute.Account}
+        to={AppRoute.Dashboard}
       >
         <ListItemIcon>
           <PersonIcon />
         </ListItemIcon>
-        <ListItemText primary="Account" />
+        <ListItemText primary="Dashboard" />
         {open ? <ExpandLess /> : <ExpandMore />}
       </ListItem>
       <Collapse in={open} timeout="auto" unmountOnExit>
@@ -80,14 +80,16 @@ export const NavBarList: React.FC = () => {
             button
             className={classes.nested}
             component={Link}
-            to={AppRoute.Account}
+            to={AppRoute.Settings}
           >
-            <ListItemText primary="My Dashboard" />
+            <ListItemText primary="Settings" />
           </ListItem>
-          <ListItem button className={classes.nested}>
-            <ListItemText primary="My Settings" />
-          </ListItem>
-          <ListItem button className={classes.nested}>
+          <ListItem
+            button
+            className={classes.nested}
+            component={Link}
+            to={AppRoute.ApiKey}
+          >
             <ListItemText primary="API Key" />
           </ListItem>
         </List>

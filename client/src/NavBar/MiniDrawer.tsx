@@ -100,12 +100,18 @@ const getTitleFromPath = (path: string): string => {
   switch (path) {
     case AppRoute.About:
       return Title.About;
-    case AppRoute.Account:
-      return Title.Account;
+    case AppRoute.ApiKey:
+      return Title.ApiKey;
+    case AppRoute.Dashboard:
+      return Title.Dashboard;
     case AppRoute.Docs:
       return Title.Docs;
     case AppRoute.Home:
       return Title.Home;
+    case AppRoute.Results:
+      return Title.Results;
+    case AppRoute.Settings:
+      return Title.Settings;
     default:
       'Path not recognized';
   }
