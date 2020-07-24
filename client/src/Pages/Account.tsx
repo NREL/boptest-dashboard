@@ -1,15 +1,5 @@
-import React, {Dispatch, SetStateAction, useEffect} from 'react';
+import React from 'react';
 
-import {Title} from '../enums';
-
-type AccountProps = {
-  setTitle: Dispatch<SetStateAction<string>>;
-};
-
-export const Account: React.FC<AccountProps> = props => {
-  useEffect(() => {
-    props.setTitle(Title.Account);
-  });
-
+export const Account: React.FC = () => {
   return <div>Account Page</div>;
 };

@@ -7,14 +7,10 @@ import {Title} from './enums';
 import './layout.css';
 
 export const Layout: React.FC = () => {
-  // title is going to be based on the Content rendered after being selected in
-  // the NavBar
-  const [title, setTitle] = useState(Title.Home);
-
   return (
     <BrowserRouter>
       <div className="page-layout">
-        <MiniDrawer title={title} setTitle={setTitle} />
+        <MiniDrawer />
       </div>
     </BrowserRouter>
   );

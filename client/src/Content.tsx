@@ -9,25 +9,21 @@ import {AppRoute} from './enums';
 
 import './content.css';
 
-type ContentProps = {
-  setTitle: Dispatch<SetStateAction<string>>;
-};
-
-export const Content: React.FC<ContentProps> = props => {
+export const Content: React.FC = () => {
   return (
     <div className="content">
       <Switch>
         <Route path={AppRoute.Docs}>
-          <Docs setTitle={props.setTitle} />
+          <Docs />
         </Route>
         <Route path={AppRoute.Account}>
-          <Account setTitle={props.setTitle} />
+          <Account />
         </Route>
         <Route path={AppRoute.About}>
-          <About setTitle={props.setTitle} />
+          <About />
         </Route>
         <Route path={AppRoute.Home}>
-          <Home setTitle={props.setTitle} />
+          <Home />
         </Route>
       </Switch>
     </div>

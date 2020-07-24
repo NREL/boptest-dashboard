@@ -1,15 +1,5 @@
-import React, {Dispatch, SetStateAction, useEffect} from 'react';
+import React from 'react';
 
-import {Title} from '../enums';
-
-type AboutProps = {
-  setTitle: Dispatch<SetStateAction<string>>;
-};
-
-export const About: React.FC<AboutProps> = props => {
-  useEffect(() => {
-    props.setTitle(Title.About);
-  });
-
+export const About: React.FC = () => {
   return <div>About Page</div>;
 };

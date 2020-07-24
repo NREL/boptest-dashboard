@@ -1,4 +1,5 @@
-import React, {Dispatch, SetStateAction} from 'react';
+import React, {Dispatch, SetStateAction, useEffect} from 'react';
+import {useLocation} from 'react-router-dom';
 import clsx from 'clsx';
 import {
   createStyles,
@@ -18,6 +19,7 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
 import {Content} from '../Content';
+import {AppRoute, Title} from '../enums';
 import {NavBarList} from './NavBarList';
 
 const drawerWidth = 240;
@@ -94,15 +96,31 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-type MiniDrawerProps = {
-  title: string;
-  setTitle: Dispatch<SetStateAction<string>>;
+const getTitleFromPath = (path: string): string => {
+  switch (path) {
+    case AppRoute.About:
+      return Title.About;
+    case AppRoute.Account:
+      return Title.Account;
+    case AppRoute.Docs:
+      return Title.Docs;
+    case AppRoute.Home:
+      return Title.Home;
+    default:
+      'Path not recognized';
+  }
 };
 
-export const MiniDrawer: React.FC<MiniDrawerProps> = props => {
+export const MiniDrawer: React.FC = () => {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
+  const [title, setTitle] = React.useState('BOPTest');
+  let location = useLocation();
+
+  useEffect(() => {
+    setTitle(getTitleFromPath(location.pathname));
+  }, [location]);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -134,7 +152,7 @@ export const MiniDrawer: React.FC<MiniDrawerProps> = props => {
             <MenuIcon />
           </IconButton>
           <div className={classes.titlebar}>
-            <Typography variant="h6">{props.title}</Typography>
+            <Typography variant="h6">{title}</Typography>
             <Typography variant="h6">Sign Out Button | username</Typography>
           </div>
         </Toolbar>
@@ -166,7 +184,7 @@ export const MiniDrawer: React.FC<MiniDrawerProps> = props => {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-        <Content setTitle={props.setTitle} />
+        <Content />
       </main>
     </div>
   );
