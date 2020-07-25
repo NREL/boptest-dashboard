@@ -15,10 +15,10 @@ accountRouter.get('/', (req: express.Request, res: express.Response) => {
 // this endpoint gets all the routes for the given user as long as that user
 // is the currently logged in user
 accountRouter.get(
-  '/:id/results',
+  '/:userId/results',
   (req: express.Request, res: express.Response) => {
     res.send(
-      `There are no test results associated with account ${req.params.id}`
+      `There are no test results associated with account ${req.params.userId}`
     );
   }
 );
