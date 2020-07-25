@@ -11,3 +11,14 @@ accountRouter.get('/', (req: express.Request, res: express.Response) => {
     })
     .catch(err => console.log('Unable to get accounts' + err));
 });
+
+// this endpoint gets all the routes for the given user as long as that user
+// is the currently logged in user
+accountRouter.get(
+  '/:id/results',
+  (req: express.Request, res: express.Response) => {
+    res.send(
+      `There are no test results associated with account ${req.params.id}`
+    );
+  }
+);
