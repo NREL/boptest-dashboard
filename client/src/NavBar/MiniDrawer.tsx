@@ -1,4 +1,4 @@
-import React, {Dispatch, SetStateAction, useEffect} from 'react';
+import React, {useEffect} from 'react';
 import {useLocation} from 'react-router-dom';
 import clsx from 'clsx';
 import {
@@ -15,8 +15,6 @@ import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
 import {Content} from '../Content';
 import {AppRoute, Title} from '../enums';
@@ -32,26 +30,12 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     appBar: {
       zIndex: theme.zIndex.drawer + 1,
-      transition: theme.transitions.create(['width', 'margin'], {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-      }),
       backgroundColor: '#078b75',
-    },
-    appBarShift: {
-      marginLeft: drawerWidth,
-      width: `calc(100% - ${drawerWidth}px)`,
-      transition: theme.transitions.create(['width', 'margin'], {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
     },
     menuButton: {
       marginRight: 36,
     },
-    hide: {
-      display: 'none',
-    },
+    hide: {},
     drawer: {
       width: drawerWidth,
       flexShrink: 0,
@@ -90,7 +74,6 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     content: {
       flexGrow: 1,
-      width: '100%',
       padding: theme.spacing(1),
     },
   })
@@ -128,28 +111,19 @@ export const MiniDrawer: React.FC = () => {
     setTitle(getTitleFromPath(location.pathname));
   }, [location]);
 
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpen(false);
+  const handleDrawerClick = () => {
+    setOpen(!open);
   };
 
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <AppBar
-        position="fixed"
-        className={clsx(classes.appBar, {
-          [classes.appBarShift]: open,
-        })}
-      >
+      <AppBar position="fixed" className={classes.appBar}>
         <Toolbar>
           <IconButton
             color="inherit"
             aria-label="open drawer"
-            onClick={handleDrawerOpen}
+            onClick={handleDrawerClick}
             edge="start"
             className={clsx(classes.menuButton, {
               [classes.hide]: open,
@@ -176,15 +150,7 @@ export const MiniDrawer: React.FC = () => {
           }),
         }}
       >
-        <div className={classes.toolbar}>
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === 'rtl' ? (
-              <ChevronRightIcon />
-            ) : (
-              <ChevronLeftIcon />
-            )}
-          </IconButton>
-        </div>
+        <div className={classes.toolbar}></div>
         <Divider />
         <NavBarList />
       </Drawer>
