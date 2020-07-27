@@ -1,5 +1,6 @@
 import React, {Dispatch, SetStateAction} from 'react';
 import {Route, Switch} from 'react-router-dom';
+import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 
 import {About} from './Pages/About';
 import {ApiKey} from './Pages/ApiKey';
@@ -10,11 +11,17 @@ import {Results} from './Pages/Results';
 import {Settings} from './Pages/Settings';
 import {AppRoute} from './enums';
 
-import './content.css';
-
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    content: {
+      height: '100%',
+    },
+  })
+);
 export const Content: React.FC = () => {
+  const classes = useStyles();
   return (
-    <div className="content">
+    <div className={classes.content}>
       <Switch>
         <Route path={AppRoute.About}>
           <About />

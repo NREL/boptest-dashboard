@@ -1,0 +1,29 @@
+.settings-container {
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+}
+
+/* .MuiRadio-colorSecondary.Mui-checked:checked {
+  color: green;
+}
+
+.Radio:checked {
+  color: green;
+}
+
+.MuiIconButton-label:checked {
+  color: green;
+} */
+
+.MuiRadio-colorSecondary.Mui-checked {
+  color: green;
+}
+
+.MuiRadio.Mui-checked {
+  color: green;
+}
+
+.Mui-checked {
+  color: green;
+}

@@ -75,6 +75,7 @@ const useStyles = makeStyles((theme: Theme) =>
     content: {
       flexGrow: 1,
       padding: theme.spacing(1),
+      width: '100%',
     },
   })
 );
@@ -102,7 +103,6 @@ const getTitleFromPath = (path: string): string => {
 
 export const MiniDrawer: React.FC = () => {
   const classes = useStyles();
-  const theme = useTheme();
   const [open, setOpen] = React.useState(false);
   const [title, setTitle] = React.useState('BOPTest');
   let location = useLocation();
