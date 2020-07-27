@@ -14,7 +14,19 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
+      padding: '16px 0 0 16px',
     },
+    radioRoot: {
+      color: '#078b75',
+      //colorSecondary: 'green',
+      '&$checked': {
+        color: '#078b75',
+      },
+      '&&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    checked: {},
   })
 );
 
@@ -47,12 +59,26 @@ export const Settings: React.FC = () => {
       <RadioGroup>
         <FormControlLabel
           value="yes"
-          control={<Radio />}
+          control={
+            <Radio
+              classes={{
+                root: classes.radioRoot,
+                checked: classes.checked,
+              }}
+            />
+          }
           label="Yes, share all results"
         />
         <FormControlLabel
           value="no"
-          control={<Radio />}
+          control={
+            <Radio
+              classes={{
+                root: classes.radioRoot,
+                checked: classes.checked,
+              }}
+            />
+          }
           label="Keep all my results private"
         />
       </RadioGroup>
