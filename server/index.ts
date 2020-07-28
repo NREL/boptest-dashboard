@@ -4,6 +4,7 @@ import path from 'path';
 import bodyParser from 'body-parser';
 
 import {accountRouter} from './routes/accountRoutes';
+import {appRouter} from './routes/appRoutes';
 import {authDbConnection} from './db';
 
 const app: express.Application = express();
@@ -14,7 +15,8 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '/usr/client/build')));
 
 // define routes
-app.use('/accounts', accountRouter);
+app.use('/api/accounts', accountRouter);
+app.use('/', appRouter);
 
 const {PORT = 8080} = process.env;
 

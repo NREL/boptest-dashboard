@@ -1,26 +1,27 @@
 import React, {useState} from 'react';
-import {BrowserRouter, Link, Route} from 'react-router-dom';
+import {BrowserRouter} from 'react-router-dom';
+import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 
-import {Content} from './Content';
-import {Header} from './Header';
-import {NavBar} from './NavBar';
+import {MiniDrawer} from './NavBar/MiniDrawer';
 
-import './layout.css';
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    pageLayout: {
+      display: 'flex',
+      flexDirection: 'row',
+      height: '100vh',
+      margin: '-8px',
+    },
+  })
+);
 
 export const Layout: React.FC = () => {
-  // title is going to be based on the Content rendered after being selected in
-  // the NavBar
-  const [title, setTitle] = useState('BOPTest');
-  const [path, setPath] = useState('/');
+  const classes = useStyles();
 
   return (
     <BrowserRouter>
-      <div className="page-layout">
-        <NavBar />
-        <div className="main-layout">
-          <Header title={title} />
-          <Content path={path} />
-        </div>
+      <div className={classes.pageLayout}>
+        <MiniDrawer />
       </div>
     </BrowserRouter>
   );
