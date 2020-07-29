@@ -3,59 +3,72 @@ import {DataTypes, Model, Optional} from 'sequelize';
 import {db} from '../db';
 
 // These are all the attributes in the User model
-interface UserAttributes {
+interface ResultAttributes {
   id: number;
-  name: string;
-  email: string;
-  hashedPassword: string;
-  apiKey: string;
+  accountId: string;
+  kpiId: string;
+  testCaseId: string;
+  controllerId: string;
+  dateRun: Date;
+  shared: boolean;
 }
 
 // Some attributes are optional in `User.build` and `User.create` calls
-interface UserCreationAttributes extends Optional<UserAttributes, 'id'> {}
+interface ResultCreationAttributes extends Optional<ResultAttributes, 'id'> {}
 
 // Some attributes are optional in `User.build` and `User.create` calls interface UserCreationAttributes extends Optional<UserAttributes, "id"> {}
 
-export class User extends Model<UserAttributes, UserCreationAttributes>
-  implements UserAttributes {
+export class Result extends Model<ResultAttributes, ResultCreationAttributes>
+  implements ResultAttributes {
   public id!: number; // Note that the `null assertion` `!` is required in strict mode.
-  public name!: string;
-  public email!: string;
-  public hashedPassword!: string;
-  public apiKey!: string;
+  public accountId!: string;
+  public kpiId!: string;
+  public testCaseId!: string;
+  public controllerId!: string;
+  public dateRun!: Date;
+  public shared!: boolean;
 }
 
-User.init(
+Result.init(
   {
     id: {
       type: DataTypes.INTEGER.UNSIGNED,
       autoIncrement: true,
       primaryKey: true,
     },
-    name: {
+    accountId: {
       type: new DataTypes.STRING(128),
       allowNull: false,
     },
-    email: {
+    kpiId: {
       type: new DataTypes.STRING(128),
       allowNull: false,
     },
-    hashedPassword: {
+    testCaseId: {
       type: new DataTypes.STRING(128),
       allowNull: false,
     },
-    apiKey: {
+    controllerId: {
       type: new DataTypes.STRING(128),
+      allowNull: false,
+    },
+    dateRun: {
+      type: new DataTypes.DATE(),
+      allowNull: false,
+    },
+    shared: {
+      type: DataTypes.BOOLEAN,
       allowNull: false,
     },
   },
   {
-    tableName: 'account',
+    tableName: 'result',
     timestamps: false,
     sequelize: db, // passing the `sequelize` instance is required
   }
 );
 
-export function getUsers(): Promise<User[]> {
-  return User.findAll();
+// gets all the results. Not useful in practice
+export function getResults(): Promise<Result[]> {
+  return Result.findAll();
 }
