@@ -13,3 +13,7 @@ export function authDbConnection() {
       console.log('unable to establish connection: ', err);
     });
 }
+
+export function syncModels() {
+  db.sync({force: true});
+}

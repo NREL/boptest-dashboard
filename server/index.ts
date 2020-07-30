@@ -3,7 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import bodyParser from 'body-parser';
 
-import {authDbConnection} from './db';
+import {authDbConnection, syncModels} from './db';
 import {accountRouter} from './routes/accountRoutes';
 import {appRouter} from './routes/appRoutes';
 import {resultRouter} from './routes/resultRoutes';
@@ -26,6 +26,7 @@ if (require.main === module) {
   app.listen(PORT, () => {
     console.log('server started at http://localhost:' + PORT);
     authDbConnection();
+    syncModels();
   });
 }
 
