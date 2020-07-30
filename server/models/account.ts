@@ -1,5 +1,15 @@
 import {Result} from './result';
-import {Association, DataTypes, Model, Optional} from 'sequelize';
+import {
+  Association,
+  DataTypes,
+  HasManyAddAssociationMixin,
+  HasManyCountAssociationsMixin,
+  HasManyCreateAssociationMixin,
+  HasManyGetAssociationsMixin,
+  HasManyHasAssociationMixin,
+  Model,
+  Optional,
+} from 'sequelize';
 
 import {db} from '../db';
 
@@ -24,6 +34,14 @@ export class User extends Model<UserAttributes, UserCreationAttributes>
   public email!: string;
   public hashedPassword!: string;
   public apiKey!: string;
+
+  public getResults!: HasManyGetAssociationsMixin<Result>; // Note the null assertions!
+  public addResults!: HasManyAddAssociationMixin<Result, number>;
+  public hasResult!: HasManyHasAssociationMixin<Result, number>;
+  public countResults!: HasManyCountAssociationsMixin;
+  public createResult!: HasManyCreateAssociationMixin<Result>;
+
+  public readonly results?: Result[];
 
   public static associations: {
     results: Association<User, Result>;
@@ -59,12 +77,33 @@ User.init(
   {
     tableName: 'account',
     timestamps: false,
+    underscored: true,
     sequelize: db, // passing the `sequelize` instance is required
   }
 );
+
+//Result.belongsTo(User, {targetKey: 'id'});
+User.hasMany(Result, {
+  sourceKey: 'id',
+  foreignKey: 'account_id',
+  as: 'results',
+});
 
 // User.hasMany(Result, {sourceKey: 'id', foreignKey: 'accountId', as: 'results'});
 
 export function getUsers(): Promise<User[]> {
   return User.findAll();
+}
+
+export function getResultsForUser(): Promise<Result[]> {
+  return User.findByPk(2).then(user => {
+    console.log(user!.name);
+    return user!.getResults();
+  });
+}
+
+export function getUserResults(): Promise<User[]> {
+  //return User.findAll({include: ['results']});
+  return User.findAll({include: [User.associations.results]});
+  //return User.findAll({include: [{all: true}]});
 }

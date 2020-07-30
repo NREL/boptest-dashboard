@@ -43,6 +43,9 @@ export class Result extends Model<ResultAttributes, ResultCreationAttributes>
   // Since TS cannot determine model association at compile time
   // we have to declare them here purely virtually
   // these will not exist until `Model.init` was called.
+  public getAccount!: HasOneGetAssociationMixin<User>; // Note the null assertions!
+  public addAccount!: HasOneSetAssociationMixin<User, number>;
+  public createResult!: HasOneCreateAssociationMixin<User>;
   // public getKpis!: HasOneGetAssociationMixin<KPI>; // Note the null assertions!
   // public addKpis!: HasOneCreateAssociationMixin<KPI>;
   // public addProject!: HasManyAddAssociationMixin<Project, number>;
@@ -55,6 +58,7 @@ export class Result extends Model<ResultAttributes, ResultCreationAttributes>
 
   public static associations: {
     projects: Association<Result, KPI>;
+    account: Association<Result, User>;
   };
 }
 
@@ -98,6 +102,7 @@ Result.init(
   {
     tableName: 'result',
     timestamps: false,
+    underscored: true,
     sequelize: db, // passing the `sequelize` instance is required
   }
 );
@@ -105,8 +110,12 @@ Result.init(
 Result.hasOne(KPI, {sourceKey: 'id'});
 KPI.belongsTo(Result, {targetKey: 'id'});
 
-Result.belongsTo(User, {targetKey: 'id'});
-User.hasMany(Result, {sourceKey: 'id', foreignKey: 'accountId', as: 'results'});
+// Result.belongsTo(User);
+// User.hasMany(Result, {
+//   sourceKey: 'id',
+//   foreignKey: 'account_id',
+//   as: 'results',
+// });
 
 Result.belongsTo(TestCase, {targetKey: 'id'});
 TestCase.hasMany(Result, {
