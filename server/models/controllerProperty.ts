@@ -1,4 +1,5 @@
-import {DataTypes, Model, Optional} from 'sequelize';
+import {Result} from './result';
+import {Association, DataTypes, Model, Optional} from 'sequelize';
 
 import {db} from '../db';
 
@@ -30,6 +31,10 @@ export class ControllerProperty
   public modelType?: string | undefined;
   public numStates?: number | undefined;
   public predictionHorizon?: number | undefined;
+
+  public static associations: {
+    results: Association<ControllerProperty, Result>;
+  };
 }
 
 ControllerProperty.init(
@@ -46,18 +51,22 @@ ControllerProperty.init(
     problemFormulation: {
       type: new DataTypes.STRING(128),
       allowNull: true,
+      field: 'problem_formulation',
     },
     modelType: {
       type: new DataTypes.STRING(128),
       allowNull: true,
+      field: 'model_type',
     },
     numStates: {
-      type: new DataTypes.INTEGER.UNSIGNED(),
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: true,
+      field: 'num_states',
     },
     predictionHorizon: {
-      type: new DataTypes.INTEGER.UNSIGNED(),
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: true,
+      field: 'prediction_horizon',
     },
   },
   {
@@ -66,6 +75,12 @@ ControllerProperty.init(
     sequelize: db, // passing the `sequelize` instance is required
   }
 );
+
+// ControllerProperty.hasMany(Result, {
+//   sourceKey: 'id',
+//   foreignKey: 'controllerId',
+//   as: 'results',
+// });
 
 // gets all the results. Not useful in practice
 export function getControllerProperties(): Promise<ControllerProperty[]> {

@@ -1,4 +1,5 @@
-import {DataTypes, Model, Optional} from 'sequelize';
+import {Result} from './result';
+import {Association, DataTypes, Model, Optional} from 'sequelize';
 
 import {db} from '../db';
 
@@ -31,6 +32,10 @@ export class TestCase
   public priceScenario?: string | undefined;
   public uncertaintyDistribution?: string | undefined;
   public buildingType?: string | undefined;
+
+  public static associations: {
+    results: Association<TestCase, Result>;
+  };
 }
 
 TestCase.init(
@@ -47,26 +52,32 @@ TestCase.init(
     cosimilationStart: {
       type: new DataTypes.DATE(),
       allowNull: true,
+      field: 'start_cosimilation',
     },
     cosimilationEnd: {
       type: new DataTypes.DATE(),
       allowNull: true,
+      field: 'end_cosimilation',
     },
     controlStep: {
       type: new DataTypes.STRING(128),
       allowNull: true,
+      field: 'control_step',
     },
     priceScenario: {
       type: new DataTypes.STRING(128),
       allowNull: true,
+      field: 'price_scenario',
     },
     uncertaintyDistribution: {
       type: new DataTypes.STRING(128),
       allowNull: true,
+      field: 'uncertainty_distribution',
     },
     buildingType: {
       type: new DataTypes.STRING(128),
       allowNull: true,
+      field: 'building_type',
     },
   },
   {
@@ -75,6 +86,12 @@ TestCase.init(
     sequelize: db, // passing the `sequelize` instance is required
   }
 );
+
+// TestCase.hasMany(Result, {
+//   sourceKey: 'id',
+//   foreignKey: 'testCaseId',
+//   as: 'results',
+// });
 
 // gets all the results. Not useful in practice
 export function getTestCases(): Promise<TestCase[]> {

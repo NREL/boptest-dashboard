@@ -1,3 +1,4 @@
+import {Result} from './result';
 import {DataTypes, Model, Optional} from 'sequelize';
 
 import {db} from '../db';
@@ -39,10 +40,12 @@ KPI.init(
     thermalDiscomfort: {
       type: new DataTypes.FLOAT(),
       allowNull: true,
+      field: 'thermal_discomfort',
     },
     energyUse: {
       type: new DataTypes.FLOAT(),
       allowNull: true,
+      field: 'energy_use',
     },
     cost: {
       type: new DataTypes.FLOAT(),
@@ -59,6 +62,7 @@ KPI.init(
     timeRatio: {
       type: new DataTypes.FLOAT(),
       allowNull: true,
+      field: 'time_ratio',
     },
   },
   {
@@ -68,6 +72,7 @@ KPI.init(
   }
 );
 
+// KPI.belongsTo(Result, {targetKey: 'id'});
 // gets all the results. Not useful in practice
 export function getKPIs(): Promise<KPI[]> {
   return KPI.findAll();

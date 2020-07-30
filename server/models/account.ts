@@ -1,4 +1,5 @@
-import {DataTypes, Model, Optional} from 'sequelize';
+import {Result} from './result';
+import {Association, DataTypes, Model, Optional} from 'sequelize';
 
 import {db} from '../db';
 
@@ -23,6 +24,10 @@ export class User extends Model<UserAttributes, UserCreationAttributes>
   public email!: string;
   public hashedPassword!: string;
   public apiKey!: string;
+
+  public static associations: {
+    results: Association<User, Result>;
+  };
 }
 
 User.init(
@@ -43,10 +48,12 @@ User.init(
     hashedPassword: {
       type: new DataTypes.STRING(128),
       allowNull: false,
+      field: 'hashed_pw',
     },
     apiKey: {
       type: new DataTypes.STRING(128),
       allowNull: false,
+      field: 'api_key',
     },
   },
   {
@@ -55,6 +62,8 @@ User.init(
     sequelize: db, // passing the `sequelize` instance is required
   }
 );
+
+// User.hasMany(Result, {sourceKey: 'id', foreignKey: 'accountId', as: 'results'});
 
 export function getUsers(): Promise<User[]> {
   return User.findAll();
