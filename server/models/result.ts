@@ -9,6 +9,9 @@ import {
   HasOneGetAssociationMixin,
   Model,
   Optional,
+  BelongsToGetAssociationMixin,
+  BelongsToCreateAssociationMixin,
+  BelongsToSetAssociationMixin,
 } from 'sequelize';
 
 import {db} from '../db';
@@ -43,22 +46,42 @@ export class Result extends Model<ResultAttributes, ResultCreationAttributes>
   // Since TS cannot determine model association at compile time
   // we have to declare them here purely virtually
   // these will not exist until `Model.init` was called.
-  public getAccount!: HasOneGetAssociationMixin<User>; // Note the null assertions!
-  public addAccount!: HasOneSetAssociationMixin<User, number>;
-  public createResult!: HasOneCreateAssociationMixin<User>;
-  // public getKpis!: HasOneGetAssociationMixin<KPI>; // Note the null assertions!
-  // public addKpis!: HasOneCreateAssociationMixin<KPI>;
-  // public addProject!: HasManyAddAssociationMixin<Project, number>;
-  // public hasProject!: HasManyHasAssociationMixin<Project, number>;
-  // public createProject!: HasManyCreateAssociationMixin<Project>;
+  public getKpi!: HasOneGetAssociationMixin<KPI>; // Note the null assertions!
+  public addKpi!: HasOneCreateAssociationMixin<KPI>;
+  public createKpi!: HasOneCreateAssociationMixin<KPI>;
+  public setKpi!: HasOneSetAssociationMixin<KPI, number>;
+
+  public getAccount!: BelongsToGetAssociationMixin<User>;
+  public createAccount!: BelongsToCreateAssociationMixin<User>;
+  public setAccount!: BelongsToSetAssociationMixin<User, number>;
+
+  public getTestCase!: BelongsToGetAssociationMixin<TestCase>;
+  public createTestCase!: BelongsToCreateAssociationMixin<TestCase>;
+  public setTestCase!: BelongsToSetAssociationMixin<TestCase, number>;
+
+  public getControllerProperty!: BelongsToGetAssociationMixin<
+    ControllerProperty
+  >;
+  public createControllerProperty!: BelongsToCreateAssociationMixin<
+    ControllerProperty
+  >;
+  public setControllerProperty!: BelongsToSetAssociationMixin<
+    ControllerProperty,
+    number
+  >;
 
   // You can also pre-declare possible inclusions, these will only be populated if you
   // actively include a relation.
-  public readonly kpis?: KPI[]; // Note this is optional since it's only populated when explicitly requested in code
+  public readonly kpi?: KPI; // Note this is optional since it's only populated when explicitly requested in code
+  public readonly account?: User;
+  public readonly testCase?: TestCase;
+  public readonly controllerProperty?: ControllerProperty;
 
   public static associations: {
-    projects: Association<Result, KPI>;
+    kpi: Association<Result, KPI>;
     account: Association<Result, User>;
+    testCase: Association<Result, TestCase>;
+    controllerProperty: Association<Result, ControllerProperty>;
   };
 }
 
@@ -70,29 +93,24 @@ Result.init(
       primaryKey: true,
     },
     accountId: {
-      type: new DataTypes.STRING(128),
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
-      field: 'account_id',
     },
     kpiId: {
-      type: new DataTypes.STRING(128),
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
-      field: 'kpi_id',
     },
     testCaseId: {
-      type: new DataTypes.STRING(128),
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
-      field: 'test_case_id',
     },
     controllerId: {
-      type: new DataTypes.STRING(128),
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
-      field: 'controller_id',
     },
     dateRun: {
       type: new DataTypes.DATE(),
       allowNull: false,
-      field: 'date_run',
     },
     shared: {
       type: DataTypes.BOOLEAN,
@@ -107,27 +125,27 @@ Result.init(
   }
 );
 
-Result.hasOne(KPI, {sourceKey: 'id'});
-KPI.belongsTo(Result, {targetKey: 'id'});
+Result.belongsTo(KPI, {foreignKey: 'kpi_id'});
+KPI.hasOne(Result, {sourceKey: 'id', foreignKey: 'kpi_id'});
 
-// Result.belongsTo(User);
-// User.hasMany(Result, {
-//   sourceKey: 'id',
-//   foreignKey: 'account_id',
-//   as: 'results',
-// });
-
-Result.belongsTo(TestCase, {targetKey: 'id'});
-TestCase.hasMany(Result, {
+Result.belongsTo(User, {foreignKey: 'account_id'});
+User.hasMany(Result, {
   sourceKey: 'id',
-  foreignKey: 'testCaseId',
+  foreignKey: 'account_id',
   as: 'results',
 });
 
-Result.belongsTo(ControllerProperty, {targetKey: 'id'});
+Result.belongsTo(TestCase, {foreignKey: 'test_case_id'});
+TestCase.hasMany(Result, {
+  sourceKey: 'id',
+  foreignKey: 'test_case_id',
+  as: 'results',
+});
+
+Result.belongsTo(ControllerProperty, {foreignKey: 'controller_id'});
 ControllerProperty.hasMany(Result, {
   sourceKey: 'id',
-  foreignKey: 'controllerId',
+  foreignKey: 'controller_id',
   as: 'results',
 });
 

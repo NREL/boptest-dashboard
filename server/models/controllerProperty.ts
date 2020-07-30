@@ -51,36 +51,27 @@ ControllerProperty.init(
     problemFormulation: {
       type: new DataTypes.STRING(128),
       allowNull: true,
-      field: 'problem_formulation',
     },
     modelType: {
       type: new DataTypes.STRING(128),
       allowNull: true,
-      field: 'model_type',
     },
     numStates: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: true,
-      field: 'num_states',
     },
     predictionHorizon: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: true,
-      field: 'prediction_horizon',
     },
   },
   {
     tableName: 'controller_property',
+    underscored: true,
     timestamps: false,
     sequelize: db, // passing the `sequelize` instance is required
   }
 );
-
-// ControllerProperty.hasMany(Result, {
-//   sourceKey: 'id',
-//   foreignKey: 'controllerId',
-//   as: 'results',
-// });
 
 // gets all the results. Not useful in practice
 export function getControllerProperties(): Promise<ControllerProperty[]> {

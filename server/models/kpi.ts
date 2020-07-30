@@ -1,5 +1,5 @@
 import {Result} from './result';
-import {DataTypes, Model, Optional} from 'sequelize';
+import {DataTypes, Model, Optional, Association} from 'sequelize';
 
 import {db} from '../db';
 
@@ -28,6 +28,10 @@ export class KPI extends Model<KPIAttributes, KPICreationAttributes>
   public emissions: number | undefined;
   public iaq: number | undefined;
   public timeRatio: number | undefined;
+
+  public static associations: {
+    result: Association<KPI, Result>;
+  };
 }
 
 KPI.init(
@@ -40,12 +44,10 @@ KPI.init(
     thermalDiscomfort: {
       type: new DataTypes.FLOAT(),
       allowNull: true,
-      field: 'thermal_discomfort',
     },
     energyUse: {
       type: new DataTypes.FLOAT(),
       allowNull: true,
-      field: 'energy_use',
     },
     cost: {
       type: new DataTypes.FLOAT(),
@@ -62,12 +64,12 @@ KPI.init(
     timeRatio: {
       type: new DataTypes.FLOAT(),
       allowNull: true,
-      field: 'time_ratio',
     },
   },
   {
     tableName: 'kpi',
     timestamps: false,
+    underscored: true,
     sequelize: db, // passing the `sequelize` instance is required
   }
 );

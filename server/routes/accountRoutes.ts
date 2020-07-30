@@ -1,7 +1,7 @@
 import express from 'express';
 
 import {getUsers, getUserResults, getResultsForUser} from '../models/account';
-import {getResults} from 'models/result';
+import {getResults} from '../models/result';
 
 export const accountRouter = express.Router();
 

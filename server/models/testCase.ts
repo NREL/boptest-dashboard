@@ -62,27 +62,24 @@ TestCase.init(
     controlStep: {
       type: new DataTypes.STRING(128),
       allowNull: true,
-      field: 'control_step',
     },
     priceScenario: {
       type: new DataTypes.STRING(128),
       allowNull: true,
-      field: 'price_scenario',
     },
     uncertaintyDistribution: {
       type: new DataTypes.STRING(128),
       allowNull: true,
-      field: 'uncertainty_distribution',
     },
     buildingType: {
       type: new DataTypes.STRING(128),
       allowNull: true,
-      field: 'building_type',
     },
   },
   {
     tableName: 'test_case',
     timestamps: false,
+    underscored: true,
     sequelize: db, // passing the `sequelize` instance is required
   }
 );

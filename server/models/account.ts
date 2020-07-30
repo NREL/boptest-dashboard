@@ -71,7 +71,6 @@ User.init(
     apiKey: {
       type: new DataTypes.STRING(128),
       allowNull: false,
-      field: 'api_key',
     },
   },
   {
@@ -82,21 +81,12 @@ User.init(
   }
 );
 
-//Result.belongsTo(User, {targetKey: 'id'});
-User.hasMany(Result, {
-  sourceKey: 'id',
-  foreignKey: 'account_id',
-  as: 'results',
-});
-
-// User.hasMany(Result, {sourceKey: 'id', foreignKey: 'accountId', as: 'results'});
-
 export function getUsers(): Promise<User[]> {
   return User.findAll();
 }
 
 export function getResultsForUser(): Promise<Result[]> {
-  return User.findByPk(2).then(user => {
+  return User.findByPk(1).then(user => {
     console.log(user!.name);
     return user!.getResults();
   });
