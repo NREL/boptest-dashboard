@@ -1,16 +1,28 @@
 import express from 'express';
 
-import {getUsers, getUserResults, getResultsForUser} from '../models/account';
-import {getResults} from '../models/result';
+import {
+  getUsers,
+  getUserResults,
+  getResultsForUser,
+  getKPIs,
+  getKpiForResult,
+} from '../models/models';
+import {getResults} from '../models/models';
 
 export const accountRouter = express.Router();
 
 accountRouter.get('/', (req: express.Request, res: express.Response) => {
-  getUsers()
-    .then(accounts => {
-      res.json(accounts);
-    })
-    .catch(err => console.log('Unable to get accounts' + err));
+  // getUsers()
+  //   .then(accounts => {
+  //     res.json(accounts);
+  //   })
+  // //   .catch(err => console.log('Unable to get accounts' + err));
+  getKPIs().then(kpis => {
+    res.json(kpis);
+  });
+  //   getKpiForResult()
+  //     .then(kpi => res.json(kpi))
+  //     .catch(err => console.log('unable to get kpi for a result ' + err));
 });
 
 accountRouter.get('/result', (req: express.Request, res: express.Response) => {
@@ -22,19 +34,19 @@ accountRouter.get('/result', (req: express.Request, res: express.Response) => {
 });
 
 accountRouter.get('/results', (req: express.Request, res: express.Response) => {
-  getResults()
-    .then(results => {
-      res.json(results);
-    })
-    .catch(err => console.log('couldnt get the results' + err));
-
-  // getUserResults()
-  //   .then(accounts => {
-  //     //res.json(accounts[0].results);
-  //     console.log('results: ' + accounts[0].results);
-  //     res.json(accounts);
+  // getResults()
+  //   .then(results => {
+  //     res.json(results);
   //   })
-  //   .catch(err => console.log('couldnt get the results from account' + err));
+  //   .catch(err => console.log('couldnt get the results' + err));
+
+  getUserResults()
+    .then(accounts => {
+      //res.json(accounts[0].results);
+      console.log('results: ' + accounts[0].results);
+      res.json(accounts);
+    })
+    .catch(err => console.log('couldnt get the results from account' + err));
 });
 
 // this endpoint gets all the routes for the given user as long as that user
