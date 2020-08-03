@@ -1,15 +1,29 @@
-import {Sequelize} from 'sequelize';
+import {entityList} from './models/Entities';
+import 'reflect-metadata';
+import {createConnection, getConnection} from 'typeorm';
+import {createData} from './testData';
 
-// stop gap for now, need to error check later
-const dbUrl: string = process.env.DATABASE_URL ?? '';
-export const db = new Sequelize(dbUrl);
-
-export function authDbConnection() {
-  db.authenticate()
+export function connectToDb(withSync: boolean = false) {
+  createConnection({
+    type: 'postgres',
+    url: process.env.DATABASE_URL ?? '',
+    entities: entityList,
+  })
     .then(() => {
-      console.log('Connection has been successful');
+      console.log('Connection to postgres created');
+      if (withSync) {
+        const conn = getConnection();
+        conn
+          .synchronize()
+          .then(() => {
+            console.log('models synchronized');
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      } else {
+        createData();
+      }
     })
-    .catch(err => {
-      console.log('unable to establish connection: ', err);
-    });
+    .catch(error => console.log(error));
 }

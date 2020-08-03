@@ -1,47 +1,45 @@
-import {DataTypes, Model, Optional} from 'sequelize';
+import {EntitySchema} from 'typeorm';
 
-import {db} from '../db';
+import {Result} from './Result';
 
-// These are all the attributes in the User model
-interface UserAttributes {
+export interface Account {
   id: number;
   name: string;
-  // preferredName: string | null;
+  email: string;
+  password: string;
+  apiKey: string;
+  results: Result[];
 }
 
-// Some attributes are optional in `User.build` and `User.create` calls
-interface UserCreationAttributes extends Optional<UserAttributes, 'id'> {}
-
-// Some attributes are optional in `User.build` and `User.create` calls interface UserCreationAttributes extends Optional<UserAttributes, "id"> {}
-
-export class User extends Model<UserAttributes, UserCreationAttributes>
-  implements UserAttributes {
-  public id!: number; // Note that the `null assertion` `!` is required in strict mode.
-  public name!: string;
-  // timestamps!
-  // public readonly createdAt!: Date;
-  // public readonly updatedAt!: Date;
-}
-
-User.init(
-  {
+//export class Account extends BaseEntity implements IAccount {
+export const AccountEntity = new EntitySchema<Account>({
+  name: 'accounts',
+  columns: {
     id: {
-      type: DataTypes.INTEGER.UNSIGNED,
-      autoIncrement: true,
-      primaryKey: true,
+      type: Number,
+      primary: true,
+      generated: true,
     },
     name: {
-      type: new DataTypes.STRING(128),
-      allowNull: false,
+      type: String,
+    },
+    email: {
+      type: String,
+    },
+    password: {
+      type: String,
+    },
+    apiKey: {
+      type: String,
     },
   },
-  {
-    tableName: 'accounts',
-    timestamps: false,
-    sequelize: db, // passing the `sequelize` instance is required
-  }
-);
-
-export function getUsers(): Promise<User[]> {
-  return User.findAll();
-}
+  relations: {
+    results: {
+      type: 'one-to-many',
+      target: 'results',
+      cascade: true,
+      inverseSide: 'account',
+      eager: true,
+    },
+  },
+});

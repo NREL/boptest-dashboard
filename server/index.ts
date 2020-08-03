@@ -5,7 +5,7 @@ import bodyParser from 'body-parser';
 
 import {accountRouter} from './routes/accountRoutes';
 import {appRouter} from './routes/appRoutes';
-import {authDbConnection} from './db';
+import {connectToDb} from './db';
 
 const app: express.Application = express();
 app.use(cors());
@@ -23,7 +23,7 @@ const {PORT = 8080} = process.env;
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log('server started at http://localhost:' + PORT);
-    authDbConnection();
+    connectToDb(false);
   });
 }
 
