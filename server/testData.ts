@@ -1,16 +1,60 @@
-import {accountRouter} from 'routes/accountRoutes';
 import {getRepository} from 'typeorm';
 
-import {AccountEntity, Account} from './models/Account';
+import {Account, AccountEntity} from './models/Account';
+import {Controller, ControllerEntity} from './models/Controller';
+import {KPI, KpiEntity} from './models/KPI';
 import {Result, ResultEntity} from './models/Result';
+import {TestCase, TestCaseEntity} from './models/TestCase';
 
-export function createData() {
+export async function createData() {
   const accountsRepository = getRepository<Account>(AccountEntity);
+  const kpiRepo = getRepository<KPI>(KpiEntity);
+  const controllerRepo = getRepository<Controller>(ControllerEntity);
   const resultRepo = getRepository<Result>(ResultEntity);
+  const testCaseRepo = getRepository<TestCase>(TestCaseEntity);
+
+  const kpiData = {
+    thermalDiscomfort: 1,
+    energyUse: 2,
+    cost: 13,
+    emissions: 400,
+    iaq: 9,
+    timeRatio: 120000,
+  };
+
+  const kpi = kpiRepo.create(kpiData);
+  await kpiRepo.save(kpi);
+
+  const testcaseData = {
+    name: 'testcase1',
+    cosimulationStart: new Date(),
+    cosimulationEnd: new Date(),
+    controlStep: 'step',
+    priceScenario: 'price',
+    uncertaintyDist: 'uncertain',
+    buildingType: 'buildingBig',
+  };
+
+  const testcase = testCaseRepo.create(testcaseData);
+  await testCaseRepo.save(testcase);
+
+  const controllerData = {
+    type: 'type',
+    problemForm: 'prob',
+    modelType: 'model1',
+    numStates: 6,
+    predictionHorizon: 600,
+  };
+
+  const controller = controllerRepo.create(controllerData);
+  await controllerRepo.save(controller);
 
   const resultData = {
     isShared: true,
     dateRun: new Date(),
+    controller: controller,
+    kpi: kpi,
+    testcase: testcase,
   };
 
   const res = resultRepo.create(resultData);
@@ -31,25 +75,4 @@ export function createData() {
       console.log('results', account.results);
     })
     .catch(err => console.log('unable to save account'));
-
-  // const resultObj = resultRepo
-  //   .save(resultData)
-  //   .then(result => {
-  //     console.log('saved the result');
-
-  //     const accountData = {
-  //       name: 'Chris',
-  //       email: 'chris@gmail.com',
-  //       password: 'pass',
-  //       apiKey: 'api',
-  //       results: [result],
-  //     };
-
-  //     console.log('about to save the account');
-  //     accountsRepository
-  //       .save(accountData)
-  //       .then(() => console.log('made the account'))
-  //       .catch(err => console.log('could not make account', err));
-  //   })
-  //   .catch(err => console.log('could not make the result', err));
 }

@@ -11,7 +11,6 @@ export interface Account {
   results: Result[];
 }
 
-//export class Account extends BaseEntity implements IAccount {
 export const AccountEntity = new EntitySchema<Account>({
   name: 'accounts',
   columns: {
@@ -39,7 +38,6 @@ export const AccountEntity = new EntitySchema<Account>({
       target: 'results',
       cascade: true,
       inverseSide: 'account',
-      eager: true,
     },
   },
 });
