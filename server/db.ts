@@ -22,7 +22,7 @@ export function connectToDb(withSync: boolean = false) {
             console.log(err);
           });
       } else {
-        createData();
+        // createData();
       }
     })
     .catch(error => console.log(error));
