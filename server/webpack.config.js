@@ -5,6 +5,9 @@ const WebpackShellPlugin = require('webpack-shell-plugin');
 module.exports = {
   entry: './index.ts',
   target: 'node',
+  node: {
+    __dirname: false,
+  },
   output: {
     path: path.resolve(__dirname, '../build/server'),
     filename: 'index.js',
