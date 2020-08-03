@@ -1,13 +1,3 @@
-//   Table kpi {
-//   id int [pk, increment]
-//     thermal_discomfort float
-//     energy_use float
-//     cost float
-//     emissions float
-//     iaq float
-//     time_ration float
-//   }
-
 import {EntitySchema} from 'typeorm';
 
 import {Result} from './Result';

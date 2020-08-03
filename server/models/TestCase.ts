@@ -1,14 +1,3 @@
-//   Table test_case {
-//     id int [pk, increment]
-//     name varchar
-//     start_cosimulation timestamp
-//     stop_cosimulation timestamp
-//     control_step varchar
-//     price_scenario varchar
-//     uncertainty_distribution varchar
-//     type_of_building varchar
-//   }
-
 import {EntitySchema} from 'typeorm';
 
 import {Result} from './Result';

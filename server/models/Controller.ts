@@ -1,12 +1,3 @@
-//   Table controler_properties {
-//     id int [pk, increment]
-//     controller_type varchar
-//     problem_formulation varchar
-//     controller_model_type varchar
-//     number_states int
-//     prediction_horizon (s) int
-//   }
-
 import {EntitySchema} from 'typeorm';
 
 import {Result} from './Result';
