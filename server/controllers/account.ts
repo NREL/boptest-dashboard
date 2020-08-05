@@ -1,5 +1,5 @@
 import {getRepository} from 'typeorm';
-import {Account, AccountEntity} from './../models/Account';
+import {Account, AccountEntity} from '../models/Account';
 
 export function getAccounts(): Promise<Account[]> {
   // request data

@@ -25,7 +25,7 @@ const {PORT = 8080} = process.env;
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log('server started at http://localhost:' + PORT);
-    connectToDb(false);
+    connectToDb(true);
   });
 }
 
