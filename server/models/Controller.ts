@@ -2,34 +2,38 @@ import {EntitySchema} from 'typeorm';
 
 import {Result} from './Result';
 
-export interface Account {
+export interface Controller {
   id: number;
-  name: string;
-  email: string;
-  password: string;
-  apiKey: string;
+  type: string;
+  problemForm: string;
+  modelType: string;
+  numStates: number;
+  predictionHorizon: number;
   results: Result[];
 }
 
-export const AccountEntity = new EntitySchema<Account>({
-  name: 'accounts',
+export const ControllerEntity = new EntitySchema<Controller>({
+  name: 'controllers',
   columns: {
     id: {
       type: Number,
       primary: true,
       generated: true,
     },
-    name: {
+    type: {
       type: String,
     },
-    email: {
+    problemForm: {
       type: String,
     },
-    password: {
+    modelType: {
       type: String,
     },
-    apiKey: {
-      type: String,
+    numStates: {
+      type: Number,
+    },
+    predictionHorizon: {
+      type: Number,
     },
   },
   relations: {
@@ -37,7 +41,7 @@ export const AccountEntity = new EntitySchema<Account>({
       type: 'one-to-many',
       target: 'results',
       cascade: true,
-      inverseSide: 'account',
+      inverseSide: 'controller',
     },
   },
 });

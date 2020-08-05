@@ -4,8 +4,14 @@
     "baseUrl": ".",
     "esModuleInterop": true,
     "sourceMap": true,
-    "module": "CommonJS",
-    "target": "es6"
+    "module": "commonjs",
+    //"target": "es6",
+    "target": "es2017",
+    "lib": ["es5", "es6"],
+    "moduleResolution": "node",
+    "outDir": "./build",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true
   },
   "include": ["./**/*.ts", "tests/**/*.ts"]
 }
