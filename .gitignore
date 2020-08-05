@@ -5,3 +5,10 @@ build
 # ignore the entirety of the db volume for now
 # pg also includes the env vars used to set it up, but that will change
 pg
+
+*/.idea/
+*/.vscode/
+*/node_modules/
+*/build/
+*/tmp/
+*/temp/
