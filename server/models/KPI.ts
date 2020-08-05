@@ -1,4 +1,4 @@
-import {EntitySchema} from 'typeorm';
+import {EntitySchema, getRepository} from 'typeorm';
 
 import {Result} from './Result';
 
@@ -12,6 +12,8 @@ export interface KPI {
   timeRatio: number;
   result: Result;
 }
+
+export type KPIData = Omit<KPI, 'result'>;
 
 export const KpiEntity = new EntitySchema<KPI>({
   name: 'kpis',
@@ -49,3 +51,8 @@ export const KpiEntity = new EntitySchema<KPI>({
     },
   },
 });
+
+export function createKPI(data: KPIData): Promise<KPI> {
+  const kpiRepo = getRepository<KPI>(KpiEntity);
+  return kpiRepo.save(data);
+}

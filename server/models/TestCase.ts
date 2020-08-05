@@ -1,4 +1,4 @@
-import {EntitySchema} from 'typeorm';
+import {EntitySchema, getRepository} from 'typeorm';
 
 import {Result} from './Result';
 
@@ -13,6 +13,8 @@ export interface TestCase {
   buildingType: string;
   results: Result[];
 }
+
+export type TestCaseData = Omit<TestCase, 'results'>;
 
 export const TestCaseEntity = new EntitySchema<TestCase>({
   name: 'testcases',
@@ -53,3 +55,22 @@ export const TestCaseEntity = new EntitySchema<TestCase>({
     },
   },
 });
+// const controllerRepo = getRepository<Controller>(ControllerEntity);
+export async function getOrCreateTestCase(
+  data: TestCaseData
+): Promise<TestCase> {
+  const testCaseRepo = getRepository<TestCase>(TestCaseEntity);
+
+  return testCaseRepo
+    .findOneOrFail({
+      name: data.name,
+    })
+    .then(testcase => {
+      return testcase;
+    })
+    .catch(() => {
+      const testcase = testCaseRepo.create(data);
+      testCaseRepo.save(testcase);
+      return testcase;
+    });
+}

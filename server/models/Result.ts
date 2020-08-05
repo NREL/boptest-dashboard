@@ -1,7 +1,6 @@
-import {EntitySchema} from 'typeorm';
+import {EntitySchema, getRepository} from 'typeorm';
 
 import {Account} from './Account';
-import {Controller} from './Controller';
 import {KPI} from './KPI';
 import {TestCase} from './TestCase';
 
@@ -10,10 +9,11 @@ export interface Result {
   dateRun: Date;
   isShared: boolean;
   account: Account;
-  controller: Controller;
   kpi: KPI;
   testcase: TestCase;
 }
+
+export type ResultData = Omit<Result, 'id'>;
 
 export const ResultEntity = new EntitySchema<Result>({
   name: 'results',
@@ -38,13 +38,6 @@ export const ResultEntity = new EntitySchema<Result>({
       nullable: false,
       inverseSide: 'results',
     },
-    controller: {
-      type: 'many-to-one',
-      target: 'controllers',
-      joinColumn: true,
-      nullable: false,
-      inverseSide: 'results',
-    },
     kpi: {
       type: 'one-to-one',
       target: 'kpis',
@@ -61,3 +54,8 @@ export const ResultEntity = new EntitySchema<Result>({
     },
   },
 });
+
+export function createResult(data: ResultData): Promise<Result> {
+  const resultRepo = getRepository<Result>(ResultEntity);
+  return resultRepo.save(data);
+}
