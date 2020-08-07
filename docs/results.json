@@ -1,0 +1,26 @@
+{
+  "results": [
+    {
+      "id": "6317d174c593f59c6ed7fc68f500b4fe",
+      "dateRun": "2020-08-04T23:00:00.000Z",
+      "account": {
+        "apiKey": "apiKey"
+      },
+      "controller": {
+        "key1": "value1",
+        "key2": "value2"
+      },
+      "kpi": {
+        "cost_tot": 29.446050432913417,
+        "emis_tot": 73.61512608228354,
+        "ener_tot": 147.23025216456708,
+        "idis_tot": 365.69118739675133,
+        "tdis_tot": 6.04446040558893,
+        "time_rat": 1.3834294416098448e-06
+      },
+      "testcase": {
+        "id": "f50d57c495de718b8e28f20d6bd088a7"
+      }
+    }
+  ]
+}
