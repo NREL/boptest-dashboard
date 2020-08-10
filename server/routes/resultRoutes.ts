@@ -1,6 +1,6 @@
 import express from 'express';
 
-import {getResults, createEntities} from '../controllers/result';
+import {getResults, createResults} from '../controllers/result';
 
 export const resultRouter = express.Router();
 
@@ -15,7 +15,7 @@ resultRouter.get('/', (req: express.Request, res: express.Response) => {
 });
 
 resultRouter.post('/', (req: express.Request, res: express.Response) => {
-  createEntities(req.body.results)
+  createResults(req.body.results)
     .then(() => {
       res.sendStatus(200);
     })

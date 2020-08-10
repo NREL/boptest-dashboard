@@ -12,7 +12,7 @@ export function getResults(): Promise<Result[]> {
   });
 }
 
-function createEntitiesFromResult(result: any) {
+function createResultAndAssociatedModels(result: any) {
   const newKpi = createKPI(<KPIData>result.kpi);
   const account = getAccount(<AccountData>result.account);
   const testcase = getOrCreateTestCase(<TestCaseData>result.testcase);
@@ -34,10 +34,10 @@ function createEntitiesFromResult(result: any) {
     );
 }
 
-export function createEntities(results: any) {
+export function createResults(results: any) {
   return Promise.all(
     results.map((result: any) => {
-      createEntitiesFromResult(result);
+      createResultAndAssociatedModels(result);
     })
   );
 }
