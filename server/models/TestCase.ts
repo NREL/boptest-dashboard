@@ -56,9 +56,7 @@ export const TestCaseEntity = new EntitySchema<TestCase>({
   },
 });
 // const controllerRepo = getRepository<Controller>(ControllerEntity);
-export async function getOrCreateTestCase(
-  data: TestCaseData
-): Promise<TestCase> {
+export function getOrCreateTestCase(data: TestCaseData): Promise<TestCase> {
   const testCaseRepo = getRepository<TestCase>(TestCaseEntity);
 
   return testCaseRepo
