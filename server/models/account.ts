@@ -1,4 +1,4 @@
-import {EntitySchema} from 'typeorm';
+import {EntitySchema, getRepository} from 'typeorm';
 
 import {Result} from './Result';
 
@@ -10,6 +10,8 @@ export interface Account {
   apiKey: string;
   results: Result[];
 }
+
+export type AccountData = Omit<Account, 'results'>;
 
 export const AccountEntity = new EntitySchema<Account>({
   name: 'accounts',
@@ -24,12 +26,14 @@ export const AccountEntity = new EntitySchema<Account>({
     },
     email: {
       type: String,
+      unique: true,
     },
     password: {
       type: String,
     },
     apiKey: {
       type: String,
+      unique: true,
     },
   },
   relations: {
@@ -41,3 +45,12 @@ export const AccountEntity = new EntitySchema<Account>({
     },
   },
 });
+
+export function getAccount(data: AccountData): Promise<Account> {
+  const accountsRepo = getRepository<Account>(AccountEntity);
+
+  return accountsRepo.findOneOrFail({
+    email: data.email,
+    apiKey: data.apiKey,
+  });
+}

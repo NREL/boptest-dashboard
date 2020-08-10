@@ -1,7 +1,6 @@
 import {getRepository} from 'typeorm';
 
 import {Account, AccountEntity} from './models/Account';
-import {Controller, ControllerEntity} from './models/Controller';
 import {KPI, KpiEntity} from './models/KPI';
 import {Result, ResultEntity} from './models/Result';
 import {TestCase, TestCaseEntity} from './models/TestCase';
@@ -9,7 +8,6 @@ import {TestCase, TestCaseEntity} from './models/TestCase';
 export async function createData() {
   const accountsRepository = getRepository<Account>(AccountEntity);
   const kpiRepo = getRepository<KPI>(KpiEntity);
-  const controllerRepo = getRepository<Controller>(ControllerEntity);
   const resultRepo = getRepository<Result>(ResultEntity);
   const testCaseRepo = getRepository<TestCase>(TestCaseEntity);
 
@@ -46,13 +44,9 @@ export async function createData() {
     predictionHorizon: 600,
   };
 
-  const controller = controllerRepo.create(controllerData);
-  await controllerRepo.save(controller);
-
   const resultData = {
     isShared: true,
     dateRun: new Date(),
-    controller: controller,
     kpi: kpi,
     testcase: testcase,
   };
