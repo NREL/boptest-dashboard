@@ -7,8 +7,8 @@
         "apiKey": "apiKey"
       },
       "controller": {
-        "key1": "value1",
-        "key2": "value2"
+        "int_key1": 42,
+        "string_key2": "some string val"
       },
       "kpi": {
         "cost_tot": 29.446050432913417,
