@@ -13,3 +13,8 @@ accountRouter.get('/', (req: express.Request, res: express.Response) => {
     })
     .catch(err => console.log('Unable to get accounts' + err));
 });
+
+// GET /api/accounts/dummy
+accountRouter.get('/dummy', (req: express.Request, res: express.Response) => {
+  res.send('Hello world');
+});
