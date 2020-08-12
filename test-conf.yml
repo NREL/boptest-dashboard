@@ -1,0 +1,38 @@
+version: "3"
+services:
+  server_test:
+    build: ./server
+    environment:
+      DATABASE_URL: postgres://admin:pass@postgres_test:5432/boptestdb
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres_test
+    volumes:
+      - ./server/node_modules:/usr/src/build/server/node_modules:z
+      - ./server:/usr/src/app/:z
+      - ./client/build:/usr/client/build:z
+  postgres_test:
+    restart: always
+    image: "postgres"
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./pg/database.env
+  api_test:
+    build: ./tests
+    depends_on:
+      - server_test
+      - postgres_test
+    environment:
+      SERVER_HOST: server_test
+      POSTGRES_HOST: postgres_test
+    links:
+      - server_test
+      - postgres_test
+    command: "bash integration_test.sh"
+  # client_test:
+  #   build: ./client
+  #   volumes:
+  #     - ./client/build:/usr/client/build:z
+  #     - ./client/src:/usr/client/src:z
