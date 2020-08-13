@@ -31,7 +31,7 @@ services:
       - server_test
       - postgres_test
     environment:
-      SERVER_HOST: boptest-dashboard_server_test_1
+      SERVER_HOST: server_test
       POSTGRES_HOST: postgres_test
     links:
       - server_test
