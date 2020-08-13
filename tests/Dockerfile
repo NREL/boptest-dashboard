@@ -17,4 +17,4 @@ RUN chmod -R 755 .
 
 COPY integration_test.sh /
 
-EXPOSE 8080
+# EXPOSE 8080
