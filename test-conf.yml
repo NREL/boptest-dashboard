@@ -17,8 +17,12 @@ services:
     image: "postgres"
     ports:
       - "5432:5432"
-    env_file:
-      - ./pg/database.env
+    environment:
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "pass"
+      POSTGRES_DB: "boptestdb"
+    # env_file:
+    #   - ./pg/database.env
   api_test:
     build: ./tests
     depends_on:
