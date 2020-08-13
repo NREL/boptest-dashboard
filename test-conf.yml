@@ -2,6 +2,7 @@ version: "3"
 services:
   server_test:
     build: ./server
+    restart: always
     environment:
       DATABASE_URL: postgres://admin:pass@postgres_test:5432/boptestdb
     ports:
@@ -25,6 +26,7 @@ services:
     #   - ./pg/database.env
   api_test:
     build: ./tests
+    restart: always
     depends_on:
       - server_test
       - postgres_test
