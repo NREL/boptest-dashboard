@@ -4,8 +4,9 @@ import path from 'path';
 import bodyParser from 'body-parser';
 
 import {accountRouter} from './routes/accountRoutes';
-import {resultRouter} from './routes/resultRoutes';
 import {appRouter} from './routes/appRoutes';
+import {resultRouter} from './routes/resultRoutes';
+import {setupRouter} from './routes/setupRoutes';
 import {connectToDb} from './db';
 
 const app: express.Application = express();
@@ -16,6 +17,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '/usr/client/build')));
 
 // define routes
+app.use('/api/setup', setupRouter);
 app.use('/api/accounts', accountRouter);
 app.use('/api/results', resultRouter);
 app.use('/', appRouter);

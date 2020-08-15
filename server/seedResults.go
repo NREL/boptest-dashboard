@@ -8,8 +8,46 @@ import (
 )
 
 func main() {
-	fmt.Println("Hello world")
+	createAccount()
+	createTestCases()
+	createResults()
+}
 
+func createAccount() {
+	url := "http://localhost:8080/api/setup/account"
+
+	var payload = []byte(`{
+		"account": {
+			"apiKey": "apiKey",
+			"email": "bill@gmail.com",
+			"name": "Bill",
+			"password": "pass"
+		}
+	}`)
+
+	makeAndSendRequest(url, payload)
+}
+
+func createTestCases() {
+	url := "http://localhost:8080/api/setup/testcase"
+
+	var payload = []byte(`{
+		"testcase": {
+			"name": "testcase",
+			"uid": "testcase1",
+			"cosimulationStart": "2020-08-04T23:00:00.000Z",
+			"cosimulationEnd": "2020-08-04T23:10:00.000Z",
+			"controlStep": "control",
+			"priceScenario": "price",
+			"uncertaintyDist": "uncertain",
+			"buildingType": "building1"
+		}
+	}`)
+
+	makeAndSendRequest(url, payload)
+}
+
+func createResults() {
 	url := "http://localhost:8080/api/results"
 	fmt.Println("URL:", url)
 
@@ -18,9 +56,8 @@ func main() {
 			{
 				"dateRun": "2020-08-04T23:00:00.000Z",
 				"isShared": true,
+				"uid": "result1",
 				"account": {
-					"name": "Bill",
-					"email": "bill@gmail.com",
 					"apiKey": "apiKey"
 				},
 				"kpi": {
@@ -32,18 +69,16 @@ func main() {
 					"timeRatio": 900
 				},
 				"testcase": {
-					"name": "testcase",
-					"cosimulationStart": "2020-08-04T23:00:00.000Z",
-					"cosimulationEnd": "2020-08-04T23:10:00.000Z",
-					"controlStep": "control",
-					"priceScenario": "price",
-					"uncertaintyDist": "uncertain",
-					"buildingType": "building1"
+					"uid": "testcase1"
 				}
 			}
 		]
 	}`)
 
+	makeAndSendRequest(url, payload)
+}
+
+func makeAndSendRequest(url string, payload []byte) {
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	req.Header.Set("Content-Type", "application/json")
 
