@@ -54,3 +54,16 @@ export function getAccount(data: AccountData): Promise<Account> {
     apiKey: data.apiKey,
   });
 }
+
+export function getAccountByApiKey(apiKey: string): Promise<Account> {
+  const accountsRepo = getRepository<Account>(AccountEntity);
+
+  return accountsRepo.findOneOrFail({
+    apiKey: apiKey,
+  });
+}
+
+export function createAccount(data: AccountData): Promise<Account> {
+  const accountRepo = getRepository<Account>(AccountEntity);
+  return accountRepo.save(data);
+}

@@ -4,6 +4,7 @@ import {Result} from './Result';
 
 export interface TestCase {
   id: number;
+  uid: string;
   name: string;
   cosimulationStart: Date;
   cosimulationEnd: Date;
@@ -23,6 +24,10 @@ export const TestCaseEntity = new EntitySchema<TestCase>({
       type: Number,
       primary: true,
       generated: true,
+    },
+    uid: {
+      type: String,
+      unique: true,
     },
     name: {
       type: String,
@@ -71,4 +76,16 @@ export function getOrCreateTestCase(data: TestCaseData): Promise<TestCase> {
       testCaseRepo.save(testcase);
       return testcase;
     });
+}
+
+// test cases should already exists by the time we are creating results
+// so this is the fetcher that will be used.
+export function getTestCaseByUid(uid: string): Promise<TestCase> {
+  const testCaseRepo = getRepository<TestCase>(TestCaseEntity);
+  return testCaseRepo.findOneOrFail({uid: uid});
+}
+
+export function createTestCase(data: TestCaseData): Promise<TestCase> {
+  const testCaseRepo = getRepository<TestCase>(TestCaseEntity);
+  return testCaseRepo.save(data);
 }

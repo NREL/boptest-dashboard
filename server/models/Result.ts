@@ -6,6 +6,7 @@ import {TestCase} from './TestCase';
 
 export interface Result {
   id: number;
+  uid: string;
   dateRun: Date;
   isShared: boolean;
   account: Account;
@@ -22,6 +23,10 @@ export const ResultEntity = new EntitySchema<Result>({
       type: Number,
       primary: true,
       generated: true,
+    },
+    uid: {
+      type: String,
+      unique: true,
     },
     dateRun: {
       type: Date,
