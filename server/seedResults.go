@@ -10,7 +10,8 @@ import (
 func main() {
 	createAccount()
 	createTestCases()
-	createResults()
+	createResultWithoutTags()
+	createResultWithTags()
 }
 
 func createAccount() {
@@ -47,9 +48,8 @@ func createTestCases() {
 	makeAndSendRequest(url, payload)
 }
 
-func createResults() {
+func createResultWithoutTags() {
 	url := "http://localhost:8080/api/results"
-	fmt.Println("URL:", url)
 
 	var payload = []byte(`{
 		"results": [
@@ -70,6 +70,40 @@ func createResults() {
 				},
 				"testcase": {
 					"uid": "testcase1"
+				}
+			}
+		]
+	}`)
+
+	makeAndSendRequest(url, payload)
+}
+
+func createResultWithTags() {
+	url := "http://localhost:8080/api/results"
+
+	var payload = []byte(`{
+		"results": [
+			{
+				"dateRun": "2020-08-04T23:00:00.000Z",
+				"isShared": true,
+				"uid": "result2",
+				"account": {
+					"apiKey": "apiKey"
+				},
+				"kpi": {
+					"thermalDiscomfort": 62,
+					"energyUse": 15,
+					"cost": 12,
+					"emissions": 11,
+					"iaq": 430,
+					"timeRatio": 1200
+				},
+				"testcase": {
+					"uid": "testcase1"
+				},
+				"tags": {
+					"numStates": 6,
+					"controllerType": "controller-big"
 				}
 			}
 		]

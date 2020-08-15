@@ -12,6 +12,7 @@ export interface Result {
   account: Account;
   kpi: KPI;
   testcase: TestCase;
+  tags: JSON;
 }
 
 export type ResultData = Omit<Result, 'id'>;
@@ -33,6 +34,10 @@ export const ResultEntity = new EntitySchema<Result>({
     },
     isShared: {
       type: Boolean,
+    },
+    tags: {
+      type: 'jsonb',
+      nullable: true,
     },
   },
   relations: {

@@ -24,6 +24,7 @@ function createResultAndAssociatedModels(result: any) {
       const resultData = {
         dateRun: result.dateRun,
         isShared: result.isShared,
+        tags: result.tags,
         uid: result.uid,
         kpi: data[0],
         account: data[1],
