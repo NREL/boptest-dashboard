@@ -6,11 +6,13 @@ import {TestCase} from './TestCase';
 
 export interface Result {
   id: number;
+  uid: string;
   dateRun: Date;
   isShared: boolean;
   account: Account;
   kpi: KPI;
   testcase: TestCase;
+  tags: JSON;
 }
 
 export type ResultData = Omit<Result, 'id'>;
@@ -23,11 +25,19 @@ export const ResultEntity = new EntitySchema<Result>({
       primary: true,
       generated: true,
     },
+    uid: {
+      type: String,
+      unique: true,
+    },
     dateRun: {
       type: Date,
     },
     isShared: {
       type: Boolean,
+    },
+    tags: {
+      type: 'jsonb',
+      nullable: true,
     },
   },
   relations: {

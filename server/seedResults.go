@@ -8,19 +8,56 @@ import (
 )
 
 func main() {
-	fmt.Println("Hello world")
+	createAccount()
+	createTestCases()
+	createResultWithoutTags()
+	createResultWithTags()
+}
 
+func createAccount() {
+	url := "http://localhost:8080/api/setup/account"
+
+	var payload = []byte(`{
+		"account": {
+			"apiKey": "apiKey",
+			"email": "bill@gmail.com",
+			"name": "Bill",
+			"password": "pass"
+		}
+	}`)
+
+	makeAndSendRequest(url, payload)
+}
+
+func createTestCases() {
+	url := "http://localhost:8080/api/setup/testcase"
+
+	var payload = []byte(`{
+		"testcase": {
+			"name": "testcase",
+			"uid": "testcase1",
+			"cosimulationStart": "2020-08-04T23:00:00.000Z",
+			"cosimulationEnd": "2020-08-04T23:10:00.000Z",
+			"controlStep": "control",
+			"priceScenario": "price",
+			"uncertaintyDist": "uncertain",
+			"buildingType": "building1"
+		}
+	}`)
+
+	makeAndSendRequest(url, payload)
+}
+
+func createResultWithoutTags() {
 	url := "http://localhost:8080/api/results"
-	fmt.Println("URL:", url)
 
 	var payload = []byte(`{
 		"results": [
 			{
 				"dateRun": "2020-08-04T23:00:00.000Z",
 				"isShared": true,
+				"uid": "result1",
 				"account": {
-					"name": "Bill",
-					"email": "bill@gmail.com",
 					"apiKey": "apiKey"
 				},
 				"kpi": {
@@ -32,18 +69,50 @@ func main() {
 					"timeRatio": 900
 				},
 				"testcase": {
-					"name": "testcase",
-					"cosimulationStart": "2020-08-04T23:00:00.000Z",
-					"cosimulationEnd": "2020-08-04T23:10:00.000Z",
-					"controlStep": "control",
-					"priceScenario": "price",
-					"uncertaintyDist": "uncertain",
-					"buildingType": "building1"
+					"uid": "testcase1"
 				}
 			}
 		]
 	}`)
 
+	makeAndSendRequest(url, payload)
+}
+
+func createResultWithTags() {
+	url := "http://localhost:8080/api/results"
+
+	var payload = []byte(`{
+		"results": [
+			{
+				"dateRun": "2020-08-04T23:00:00.000Z",
+				"isShared": true,
+				"uid": "result2",
+				"account": {
+					"apiKey": "apiKey"
+				},
+				"kpi": {
+					"thermalDiscomfort": 62,
+					"energyUse": 15,
+					"cost": 12,
+					"emissions": 11,
+					"iaq": 430,
+					"timeRatio": 1200
+				},
+				"testcase": {
+					"uid": "testcase1"
+				},
+				"tags": {
+					"numStates": 6,
+					"controllerType": "controller-big"
+				}
+			}
+		]
+	}`)
+
+	makeAndSendRequest(url, payload)
+}
+
+func makeAndSendRequest(url string, payload []byte) {
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	req.Header.Set("Content-Type", "application/json")
 
