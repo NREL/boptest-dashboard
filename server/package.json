@@ -43,5 +43,7 @@
     "typeorm": "0.2.25",
     "mysql": "^2.14.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "axios": "^0.19.2"
+  }
 }
