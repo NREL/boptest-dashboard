@@ -10,8 +10,9 @@ services:
     depends_on:
       - pg
     volumes:
-      - ./server/node_modules:/usr/src/build/server/node_modules:z
+      # - ./server/node_modules:/usr/src/build/server/node_modules:z
       - ./server:/usr/src/app/:z
+      - /usr/src/app/node_modules
       - ./client/build:/usr/client/build:z
   pg:
     image: "postgres"

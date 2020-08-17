@@ -1,15 +1,12 @@
 FROM node:12
 
-# app dir
 WORKDIR /usr/src/app
 
-# grab app dependencies and install them
-COPY package*.json ./
+COPY . .
 
 RUN npm install
-
-# bundle source app
-COPY . .
+RUN mkdir /usr/src/build
+RUN ln -s /usr/src/app/node_modules/ /usr/src/build/
 
 EXPOSE 8080
 
