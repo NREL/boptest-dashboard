@@ -46,15 +46,6 @@ export const AccountEntity = new EntitySchema<Account>({
   },
 });
 
-export function getAccount(data: AccountData): Promise<Account> {
-  const accountsRepo = getRepository<Account>(AccountEntity);
-
-  return accountsRepo.findOneOrFail({
-    email: data.email,
-    apiKey: data.apiKey,
-  });
-}
-
 export function getAccountByApiKey(apiKey: string): Promise<Account> {
   const accountsRepo = getRepository<Account>(AccountEntity);
 
