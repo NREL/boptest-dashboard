@@ -1,6 +1,8 @@
+import {getRepository} from 'typeorm';
 import express from 'express';
 import {createAccount} from '../models/Account';
 import {createTestCase} from '../models/TestCase';
+import {seedTestData} from '../db';
 
 export const setupRouter = express.Router();
 
@@ -20,4 +22,11 @@ setupRouter.post('/testcase', (req: express.Request, res: express.Response) => {
       res.json(testcase);
     })
     .catch(err => console.log('Unable to create testcase', err));
+});
+
+setupRouter.get('/db', (req: express.Request, res: express.Response) => {
+  console.log('about to seed test data');
+  seedTestData()
+    .then(() => res.send('successfully seeded db'))
+    .catch(err => console.log('Unable to seed db', err));
 });

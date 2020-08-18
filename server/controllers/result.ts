@@ -8,7 +8,7 @@ export function getResults(): Promise<Result[]> {
   // request data
   const resultsRepository = getRepository<Result>(ResultEntity);
   return resultsRepository.find({
-    relations: ['account', 'controller', 'kpi', 'testcase'],
+    relations: ['account', 'kpi', 'testcase'],
   });
 }
 
