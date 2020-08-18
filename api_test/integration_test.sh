@@ -11,4 +11,4 @@ while ! nc -w 1 -z $SERVER_HOST 8080
   do sleep 0.1
 done
 
-sleep 5 && go test -v ./...
+sleep 5 && npm test
