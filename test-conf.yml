@@ -9,8 +9,8 @@ services:
     depends_on:
       - postgres_test
     volumes:
-      - ./server/node_modules:/usr/src/build/server/node_modules:z
       - ./server:/usr/src/app/:z
+      - /usr/src/app/node_modules #ignore node_modules (they are installed in the container)
       - ./client/build:/usr/client/build:z
   postgres_test:
     restart: always
@@ -19,8 +19,11 @@ services:
       - "5432:5432"
     env_file:
       - ./pg/database.env
+    # volumes:
+    #   # add the initialization script for a clean db start each time
+    #   - ./pg/scripts/test_init.sql:/docker-entrypoint-initdb.d/test_init.sql
   api_test:
-    build: ./tests
+    build: ./api_test
     depends_on:
       - server_test
       - postgres_test
