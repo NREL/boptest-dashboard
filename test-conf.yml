@@ -19,9 +19,6 @@ services:
       - "5432:5432"
     env_file:
       - ./pg/database.env
-    # volumes:
-    #   # add the initialization script for a clean db start each time
-    #   - ./pg/scripts/test_init.sql:/docker-entrypoint-initdb.d/test_init.sql
   api_test:
     build: ./api_test
     depends_on:
@@ -33,9 +30,7 @@ services:
     links:
       - server_test
       - postgres_test
+    volumes:
+      - ./api_test:/usr/src/app/:z
+      - /usr/src/app/node_modules #ignore node_modules (they are installed in the container)
     command: "bash integration_test.sh"
-  # client_test:
-  #   build: ./client
-  #   volumes:
-  #     - ./client/build:/usr/client/build:z
-  #     - ./client/src:/usr/client/src:z
