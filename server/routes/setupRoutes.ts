@@ -1,18 +1,18 @@
 import {getRepository} from 'typeorm';
 import express from 'express';
-import {createAccount} from '../models/Account';
+import {createAccounts} from '../controllers/account';
 import {createTestCase} from '../models/TestCase';
 import {seedTestData} from '../db';
 
 export const setupRouter = express.Router();
 
 setupRouter.post('/account', (req: express.Request, res: express.Response) => {
-  createAccount(req.body.account)
-    .then(account => {
-      console.log('successfully created account with id', account.id);
-      res.json(account);
+  createAccounts(req.body)
+    .then(accounts => {
+      console.log(`successfully created ${accounts.length} accounts`);
+      res.json(accounts);
     })
-    .catch(err => console.log('Unable to create account', err));
+    .catch(err => console.log('Unable to create accounts', err));
 });
 
 setupRouter.post('/testcase', (req: express.Request, res: express.Response) => {
