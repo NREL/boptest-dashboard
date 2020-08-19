@@ -135,21 +135,13 @@ describe("results test", () => {
   test("results should be returned properly", async () => {
     let res = await axios.get(resultsEndpoint);
 
-    // TODO fill out expected results after deciding
-    // how I want to set up the db
-    const expectedResults = {
-      results: [{}, {}],
-    };
+    expect(res.data.length).toEqual(2);
 
-    expect(res.data).toContain(expectedResults);
-  });
-  test("posting to results should return those results", async () => {
-    const data = {};
+    const result = res.data.filter((result) => result.uid === "result2")[0];
 
-    let res = await axios.post(resultsEndpoint, data);
-
-    expect(res.status).toEqual(200);
-
-    // TODO query the db for the data that we just added
+    expect(result["account"]["apiKey"]).toEqual("tedsapikey");
+    expect(result["kpi"]["cost"]).toEqual(12);
+    expect(result["testcase"]["uid"]).toEqual("testcase1");
+    expect(result["tags"]["numStates"]).toEqual(6);
   });
 });
