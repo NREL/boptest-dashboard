@@ -2,7 +2,6 @@ import axios from "axios";
 
 const accountEndpoint = `http://${process.env.SERVER_HOST}:8080/api/setup/account`;
 const resultsEndpoint = `http://${process.env.SERVER_HOST}:8080/api/results`;
-const setupEndpoint = `http://${process.env.SERVER_HOST}:8080/api/setup/db`;
 const testcaseEndpoint = `http://${process.env.SERVER_HOST}:8080/api/setup/testcase`;
 const accountsPayload = [
   {
@@ -87,7 +86,6 @@ const resultPayload = {
 
 // Have the server init the db before any of the tests run
 beforeAll(() => {
-  console.log("calling setup endpoint", setupEndpoint);
   const account = axios.post(accountEndpoint, accountsPayload);
   const testcase = axios.post(testcaseEndpoint, testcasePayload);
   return Promise.all([account, testcase]).then(() => {
@@ -100,7 +98,6 @@ beforeAll(() => {
 const dummyEndpoint = `http://${process.env.SERVER_HOST}:8080/api/accounts/dummy`;
 describe("dummy test", () => {
   test("dummy endpoint should be reachable", async () => {
-    console.log(dummyEndpoint);
     let res = await axios.get(dummyEndpoint);
 
     expect(res.status).toEqual(200);
@@ -121,8 +118,6 @@ describe("accounts test", () => {
     const jerrysAccount = res.data.filter(
       (account) => account.name === "Jerry"
     )[0];
-
-    console.log(jerrysAccount);
 
     expect(jerrysAccount["apiKey"]).toEqual("jerrysapikey");
     expect(jerrysAccount["email"]).toEqual("jerbear@gmail.com");
