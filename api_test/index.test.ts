@@ -3,6 +3,9 @@ import axios from "axios";
 const accountEndpoint = `http://${process.env.SERVER_HOST}:8080/api/setup/account`;
 const resultsEndpoint = `http://${process.env.SERVER_HOST}:8080/api/results`;
 const testcaseEndpoint = `http://${process.env.SERVER_HOST}:8080/api/setup/testcase`;
+const dummyEndpoint = `http://${process.env.SERVER_HOST}:8080/api/accounts/dummy`;
+const accountsEndpoint = `http://${process.env.SERVER_HOST}:8080/api/accounts`;
+
 const accountsPayload = [
   {
     apiKey: "jerrysapikey",
@@ -84,33 +87,28 @@ const resultPayload = {
   ],
 };
 
-// Have the server init the db before any of the tests run
-beforeAll(() => {
-  let accountData: any;
-  let testCaseData: any;
-  return axios.post(accountEndpoint, accountsPayload)
-    .then(res => {
-      accountData = res.data;
-      return axios.post(testcaseEndpoint, testcasePayload)
-    })
-    .then(res => {
-      testCaseData = res.data;
-      return axios.post(resultsEndpoint, resultPayload)
-    })
-    .then(() => new Promise((res, _) => setTimeout(() => res(), 3000)));
-});
+describe('Main', () => {
+  beforeAll(async () => {
+    let accountData: any;
+    let testCaseData: any;
+    return axios.post(accountEndpoint, accountsPayload)
+      .then(res => {
+        accountData = res.data;
+        return axios.post(testcaseEndpoint, testcasePayload)
+      })
+      .then(res => {
+        testCaseData = res.data;
+        return axios.post(resultsEndpoint, resultPayload)
+      });
+      // This is a temporary stop gap until the race condition is addressed
+      // .then(() => new Promise((res, _) => setTimeout(() => res(), 3000)));
+  });
 
-const dummyEndpoint = `http://${process.env.SERVER_HOST}:8080/api/accounts/dummy`;
-describe("dummy test", () => {
   test("dummy endpoint should be reachable", async () => {
     let res = await axios.get(dummyEndpoint);
-
     expect(res.status).toEqual(200);
   });
-});
 
-const accountsEndpoint = `http://${process.env.SERVER_HOST}:8080/api/accounts`;
-describe("accounts test", () => {
   test("accounts endpoint should be reachable", async () => {
     let res = await axios.get(accountsEndpoint);
     expect(res.status).toEqual(200);
@@ -129,9 +127,7 @@ describe("accounts test", () => {
     expect(jerrysAccount["password"]).toEqual("jerryspass");
     expect(jerrysAccount["results"][0]["uid"]).toEqual("result1");
   });
-});
 
-describe("results test", () => {
   test("results endpoint should be reachable", async () => {
     let res = await axios.get(resultsEndpoint);
 
@@ -149,4 +145,5 @@ describe("results test", () => {
     expect(result["testcase"]["uid"]).toEqual("testcase1");
     expect(result["tags"]["numStates"]).toEqual(6);
   });
+
 });
