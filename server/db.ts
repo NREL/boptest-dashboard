@@ -31,7 +31,6 @@ export function connectToDb(withSync: boolean = false) {
 }
 
 export async function seedTestData() {
-  console.log('inside seeedTestData');
   // create accounts
   const accounts = [
     {

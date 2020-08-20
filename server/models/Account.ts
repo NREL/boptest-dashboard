@@ -49,11 +49,6 @@ export const AccountEntity = new EntitySchema<Account>({
 export function getAccountByApiKey(apiKey: string): Promise<Account> {
   const accountsRepo = getRepository<Account>(AccountEntity);
 
-  console.log('looking for apiKey', apiKey);
-  accountsRepo
-    .find()
-    .then(all => console.log('found ' + all.length + ' accounts'));
-
   return accountsRepo.findOneOrFail({
     apiKey: apiKey,
   });
