@@ -88,7 +88,7 @@ const resultPayload = {
 };
 
 describe('Main', () => {
-  beforeAll(async (done) => {
+  beforeAll(done => {
     let accountData: any;
     let testCaseData: any;
     return axios.post(accountEndpoint, accountsPayload)
