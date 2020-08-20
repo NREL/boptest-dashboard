@@ -88,7 +88,7 @@ const resultPayload = {
 };
 
 describe('Main', () => {
-  beforeAll(async () => {
+  beforeAll(async (done) => {
     let accountData: any;
     let testCaseData: any;
     return axios.post(accountEndpoint, accountsPayload)
@@ -99,7 +99,8 @@ describe('Main', () => {
       .then(res => {
         testCaseData = res.data;
         return axios.post(resultsEndpoint, resultPayload)
-      });
+      })
+      .then(() => done());
       // This is a temporary stop gap until the race condition is addressed
       // .then(() => new Promise((res, _) => setTimeout(() => res(), 3000)));
   });
