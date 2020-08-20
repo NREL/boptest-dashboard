@@ -101,8 +101,6 @@ describe('Main', () => {
         return axios.post(resultsEndpoint, resultPayload)
       })
       .then(() => done());
-      // This is a temporary stop gap until the race condition is addressed
-      // .then(() => new Promise((res, _) => setTimeout(() => res(), 3000)));
   });
 
   test("dummy endpoint should be reachable", async () => {
