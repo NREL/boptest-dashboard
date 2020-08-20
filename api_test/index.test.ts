@@ -97,6 +97,7 @@ beforeAll(() => {
       testCaseData = res.data;
       return axios.post(resultsEndpoint, resultPayload)
     })
+    .then(() => new Promise((res, _) => setTimeout(() => res(), 3000)));
 });
 
 const dummyEndpoint = `http://${process.env.SERVER_HOST}:8080/api/accounts/dummy`;
