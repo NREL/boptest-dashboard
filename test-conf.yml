@@ -1,0 +1,40 @@
+version: "3"
+services:
+  server_test:
+    build: ./server
+    environment:
+      DATABASE_URL: postgres://admin:pass@postgres_test:5432/boptestdb
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres_test
+    volumes:
+      - ./server:/usr/src/app/:z
+      - /usr/src/app/node_modules #ignore node_modules (they are installed in the container)
+      - ./client/build:/usr/client/build:z
+  postgres_test:
+    restart: always
+    image: "postgres"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "pass"
+      POSTGRES_DB: "boptestdb"
+    # env_file:
+    #   - ./pg/database.env
+  api_test:
+    build: ./api_test
+    depends_on:
+      - server_test
+      - postgres_test
+    environment:
+      SERVER_HOST: server_test
+      POSTGRES_HOST: postgres_test
+    links:
+      - server_test
+      - postgres_test
+    volumes:
+      - ./api_test:/usr/src/app/:z
+      - /usr/src/app/node_modules #ignore node_modules (they are installed in the container)
+    command: "bash integration_test.sh"

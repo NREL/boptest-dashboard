@@ -8,7 +8,7 @@ export function getResults(): Promise<Result[]> {
   // request data
   const resultsRepository = getRepository<Result>(ResultEntity);
   return resultsRepository.find({
-    relations: ['account', 'controller', 'kpi', 'testcase'],
+    relations: ['account', 'kpi', 'testcase'],
   });
 }
 
@@ -34,7 +34,7 @@ function createResultAndAssociatedModels(result: any) {
       return createResult(resultData);
     })
     .catch(err =>
-      console.log('oops something went wrong with the promises', err)
+      console.log('Something went wrong in the mega creation method', err)
     );
 }
 
