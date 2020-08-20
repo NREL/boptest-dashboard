@@ -23,4 +23,4 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Backend Tests
-        run: docker-compose -f test-conf.yml run api_test
+        run: docker-compose -f test-conf.yml down -v && docker-compose -f test-conf.yml run api_test && docker-compose -f test-conf.yml down -v
