@@ -119,6 +119,9 @@ describe("accounts test", () => {
       (account) => account.name === "Jerry"
     )[0];
 
+    console.log("full output", res.data);
+    console.log("jerrys account", jerrysAccount);
+
     expect(jerrysAccount["apiKey"]).toEqual("jerrysapikey");
     expect(jerrysAccount["email"]).toEqual("jerbear@gmail.com");
     expect(jerrysAccount["password"]).toEqual("jerryspass");
