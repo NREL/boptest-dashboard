@@ -122,6 +122,7 @@ describe("accounts test", () => {
     expect(jerrysAccount["apiKey"]).toEqual("jerrysapikey");
     expect(jerrysAccount["email"]).toEqual("jerbear@gmail.com");
     expect(jerrysAccount["password"]).toEqual("jerryspass");
+    expect(jerrysAccount["results"].length).toEqual(1);
     expect(jerrysAccount["results"][0]["uid"]).toEqual("result1");
   });
 });
