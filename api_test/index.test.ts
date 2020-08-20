@@ -140,6 +140,7 @@ describe("results test", () => {
     let res = await axios.get(resultsEndpoint);
 
     expect(res.data.length).toEqual(2);
+    console.log("all results", res.data);
 
     const result = res.data.filter((result) => result.uid === "result2")[0];
 
