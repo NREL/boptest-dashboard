@@ -86,13 +86,17 @@ const resultPayload = {
 
 // Have the server init the db before any of the tests run
 beforeAll(() => {
-  const account = axios.post(accountEndpoint, accountsPayload);
-  const testcase = axios.post(testcaseEndpoint, testcasePayload);
-  return Promise.all([account, testcase]).then(() => {
-    return axios
-      .post(resultsEndpoint, resultPayload)
-      .catch((err) => console.log("unable to create results", err));
-  });
+  let accountData: any;
+  let testCaseData: any;
+  return axios.post(accountEndpoint, accountsPayload)
+    .then(res => {
+      accountData = res.data;
+      return axios.post(testcaseEndpoint, testcasePayload)
+    })
+    .then(res => {
+      testCaseData = res.data;
+      return axios.post(resultsEndpoint, resultPayload)
+    })
 });
 
 const dummyEndpoint = `http://${process.env.SERVER_HOST}:8080/api/accounts/dummy`;
@@ -119,13 +123,9 @@ describe("accounts test", () => {
       (account) => account.name === "Jerry"
     )[0];
 
-    console.log("full output", res.data);
-    console.log("jerrys account", jerrysAccount);
-
     expect(jerrysAccount["apiKey"]).toEqual("jerrysapikey");
     expect(jerrysAccount["email"]).toEqual("jerbear@gmail.com");
     expect(jerrysAccount["password"]).toEqual("jerryspass");
-    expect(jerrysAccount["results"].length).toEqual(1);
     expect(jerrysAccount["results"][0]["uid"]).toEqual("result1");
   });
 });
@@ -140,7 +140,6 @@ describe("results test", () => {
     let res = await axios.get(resultsEndpoint);
 
     expect(res.data.length).toEqual(2);
-    console.log("all results", res.data);
 
     const result = res.data.filter((result) => result.uid === "result2")[0];
 
