@@ -1,11 +1,11 @@
 import express from 'express';
 
-import {getResults, createResults} from '../controllers/result';
+import {getAllSharedResults, createResults} from '../controllers/result';
 
 export const resultRouter = express.Router();
 
 resultRouter.get('/', (req: express.Request, res: express.Response) => {
-  getResults()
+  getAllSharedResults()
     .then(results => {
       res.json(results);
     })
