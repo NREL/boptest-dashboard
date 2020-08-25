@@ -51,7 +51,6 @@ const createDataFromResult = (result): Data => {
 };
 
 const createRows = (results): Data[] => {
-  console.log('Results: ', results);
   let rows: Data[] = [];
   if (!results || !Array.isArray(results) || results.length == 0) {
     return rows;

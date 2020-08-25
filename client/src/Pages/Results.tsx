@@ -10,7 +10,6 @@ export const Results: React.FC = () => {
   // build out simple data fetcher straight in the useEffect for now
   useEffect(() => {
     axios.get(endpoint).then(response => {
-      console.log('response data: ', response.data);
       setResults(response.data);
     });
   }, []);
