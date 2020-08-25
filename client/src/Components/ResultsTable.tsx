@@ -131,12 +131,6 @@ const headCells: HeadCell[] = [
     label: 'Indoor Air Quality Discomfort [ppmh]',
   },
   {
-    id: 'energy',
-    numeric: true,
-    disablePadding: false,
-    label: 'Total Energy Consumption [kWh]',
-  },
-  {
     id: 'cost',
     numeric: true,
     disablePadding: false,
@@ -426,6 +420,8 @@ export default function ResultsTable(props) {
                   const isItemSelected = isSelected(row.resultUid);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
+                  var dateString = new Date(row.dateRun).toLocaleString();
+
                   return (
                     <TableRow
                       hover
@@ -448,18 +444,37 @@ export default function ResultsTable(props) {
                         scope="row"
                         padding="none"
                       >
-                        {row.testCase}
+                        <Typography variant="body1">{row.testCase}</Typography>
                       </TableCell>
-                      <TableCell align="center">{row.dateRun}</TableCell>
-                      <TableCell align="center">{row.totalEnergy}</TableCell>
                       <TableCell align="center">
-                        {row.thermalDiscomfort}
+                        <Typography variant="body1">{dateString}</Typography>
                       </TableCell>
-                      <TableCell align="center">{row.aqDiscomfort}</TableCell>
-                      <TableCell align="center">{row.totalEnergy}</TableCell>
-                      <TableCell align="center">{row.cost}</TableCell>
-                      <TableCell align="center">{row.emissions}</TableCell>
-                      <TableCell align="center">{row.compTimeRatio}</TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body1">
+                          {row.totalEnergy}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body1">
+                          {row.thermalDiscomfort}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body1">
+                          {row.aqDiscomfort}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body1">{row.cost}</Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body1">{row.emissions}</Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body1">
+                          {row.compTimeRatio}
+                        </Typography>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
