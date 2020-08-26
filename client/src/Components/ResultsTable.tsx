@@ -1,11 +1,6 @@
 import React, {useEffect} from 'react';
 import clsx from 'clsx';
-import {
-  createStyles,
-  lighten,
-  makeStyles,
-  Theme,
-} from '@material-ui/core/styles';
+import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -187,6 +182,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
             inputProps={{'aria-label': 'select all desserts'}}
+            color="default"
           />
         </TableCell>
         {headCells.map(headCell => (
@@ -223,16 +219,6 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(1),
     },
-    highlight:
-      theme.palette.type === 'light'
-        ? {
-            color: theme.palette.secondary.main,
-            backgroundColor: lighten(theme.palette.secondary.light, 0.85),
-          }
-        : {
-            color: theme.palette.text.primary,
-            backgroundColor: theme.palette.secondary.dark,
-          },
     title: {
       flex: '1 1 100%',
     },
@@ -241,26 +227,23 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
+  totalResults: number;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   const classes = useToolbarStyles();
-  const {numSelected} = props;
+  const {numSelected, totalResults} = props;
 
   return (
-    <Toolbar
-      className={clsx(classes.root, {
-        [classes.highlight]: numSelected > 0,
-      })}
-    >
+    <Toolbar className={clsx(classes.root)}>
       {numSelected > 0 ? (
         <Typography
           className={classes.title}
           color="inherit"
-          variant="subtitle1"
+          variant="h6"
           component="div"
         >
-          {numSelected} selected
+          {numSelected} Selected Results
         </Typography>
       ) : (
         <Typography
@@ -269,7 +252,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
           id="tableTitle"
           component="div"
         >
-          Nutrition
+          {totalResults} Total Results
         </Typography>
       )}
       {numSelected > 0 ? (
@@ -315,6 +298,12 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 20,
       width: 1,
     },
+    tableRow: {
+      '&$selected, &$selected:hover': {
+        backgroundColor: 'rgb(146, 203, 197)',
+      },
+    },
+    selected: {},
   })
 );
 
@@ -394,7 +383,10 @@ export default function ResultsTable(props) {
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <EnhancedTableToolbar
+          totalResults={rows.length}
+          numSelected={selected.length}
+        />
         <TableContainer>
           <Table
             className={classes.table}
@@ -430,11 +422,14 @@ export default function ResultsTable(props) {
                       tabIndex={-1}
                       key={row.resultUid}
                       selected={isItemSelected}
+                      classes={{selected: classes.selected}}
+                      className={classes.tableRow}
                     >
                       <TableCell padding="checkbox">
                         <Checkbox
                           checked={isItemSelected}
                           inputProps={{'aria-labelledby': labelId}}
+                          color="default"
                         />
                       </TableCell>
                       <TableCell
