@@ -103,46 +103,52 @@ describe('Main', () => {
       .then(() => done());
   });
 
-  test("dummy endpoint should be reachable", async () => {
-    let res = await axios.get(dummyEndpoint);
-    expect(res.status).toEqual(200);
+  test("dummy endpoint should be reachable", () => {
+    axios.get(dummyEndpoint).then((res) => {
+      expect(res.status).toEqual(200);
+    });
   });
 
-  test("accounts endpoint should be reachable", async () => {
-    let res = await axios.get(accountsEndpoint);
-    expect(res.status).toEqual(200);
+  test("accounts endpoint should be reachable", () => {
+    axios.get(accountsEndpoint).then((res) => {
+      expect(res.status).toEqual(200);
+    });
   });
-  test("accounts should be returned properly", async () => {
-    let res = await axios.get(accountsEndpoint);
+  test("accounts should be returned properly", () => {
+    axios.get(accountsEndpoint).then((res) => {
+      expect(res.data.length).toEqual(3);
+      
+      const jerrysAccount = res.data.filter(
+        (account) => account.name === "Jerry"
+      )[0];
+  
+      expect(jerrysAccount["apiKey"]).toEqual("jerrysapikey");
+      expect(jerrysAccount["email"]).toEqual("jerbear@gmail.com");
+      expect(jerrysAccount["password"]).toEqual("jerryspass");
+      expect(jerrysAccount["results"][0]["uid"]).toEqual("result1");
+    });
 
-    expect(res.data.length).toEqual(3);
 
-    const jerrysAccount = res.data.filter(
-      (account) => account.name === "Jerry"
-    )[0];
-
-    expect(jerrysAccount["apiKey"]).toEqual("jerrysapikey");
-    expect(jerrysAccount["email"]).toEqual("jerbear@gmail.com");
-    expect(jerrysAccount["password"]).toEqual("jerryspass");
-    expect(jerrysAccount["results"][0]["uid"]).toEqual("result1");
   });
 
-  test("results endpoint should be reachable", async () => {
-    let res = await axios.get(resultsEndpoint);
-
-    expect(res.status).toEqual(200);
+  test("results endpoint should be reachable", () => {
+    axios.get(resultsEndpoint).then((res) => {
+      expect(res.status).toEqual(200);
+    });;
   });
-  test("results should be returned properly", async () => {
-    let res = await axios.get(resultsEndpoint);
+  test("results should be returned properly", () => {
+    axios.get(resultsEndpoint).then((res) => {
+      
+      expect(res.data.length).toEqual(2);
 
-    expect(res.data.length).toEqual(2);
+      const result = res.data.filter((result) => result.uid === "result2")[0];
 
-    const result = res.data.filter((result) => result.uid === "result2")[0];
+      expect(result["account"]["apiKey"]).toEqual("tedsapikey");
+      expect(result["kpi"]["cost"]).toEqual(12);
+      expect(result["testcase"]["uid"]).toEqual("testcase1");
+      expect(result["tags"]["numStates"]).toEqual(6);
+    });
 
-    expect(result["account"]["apiKey"]).toEqual("tedsapikey");
-    expect(result["kpi"]["cost"]).toEqual(12);
-    expect(result["testcase"]["uid"]).toEqual("testcase1");
-    expect(result["tags"]["numStates"]).toEqual(6);
   });
 
 });
