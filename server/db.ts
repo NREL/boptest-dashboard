@@ -30,7 +30,7 @@ export function connectToDb(withSync: boolean = false) {
     .catch(error => console.log(error));
 }
 
-export async function seedTestData() {
+export function seedTestData() {
   // create accounts
   const accounts = [
     {
@@ -53,7 +53,7 @@ export async function seedTestData() {
     },
   ];
 
-  await createAccounts(accounts);
+  
 
   // create testcases
   const testcases = [
@@ -78,8 +78,6 @@ export async function seedTestData() {
       buildingType: 'building-large',
     },
   ];
-
-  await createTestCases(testcases);
 
   // create results (which will associate the above and create kpis on the fly)
   const results = [
@@ -127,5 +125,7 @@ export async function seedTestData() {
     },
   ];
 
-  await createResults(results);
+  return createAccounts(accounts)
+    .then(()=> { createTestCases(testcases) })
+    .then(() => { createResults(results) })
 }
