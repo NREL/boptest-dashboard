@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, TextField, Typography} from '@material-ui/core';
+import {Box, Button, TextField, Typography} from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -11,6 +11,9 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: '16px 0 0 16px',
       width: '80%',
       margin: 'auto',
+    },
+    bold: {
+      fontWeight: 'inherit',
     },
     apiKeyOps: {
       display: 'flex',
@@ -38,7 +41,11 @@ export const ApiKey: React.FC = () => {
 
   return (
     <div className={classes.root}>
-      <Typography variant="h6">Your API key</Typography>
+      <Box fontWeight="fontWeightBold">
+        <Typography variant="h6" className={classes.bold}>
+          Your API key
+        </Typography>
+      </Box>
       <Typography variant="body1">
         This is a description for the api key, it can get quite long, but that's
         honestly fine here.
