@@ -14,7 +14,15 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
+      width: '80%',
+      margin: 'auto',
       padding: '16px 0 0 16px',
+    },
+    item: {
+      padding: '32px 0 0 0',
+    },
+    subItem: {
+      padding: '16px 0 0 0',
     },
     radioRoot: {
       color: '#078b75',
@@ -44,18 +52,24 @@ export const Settings: React.FC = () => {
         placeholder="User Name"
         size="small"
       ></TextField>
-      <Typography variant="h6">Change Password</Typography>
+      <Typography variant="h6" className={classes.item}>
+        Change Password
+      </Typography>
       <TextField
         variant="outlined"
         placeholder="Password"
         size="small"
+        //className={classes.item}
       ></TextField>
       <TextField
         variant="outlined"
         placeholder="Confirm Password"
         size="small"
+        className={classes.subItem}
       ></TextField>
-      <Typography variant="h6">SHARE MY TEST RESULTS</Typography>
+      <Typography variant="h6" className={classes.item}>
+        SHARE MY TEST RESULTS
+      </Typography>
       <RadioGroup>
         <FormControlLabel
           value="yes"
@@ -82,7 +96,9 @@ export const Settings: React.FC = () => {
           label="Keep all my results private"
         />
       </RadioGroup>
-      <Typography variant="h6">About sharing results</Typography>
+      <Typography variant="h6" className={classes.item}>
+        About sharing results
+      </Typography>
       <Typography variant="subtitle2">
         You can choose which results to share or keep private on your dashboard
         page.
