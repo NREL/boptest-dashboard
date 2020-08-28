@@ -27,6 +27,9 @@ const useStyles = makeStyles((theme: Theme) =>
     nested: {
       paddingLeft: theme.spacing(4),
     },
+    icon: {
+      color: 'black',
+    },
   })
 );
 
@@ -46,19 +49,19 @@ export const NavBarList: React.FC = () => {
     >
       <ListItem button component={Link} to={AppRoute.Home}>
         <ListItemIcon>
-          <HomeIcon />
+          <HomeIcon className={classes.icon} />
         </ListItemIcon>
         <ListItemText primary="Home" />
       </ListItem>
       <ListItem button component={Link} to={AppRoute.Docs}>
         <ListItemIcon>
-          <DocsIcon />
+          <DocsIcon className={classes.icon} />
         </ListItemIcon>
         <ListItemText primary="Documentation" />
       </ListItem>
       <ListItem button component={Link} to={AppRoute.Results}>
         <ListItemIcon>
-          <ChartIcon />
+          <ChartIcon className={classes.icon} />
         </ListItemIcon>
         <ListItemText primary="Test Results" />
       </ListItem>
@@ -69,7 +72,7 @@ export const NavBarList: React.FC = () => {
         to={AppRoute.Dashboard}
       >
         <ListItemIcon>
-          <PersonIcon />
+          <PersonIcon className={classes.icon} />
         </ListItemIcon>
         <ListItemText primary="Dashboard" />
         {open ? <ExpandLess /> : <ExpandMore />}
@@ -96,7 +99,7 @@ export const NavBarList: React.FC = () => {
       </Collapse>
       <ListItem button component={Link} to={AppRoute.About}>
         <ListItemIcon>
-          <InfoIcon />
+          <InfoIcon className={classes.icon} />
         </ListItemIcon>
         <ListItemText primary="About" />
       </ListItem>

@@ -12,6 +12,20 @@ export function getResults(): Promise<Result[]> {
   });
 }
 
+// this fetches all results that are shared to be shown on
+// both the home page and the results table
+// TODO: Eventually, we will also need to include results for the
+// current user even if they aren't shared (I believe; circle back)
+export function getAllSharedResults(): Promise<Result[]> {
+  const resultsRepository = getRepository<Result>(ResultEntity);
+  return resultsRepository.find({
+    relations: ['account', 'kpi', 'testcase'],
+    where: {
+      isShared: true,
+    },
+  });
+}
+
 // TODO get some error checking up in this bitch
 // need to account for missing testcase uid and account misses too
 function createResultAndAssociatedModels(result: any) {
