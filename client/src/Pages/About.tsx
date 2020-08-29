@@ -65,7 +65,7 @@ export const About: React.FC = () => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
-      <Grid container spacing={2} className={classes.topText}>
+      <Grid container spacing={10} className={classes.topText}>
         <Grid item xs={6}>
           <Typography variant="body1">{textSample1}</Typography>
         </Grid>
