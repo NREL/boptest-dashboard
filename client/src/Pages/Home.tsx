@@ -69,7 +69,7 @@ export const Home: React.FC = () => {
   return (
     <div className={classes.root}>
       {/* this grid holds the entire page to split into 2 horizontal slices */}
-      <Grid container spacing={2}>
+      <Grid container spacing={4}>
         {/* this grid item holds the chunkier left side with a long image and text on bottom */}
         <Grid item xs={9}>
           {/* make new grid here for inside the other grid */}
