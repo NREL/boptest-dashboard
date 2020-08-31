@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Box,
   FormControlLabel,
   Radio,
   RadioGroup,
@@ -14,7 +15,19 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
+      width: '80%',
+      margin: 'auto',
       padding: '16px 0 0 16px',
+    },
+    bold: {
+      fontWeight: 'inherit',
+    },
+    item: {
+      padding: '32px 0 0 0',
+      fontWeight: 'inherit',
+    },
+    subItem: {
+      padding: '16px 0 0 0',
     },
     radioRoot: {
       color: '#078b75',
@@ -35,7 +48,11 @@ export const Settings: React.FC = () => {
 
   return (
     <div className={classes.root}>
-      <Typography variant="h6">User Name</Typography>
+      <Box fontWeight="fontWeightBold">
+        <Typography variant="h6" className={classes.bold}>
+          User Name
+        </Typography>
+      </Box>
       <Typography variant="subtitle2">
         This will be displayed with your results if you choose to share them.
       </Typography>
@@ -44,18 +61,28 @@ export const Settings: React.FC = () => {
         placeholder="User Name"
         size="small"
       ></TextField>
-      <Typography variant="h6">Change Password</Typography>
+      <Box fontWeight="fontWeightBold">
+        <Typography variant="h6" className={classes.item}>
+          Change Password
+        </Typography>
+      </Box>
       <TextField
         variant="outlined"
         placeholder="Password"
         size="small"
+        //className={classes.item}
       ></TextField>
       <TextField
         variant="outlined"
         placeholder="Confirm Password"
         size="small"
+        className={classes.subItem}
       ></TextField>
-      <Typography variant="h6">SHARE MY TEST RESULTS</Typography>
+      <Box fontWeight="fontWeightBold">
+        <Typography variant="h6" className={classes.item}>
+          SHARE MY TEST RESULTS
+        </Typography>
+      </Box>
       <RadioGroup>
         <FormControlLabel
           value="yes"
@@ -82,7 +109,11 @@ export const Settings: React.FC = () => {
           label="Keep all my results private"
         />
       </RadioGroup>
-      <Typography variant="h6">About sharing results</Typography>
+      <Box fontWeight="fontWeightBold">
+        <Typography variant="h6" className={classes.item}>
+          About sharing results
+        </Typography>
+      </Box>
       <Typography variant="subtitle2">
         You can choose which results to share or keep private on your dashboard
         page.
