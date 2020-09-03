@@ -55,7 +55,7 @@ function createResultAndAssociatedModels(result: any) {
 export function createResults(results: any) {
   return Promise.all(
     results.map((result: any) => {
-      createResultAndAssociatedModels(result);
+      return createResultAndAssociatedModels(result);
     })
   );
 }
