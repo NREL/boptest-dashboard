@@ -6,6 +6,35 @@ import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 
 import {ResultModal} from './ResultModal';
 
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    modal: {
+      position: 'absolute',
+      top: '32px',
+      bottom: '32px',
+      left: '73px',
+      right: '73px',
+      backgroundColor: 'white',
+      border: '1px solid #ccc',
+      background: '#fff',
+      overflow: 'auto',
+      WebkitOverflowScrolling: 'touch',
+      borderRadius: '4px',
+      outline: 'none',
+      padding: '32px',
+    },
+    overlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 1202,
+      backgroundColor: 'rgba(0, 0, 0, .75)',
+    },
+  })
+);
+
 interface WrapperProps {
   tableComponent: React.ReactElement;
 }
@@ -19,14 +48,18 @@ interface WrapperProps {
 // a list of results from the server/context (eventually),
 // and a method that is defined here to display the result detail modal
 export const TableWrapper: React.FC<WrapperProps> = props => {
+  const classes = useStyles();
+
   //modal data is going to be a Result
   const [modalData, setModalData] = useState(null);
   const [showModal, hideModal] = useModal(
     () => (
       <ReactModal
+        className={classes.modal}
         isOpen
         appElement={document.getElementById('app')}
         onRequestClose={hideModal}
+        overlayClassName={classes.overlay}
       >
         <ResultModal result={modalData} />
       </ReactModal>
