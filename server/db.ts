@@ -124,10 +124,6 @@ export async function seedTestData() {
   ];
 
   return createAccounts(accounts)
-    .then(res => {
-      return createTestCases(testcases);
-    })
-    .then(res => {
-      return createResults(results);
-    });
+    .then(res => createTestCases(testcases))
+    .then(res => createResults(results));
 }
