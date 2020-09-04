@@ -4,7 +4,7 @@ import ReactModal from 'react-modal';
 import {Box, Button, TextField, Typography} from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 
-import {ResultModal} from './ResultModal';
+import {ResultDetails} from './ResultDetails';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -61,7 +61,7 @@ export const TableWrapper: React.FC<WrapperProps> = props => {
         onRequestClose={hideModal}
         overlayClassName={classes.overlay}
       >
-        <ResultModal result={modalData} />
+        <ResultDetails result={modalData} />
       </ReactModal>
     ),
     [modalData]

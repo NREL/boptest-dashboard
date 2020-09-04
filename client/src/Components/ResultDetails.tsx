@@ -1,14 +1,12 @@
-import React, {useEffect} from 'react';
-import {Box, Button, TextField, Typography} from '@material-ui/core';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import React from 'react';
 
-interface ResultModalProps {
+interface ResultDetailsProps {
   result: any;
 }
 
 // props here are just going to be a result. Need to type it with an interface
 // once we have the shared models
-export const ResultModal: React.FC<ResultModalProps> = props => {
+export const ResultDetails: React.FC<ResultDetailsProps> = props => {
   // this useEffect will be used to get the testcase signature for ranges if applicable
   // useEffect(() => {}, []);
   return (
