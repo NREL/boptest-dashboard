@@ -10,7 +10,7 @@ export function getAccounts(): Promise<Account[]> {
 export function createAccounts(accounts: any): Promise<Account[]> {
   return Promise.all(
     accounts.map((account: any) => {
-      createAccount(account);
+      return createAccount(account);
     })
   );
 }
