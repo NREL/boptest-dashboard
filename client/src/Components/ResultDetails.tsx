@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface ResultDetailsProps {
-  result: any;
+  data: any;
 }
 
 // props here are just going to be a result. Need to type it with an interface
@@ -13,7 +13,7 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
     <div>
       <div>You can't do that</div>
       <div>I am here to stay</div>
-      <div>{props.result.resultUid}</div>
+      <div>{props.data.resultUid}</div>
     </div>
   );
 };

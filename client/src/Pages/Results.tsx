@@ -1,7 +1,8 @@
 import axios from 'axios';
 import React, {useEffect, useState} from 'react';
 import ResultsTable from '../Components/ResultsTable';
-import {TableWrapper} from '../Components/TableWrapper';
+import {BoptestModal} from '../Components/BoptestModal';
+import {ResultDetails} from '../Components/ResultDetails';
 
 const endpoint = '/api/results';
 
@@ -18,7 +19,10 @@ export const Results: React.FC = () => {
   return (
     <div>
       <h1>Results page</h1>
-      <TableWrapper tableComponent={<ResultsTable results={results} />} />
+      <BoptestModal
+        tableComponent={<ResultsTable results={results} />}
+        detailsComponent={<ResultDetails data={null} />}
+      />
     </div>
   );
 };

@@ -1,10 +1,7 @@
 import React, {cloneElement, useCallback, useState} from 'react';
 import {useModal} from 'react-modal-hook';
 import ReactModal from 'react-modal';
-import {Box, Button, TextField, Typography} from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
-
-import {ResultDetails} from './ResultDetails';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -35,8 +32,9 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-interface WrapperProps {
+interface ModalProps {
   tableComponent: React.ReactElement;
+  detailsComponent: React.ReactElement;
 }
 
 // This TableWrapper is going to take a table of results as a prop,
@@ -47,7 +45,7 @@ interface WrapperProps {
 // this table component on either side is going to need to take as props:
 // a list of results from the server/context (eventually),
 // and a method that is defined here to display the result detail modal
-export const TableWrapper: React.FC<WrapperProps> = props => {
+export const BoptestModal: React.FC<ModalProps> = props => {
   const classes = useStyles();
 
   //modal data is going to be a Result
@@ -61,7 +59,7 @@ export const TableWrapper: React.FC<WrapperProps> = props => {
         onRequestClose={hideModal}
         overlayClassName={classes.overlay}
       >
-        <ResultDetails result={modalData} />
+        {cloneElement(props.detailsComponent, {data: modalData})}
       </ReactModal>
     ),
     [modalData]
