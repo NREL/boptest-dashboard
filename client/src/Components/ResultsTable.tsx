@@ -368,7 +368,9 @@ export default function ResultsTable(props) {
 
   const handleRowClick = (event: React.MouseEvent<unknown>, result: Data) => {
     // I think we just want to call a method that's passed in to handle the modal display
-    props.displayResult(result);
+    // may need to call into a global state for the selected result here instead of
+    // sending the result to the modal.
+    props.setSelectedResult(result);
   };
 
   return (
