@@ -31,7 +31,6 @@ export const Results: React.FC = () => {
 
   return (
     <div>
-      <h1>Results page</h1>
       {/* filters components placeholder */}
       <ResultsTable results={results} setSelectedResult={handleChange} />
       {showResultModal && (
