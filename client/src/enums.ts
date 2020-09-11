@@ -10,10 +10,10 @@ export enum AppRoute {
 
 export enum Title {
   About = 'About',
-  ApiKey = 'API KEY',
-  Dashboard = 'MY DASHBOARD',
-  Docs = 'TEST CASES',
+  ApiKey = 'API Key',
+  Dashboard = 'My Dashboard',
+  Docs = 'Test Cases',
   Home = 'Objectively and quantitatively evaluate building control algorithms',
-  Results = 'TEST RESULTS',
-  Settings = 'MY SETTINGS',
+  Results = 'Test Results',
+  Settings = 'My Settings',
 }
