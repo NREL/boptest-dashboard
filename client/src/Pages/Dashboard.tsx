@@ -32,7 +32,6 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div>
-      <h1>My Dashboard</h1>
       {/* filters components placeholder */}
       <DashboardResultsTable
         results={results}

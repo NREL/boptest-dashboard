@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import clsx from 'clsx';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
 import Switch from '@material-ui/core/Switch';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -293,6 +294,13 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '100%',
       marginBottom: theme.spacing(2),
     },
+    button: {
+      justifyContent: 'center',
+      padding: '0 16px 0 16px',
+      margin: '0 8px 0 8px',
+      backgroundColor: 'rgb(0, 150, 136)',
+      color: 'white',
+    },
     headerCell: {
       fontWeight: 'bold',
     },
@@ -419,6 +427,14 @@ export default function DashboardResultsTable(props) {
           totalResults={rows.length}
           numSelected={selected.length}
         />
+        <div>
+          <Button className={classes.button} variant="contained" size="small">
+            Remove Test Results
+          </Button>
+          <Button className={classes.button} variant="contained" size="small">
+            Download Test Results
+          </Button>
+        </div>
         <TableContainer>
           <Table
             className={classes.table}
