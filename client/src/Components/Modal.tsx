@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface ModalProps {
-  detailsComponent: React.ReactElement;
+  renderProp: React.ReactElement;
   closeModal: any;
 }
 
@@ -47,7 +47,7 @@ export const Modal: React.FC<ModalProps> = props => {
       onRequestClose={props.closeModal}
       overlayClassName={classes.overlay}
     >
-      {props.detailsComponent}
+      {props.renderProp}
     </ReactModal>
   );
 };

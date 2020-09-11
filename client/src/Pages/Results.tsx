@@ -37,7 +37,7 @@ export const Results: React.FC = () => {
       {showResultModal && (
         <Modal
           closeModal={closeModal}
-          detailsComponent={<ResultDetails result={selectedResult} />}
+          renderProp={<ResultDetails result={selectedResult} />}
         />
       )}
     </div>
