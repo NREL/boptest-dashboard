@@ -190,8 +190,11 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
-            inputProps={{'aria-label': 'select all desserts'}}
+            inputProps={{'aria-label': 'select all results'}}
             color="default"
+            style={{
+              color: '#078b75',
+            }}
           />
         </TableCell>
         {headCells.map(headCell => (
@@ -313,6 +316,17 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     selected: {},
+    checked: {},
+    track: {},
+    switchBase: {
+      color: '#078b75',
+      '&$checked': {
+        color: '#078b75',
+      },
+      '&$checked + $track': {
+        backgroundColor: '#078b75',
+      },
+    },
   })
 );
 
@@ -448,6 +462,9 @@ export default function DashboardResultsTable(props) {
                           checked={isItemSelected}
                           inputProps={{'aria-labelledby': labelId}}
                           color="default"
+                          style={{
+                            color: '#078b75',
+                          }}
                           onClick={event =>
                             handleCheckboxClick(event, row.resultUid)
                           }
@@ -496,6 +513,12 @@ export default function DashboardResultsTable(props) {
                           onClick={event => handleShareToggleClick(event, row)}
                           name="share switch"
                           inputProps={{'aria-label': 'secondary checkbox'}}
+                          color="default"
+                          classes={{
+                            switchBase: classes.switchBase,
+                            track: classes.track,
+                            checked: classes.checked,
+                          }}
                         />
                       </TableCell>
                     </TableRow>
