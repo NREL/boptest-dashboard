@@ -80,7 +80,7 @@ export const Settings: React.FC = () => {
       ></TextField>
       <Box fontWeight="fontWeightBold">
         <Typography variant="h6" className={classes.item}>
-          SHARE MY TEST RESULTS
+          Share My Test Results
         </Typography>
       </Box>
       <RadioGroup>
