@@ -102,7 +102,7 @@ const headCells: HeadCell[] = [
   {
     id: 'testCase',
     numeric: false,
-    disablePadding: true,
+    disablePadding: false,
     label: 'Test Case',
   },
   {id: 'dateRun', numeric: false, disablePadding: false, label: 'Date Run'},
@@ -146,27 +146,17 @@ const headCells: HeadCell[] = [
 
 interface EnhancedTableProps {
   classes: ReturnType<typeof useStyles>;
-  numSelected: number;
   onRequestSort: (
     event: React.MouseEvent<unknown>,
     property: keyof Data
   ) => void;
-  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
   order: Order;
   orderBy: string;
   rowCount: number;
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
-  const {
-    classes,
-    onSelectAllClick,
-    order,
-    orderBy,
-    numSelected,
-    rowCount,
-    onRequestSort,
-  } = props;
+  const {classes, order, orderBy, rowCount, onRequestSort} = props;
   const createSortHandler = (property: keyof Data) => (
     event: React.MouseEvent<unknown>
   ) => {
@@ -176,15 +166,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{'aria-label': 'select all desserts'}}
-            color="default"
-          />
-        </TableCell>
         {headCells.map(headCell => (
           <TableCell
             key={headCell.id}
@@ -226,48 +207,23 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
 );
 
 interface EnhancedTableToolbarProps {
-  numSelected: number;
   totalResults: number;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   const classes = useToolbarStyles();
-  const {numSelected, totalResults} = props;
+  const {totalResults} = props;
 
   return (
     <Toolbar className={clsx(classes.root)}>
-      {numSelected > 0 ? (
-        <Typography
-          className={classes.title}
-          color="inherit"
-          variant="h6"
-          component="div"
-        >
-          {numSelected} Selected Results
-        </Typography>
-      ) : (
-        <Typography
-          className={classes.title}
-          variant="h6"
-          id="tableTitle"
-          component="div"
-        >
-          {totalResults} Total Results
-        </Typography>
-      )}
-      {numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <IconButton aria-label="delete">
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <Tooltip title="Filter list">
-          <IconButton aria-label="filter list">
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
-      )}
+      <Typography
+        className={classes.title}
+        variant="h6"
+        id="tableTitle"
+        component="div"
+      >
+        {totalResults} Total Results
+      </Typography>
     </Toolbar>
   );
 };
@@ -286,6 +242,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     table: {
       minWidth: 750,
+      padding: '0 0 0 16px',
     },
     visuallyHidden: {
       border: 0,
@@ -298,12 +255,6 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 20,
       width: 1,
     },
-    tableRow: {
-      '&$selected, &$selected:hover': {
-        backgroundColor: 'rgb(146, 203, 197)',
-      },
-    },
-    selected: {},
   })
 );
 
@@ -331,41 +282,6 @@ export default function ResultsTable(props) {
     setOrderBy(property);
   };
 
-  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const newSelecteds = rows.map(r => r.resultUid);
-      setSelected(newSelecteds);
-      return;
-    }
-    setSelected([]);
-  };
-
-  const handleCheckboxClick = (
-    event: React.MouseEvent<unknown>,
-    uid: string
-  ) => {
-    event.stopPropagation();
-    const selectedIndex = selected.indexOf(uid);
-    let newSelected: string[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, uid);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-
-    setSelected(newSelected);
-  };
-
-  const isSelected = (uid: string) => selected.indexOf(uid) !== -1;
-
   const handleRowClick = (event: React.MouseEvent<unknown>, result: Data) => {
     // I think we just want to call a method that's passed in to handle the modal display
     // may need to call into a global state for the selected result here instead of
@@ -376,10 +292,7 @@ export default function ResultsTable(props) {
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar
-          totalResults={rows.length}
-          numSelected={selected.length}
-        />
+        <EnhancedTableToolbar totalResults={rows.length} />
         <TableContainer>
           <Table
             className={classes.table}
@@ -390,10 +303,8 @@ export default function ResultsTable(props) {
           >
             <EnhancedTableHead
               classes={classes}
-              numSelected={selected.length}
               order={order}
               orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
             />
@@ -401,7 +312,6 @@ export default function ResultsTable(props) {
               {stableSort(rows, getComparator(order, orderBy))
                 //.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
-                  const isItemSelected = isSelected(row.resultUid);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   var dateString = new Date(row.dateRun).toLocaleString();
@@ -411,28 +321,14 @@ export default function ResultsTable(props) {
                       hover
                       onClick={event => handleRowClick(event, row)}
                       role="checkbox"
-                      aria-checked={isItemSelected}
                       tabIndex={-1}
                       key={row.resultUid}
-                      selected={isItemSelected}
-                      classes={{selected: classes.selected}}
-                      className={classes.tableRow}
                     >
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          checked={isItemSelected}
-                          inputProps={{'aria-labelledby': labelId}}
-                          color="default"
-                          onClick={event =>
-                            handleCheckboxClick(event, row.resultUid)
-                          }
-                        />
-                      </TableCell>
                       <TableCell
                         component="th"
                         id={labelId}
                         scope="row"
-                        padding="none"
+                        padding="default"
                       >
                         <Typography variant="body1">{row.testCase}</Typography>
                       </TableCell>
