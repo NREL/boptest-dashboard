@@ -132,6 +132,7 @@ export const MiniDrawer: React.FC = () => {
             <MenuIcon />
           </IconButton>
           <div className={classes.titlebar}>
+            <Typography variant="h6">Boptest Icon</Typography>
             <Typography variant="h6">{title}</Typography>
             <Typography variant="h6">Sign Out Button | username</Typography>
           </div>
