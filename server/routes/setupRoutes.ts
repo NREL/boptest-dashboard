@@ -1,7 +1,6 @@
-import {getRepository} from 'typeorm';
 import express from 'express';
 import {createAccounts} from '../controllers/account';
-import {createTestCase} from '../models/TestCase';
+import {createBuildingType} from '../models/BuildingType';
 import {seedTestData} from '../db';
 
 export const setupRouter = express.Router();
@@ -14,13 +13,16 @@ setupRouter.post('/account', (req: express.Request, res: express.Response) => {
     .catch(err => console.log('Unable to create accounts', err));
 });
 
-setupRouter.post('/testcase', (req: express.Request, res: express.Response) => {
-  createTestCase(req.body.testcase)
-    .then(testcase => {
-      res.json(testcase);
-    })
-    .catch(err => console.log('Unable to create testcase', err));
-});
+setupRouter.post(
+  '/buildingType',
+  (req: express.Request, res: express.Response) => {
+    createBuildingType(req.body.buildingType)
+      .then(buildingType => {
+        res.json(buildingType);
+      })
+      .catch(err => console.log('Unable to create buildingType', err));
+  }
+);
 
 setupRouter.get('/db', (req: express.Request, res: express.Response) => {
   seedTestData()

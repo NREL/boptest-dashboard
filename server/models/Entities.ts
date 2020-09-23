@@ -1,11 +1,5 @@
 import {AccountEntity} from './Account';
-import {KpiEntity} from './KPI';
+import {BuildingTypeEntity} from './BuildingType';
 import {ResultEntity} from './Result';
-import {TestCaseEntity} from './TestCase';
 
-export const entityList = [
-  AccountEntity,
-  KpiEntity,
-  ResultEntity,
-  TestCaseEntity,
-];
+export const entityList = [AccountEntity, BuildingTypeEntity, ResultEntity];

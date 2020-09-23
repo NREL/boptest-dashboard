@@ -1,18 +1,39 @@
+import {BuildingType} from './BuildingType';
 import {EntitySchema, getRepository} from 'typeorm';
 
 import {Account} from './Account';
-import {KPI} from './KPI';
-import {TestCase} from './TestCase';
 
 export interface Result {
   id: number;
   uid: string;
   dateRun: Date;
   isShared: boolean;
-  account: Account;
-  kpi: KPI;
-  testcase: TestCase;
   tags: JSON;
+
+  // KPI stuff
+  thermalDiscomfort: number;
+  energyUse: number;
+  cost: number;
+  emissions: number;
+  iaq: number;
+  timeRatio: number;
+
+  // Building Type stuff (formerly testcase stuff)
+  testTimePeriodStart: Date;
+  testTimePeriodEnd: Date;
+  controlStep: string;
+  priceScenario: string;
+  weatherForecastUncertainty: string;
+
+  // Controller Type stuff
+  controllerType: string;
+  problemFormulation: string;
+  modelType: string;
+  numStates: number;
+  predictionHorizon: number;
+
+  account: Account;
+  buildingtype: BuildingType;
 }
 
 export type ResultData = Omit<Result, 'id'>;
@@ -39,6 +60,57 @@ export const ResultEntity = new EntitySchema<Result>({
       type: 'jsonb',
       nullable: true,
     },
+    thermalDiscomfort: {
+      type: Number,
+    },
+    energyUse: {
+      type: Number,
+    },
+    cost: {
+      type: Number,
+    },
+    emissions: {
+      type: Number,
+    },
+    iaq: {
+      type: Number,
+    },
+    timeRatio: {
+      type: Number,
+    },
+    testTimePeriodStart: {
+      type: Date,
+    },
+    testTimePeriodEnd: {
+      type: Date,
+    },
+    controlStep: {
+      type: String,
+    },
+    priceScenario: {
+      type: String,
+    },
+    weatherForecastUncertainty: {
+      type: String,
+    },
+    buildingtype: {
+      type: String,
+    },
+    controllerType: {
+      type: String,
+    },
+    problemFormulation: {
+      type: String,
+    },
+    modelType: {
+      type: String,
+    },
+    numStates: {
+      type: Number,
+    },
+    predictionHorizon: {
+      type: Number,
+    },
   },
   relations: {
     account: {
@@ -48,16 +120,9 @@ export const ResultEntity = new EntitySchema<Result>({
       nullable: false,
       inverseSide: 'results',
     },
-    kpi: {
-      type: 'one-to-one',
-      target: 'kpis',
-      joinColumn: true,
-      nullable: false,
-      inverseSide: 'result',
-    },
-    testcase: {
+    buildingtype: {
       type: 'many-to-one',
-      target: 'testcases',
+      target: 'buildingtypes',
       joinColumn: true,
       nullable: false,
       inverseSide: 'results',
