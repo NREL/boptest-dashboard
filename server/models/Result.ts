@@ -6,6 +6,7 @@ import {Account} from './Account';
 export interface Result {
   id: number;
   uid: string;
+  deleted: boolean;
   dateRun: Date;
   isShared: boolean;
   tags: JSON;
@@ -49,6 +50,9 @@ export const ResultEntity = new EntitySchema<Result>({
     uid: {
       type: String,
       unique: true,
+    },
+    deleted: {
+      type: Boolean,
     },
     dateRun: {
       type: Date,

@@ -38,6 +38,7 @@ function createResultAndAssociatedModels(result: any) {
   return Promise.all([account, buildingType])
     .then(data => {
       const resultData = {
+        deleted: false,
         dateRun: result.dateRun,
         isShared: result.isShared,
         tags: result.tags,
@@ -79,4 +80,30 @@ export function createResults(results: any) {
       return createResultAndAssociatedModels(result);
     })
   );
+}
+
+export function removeResults(ids: number[]): Promise<void>[] {
+  const repo = getRepository<Result>(ResultEntity);
+  return ids.map((id: number) => {
+    return repo
+      .findOneOrFail(id)
+      .then(result => {
+        result.deleted = true;
+        repo.save(result);
+      })
+      .catch(() => console.log('unable to remove result', id));
+  });
+}
+
+export function shareResults(ids: number[]): Promise<void>[] {
+  const repo = getRepository<Result>(ResultEntity);
+  return ids.map((id: number) => {
+    return repo
+      .findOneOrFail(id)
+      .then(result => {
+        result.isShared = !result.isShared;
+        repo.save(result);
+      })
+      .catch(() => console.log('unable to update shared value of result', id));
+  });
 }
