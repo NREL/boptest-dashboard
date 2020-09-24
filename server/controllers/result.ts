@@ -7,19 +7,16 @@ export function getResults(): Promise<Result[]> {
   // request data
   const resultsRepository = getRepository<Result>(ResultEntity);
   return resultsRepository.find({
-    //relations: ['account', 'kpi', 'testcase'],
     relations: ['account', 'buildingtype'],
   });
 }
 
 // this fetches all results that are shared to be shown on
 // both the home page and the results table
-// TODO: Eventually, we will also need to include results for the
-// current user even if they aren't shared (I believe; circle back)
+// we DO NOT want to show nonshared results for the current user
 export function getAllSharedResults(): Promise<Result[]> {
   const resultsRepository = getRepository<Result>(ResultEntity);
   return resultsRepository.find({
-    //relations: ['account', 'kpi', 'testcase'],
     relations: ['account', 'buildingtype'],
     where: {
       isShared: true,
@@ -27,11 +24,8 @@ export function getAllSharedResults(): Promise<Result[]> {
   });
 }
 
-// TODO get some error checking up in this bitch
-// need to account for missing testcase uid and account misses too
+// need to account for account misses
 function createResultAndAssociatedModels(result: any) {
-  //const newKpi = createKPI(<KPIData>result.kpi);
-  //const testcase = getTestCaseByUid(result.testcase.uid);
   const account = getAccountByApiKey(result.account.apiKey);
   const buildingType = getBuildingType(result.buildingTypeId);
 

@@ -32,7 +32,7 @@ export const BuildingTypeEntity = new EntitySchema<BuildingType>({
       type: String,
     },
     detailsURL: {
-      type: Date,
+      type: String,
     },
   },
   relations: {
