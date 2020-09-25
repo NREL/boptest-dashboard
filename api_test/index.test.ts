@@ -105,16 +105,12 @@ const resultPayload = {
 
 describe("Main", () => {
   beforeAll((done) => {
-    let accountData: any;
-    let testCaseData: any;
     return axios
       .post(accountEndpoint, accountsPayload)
-      .then((res) => {
-        accountData = res.data;
+      .then(() => {
         return axios.post(buildingTypesEndpoint, buildingTypesPayload);
       })
-      .then((res) => {
-        testCaseData = res.data;
+      .then(() => {
         return axios.post(resultsEndpoint, resultPayload);
       })
       .then(() => done());
