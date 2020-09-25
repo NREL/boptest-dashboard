@@ -1,6 +1,7 @@
 import express from 'express';
 import {createAccounts} from '../controllers/account';
 import {createBuildingType} from '../models/BuildingType';
+import {createBuildingTypes} from '../controllers/buildingTypes';
 import {seedTestData} from '../db';
 
 export const setupRouter = express.Router();
@@ -17,6 +18,17 @@ setupRouter.post(
   '/buildingType',
   (req: express.Request, res: express.Response) => {
     createBuildingType(req.body.buildingType)
+      .then(buildingType => {
+        res.json(buildingType);
+      })
+      .catch(err => console.log('Unable to create buildingType', err));
+  }
+);
+
+setupRouter.post(
+  '/buildingTypes',
+  (req: express.Request, res: express.Response) => {
+    createBuildingTypes(req.body.buildingTypes)
       .then(buildingType => {
         res.json(buildingType);
       })
