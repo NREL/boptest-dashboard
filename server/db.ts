@@ -55,14 +55,14 @@ export async function seedTestData() {
   // create buildingTypes
   const buildingTypes = [
     {
-      id: 'buildingType-1',
+      id: '1',
       uid: 'buildingType-1',
       name: 'BIG building',
       parsedHTML: '<html></html>',
       detailsURL: 'bigbuilding.com',
     },
     {
-      id: 'buildingType-2',
+      id: '2',
       uid: 'buildingType-2',
       name: 'small building',
       parsedHTML: '<html></html>',
@@ -70,25 +70,7 @@ export async function seedTestData() {
     },
   ];
 
-  // // Building Type stuff (formerly testcase stuff)
-  // testTimePeriodStart: Date;
-  // testTimePeriodEnd: Date;
-  // controlStep: string;
-  // priceScenario: string;
-  // weatherForecastUncertainty: string;
-
-  // // Controller Type stuff
-  // controllerType: string;
-  // problemFormulation: string;
-  // modelType: string;
-  // numStates: number;
-  // predictionHorizon: number;
-
-  // account: Account;
-  // buildingtype: BuildingType;
-
   // create results (which will associate the above and create kpis on the fly)
-  // need to update results to abide by the building types changes instead of testcases
   const results = [
     {
       dateRun: '2020-08-04T23:00:00.000Z',
@@ -103,9 +85,6 @@ export async function seedTestData() {
       emissions: 19,
       iaq: 43,
       timeRatio: 900,
-      testcase: {
-        uid: 'uidTest1',
-      },
       tags: {},
       testTimePeriodStart: new Date(),
       testTimePeriodEnd: new Date(),
@@ -117,6 +96,7 @@ export async function seedTestData() {
       modelType: 'modelType1',
       numStates: 15,
       predictionHorizon: 700,
+      buildingType: buildingTypes[0],
     },
     {
       dateRun: '2020-08-04T23:00:00.000Z',
@@ -131,9 +111,6 @@ export async function seedTestData() {
       emissions: 11,
       iaq: 430,
       timeRatio: 1200,
-      testcase: {
-        uid: 'uidTest2',
-      },
       tags: {},
       testTimePeriodStart: new Date(),
       testTimePeriodEnd: new Date(),
@@ -145,6 +122,7 @@ export async function seedTestData() {
       modelType: 'modelType2',
       numStates: 25,
       predictionHorizon: 8000,
+      buildingType: buildingTypes[1],
     },
   ];
 

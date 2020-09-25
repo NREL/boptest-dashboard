@@ -53,7 +53,7 @@ export function createBuildingType(
   return buildingTypeRepo.save(data);
 }
 
-export function getBuildingType(id: string): Promise<BuildingType> {
+export function getBuildingType(id: number): Promise<BuildingType> {
   const buildingTypeRepo = getRepository<BuildingType>(BuildingTypeEntity);
 
   return buildingTypeRepo.findOneOrFail(id);

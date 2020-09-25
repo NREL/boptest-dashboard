@@ -7,7 +7,7 @@ export function getResults(): Promise<Result[]> {
   // request data
   const resultsRepository = getRepository<Result>(ResultEntity);
   return resultsRepository.find({
-    relations: ['account', 'buildingtype'],
+    relations: ['account', 'buildingType'],
   });
 }
 
@@ -17,7 +17,7 @@ export function getResults(): Promise<Result[]> {
 export function getAllSharedResults(): Promise<Result[]> {
   const resultsRepository = getRepository<Result>(ResultEntity);
   return resultsRepository.find({
-    relations: ['account', 'buildingtype'],
+    relations: ['account', 'buildingType'],
     where: {
       isShared: true,
     },
@@ -27,7 +27,7 @@ export function getAllSharedResults(): Promise<Result[]> {
 // need to account for account misses
 function createResultAndAssociatedModels(result: any) {
   const account = getAccountByApiKey(result.account.apiKey);
-  const buildingType = getBuildingType(result.buildingTypeId);
+  const buildingType = getBuildingType(result.buildingType.id);
 
   return Promise.all([account, buildingType])
     .then(data => {
@@ -58,7 +58,7 @@ function createResultAndAssociatedModels(result: any) {
         predictionHorizon: result.predictionHorizon,
 
         account: data[0],
-        buildingtype: data[1],
+        buildingType: data[1],
       };
 
       return createResult(resultData);

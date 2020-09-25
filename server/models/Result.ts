@@ -34,7 +34,7 @@ export interface Result {
   predictionHorizon: number;
 
   account: Account;
-  buildingtype: BuildingType;
+  buildingType: BuildingType;
 }
 
 export type ResultData = Omit<Result, 'id'>;
@@ -97,7 +97,7 @@ export const ResultEntity = new EntitySchema<Result>({
     weatherForecastUncertainty: {
       type: String,
     },
-    buildingtype: {
+    buildingType: {
       type: String,
     },
     controllerType: {
@@ -124,7 +124,7 @@ export const ResultEntity = new EntitySchema<Result>({
       nullable: false,
       inverseSide: 'results',
     },
-    buildingtype: {
+    buildingType: {
       type: 'many-to-one',
       target: 'buildingtypes',
       joinColumn: true,
