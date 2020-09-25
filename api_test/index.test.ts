@@ -30,14 +30,14 @@ const accountsPayload = [
 const buildingTypesPayload = {
   buildingTypes: [
     {
-      id: "1",
+      id: 1,
       uid: "buildingType-1",
       name: "BIG building",
       parsedHTML: "<html></html>",
       detailsURL: "bigbuilding.com",
     },
     {
-      id: "2",
+      id: 2,
       uid: "buildingType-2",
       name: "small building",
       parsedHTML: "<html></html>",
@@ -72,7 +72,7 @@ const resultPayload = {
       modelType: "modelType1",
       numStates: 15,
       predictionHorizon: 700,
-      buildingType: buildingTypesPayload[0],
+      buildingType: buildingTypesPayload.buildingTypes[0],
     },
     {
       dateRun: "2020-08-04T23:00:00.000Z",
@@ -98,7 +98,7 @@ const resultPayload = {
       modelType: "modelType2",
       numStates: 25,
       predictionHorizon: 8000,
-      buildingType: buildingTypesPayload[1],
+      buildingType: buildingTypesPayload.buildingTypes[1],
     },
   ],
 };
@@ -117,18 +117,18 @@ describe("Main", () => {
   });
 
   test("dummy endpoint should be reachable", () => {
-    axios.get(dummyEndpoint).then((res) => {
+    return axios.get(dummyEndpoint).then((res) => {
       expect(res.status).toEqual(200);
     });
   });
 
   test("accounts endpoint should be reachable", () => {
-    axios.get(accountsEndpoint).then((res) => {
+    return axios.get(accountsEndpoint).then((res) => {
       expect(res.status).toEqual(200);
     });
   });
   test("accounts should be returned properly", () => {
-    axios.get(accountsEndpoint).then((res) => {
+    return axios.get(accountsEndpoint).then((res) => {
       expect(res.data.length).toEqual(3);
 
       const jerrysAccount = res.data.filter(
@@ -143,12 +143,12 @@ describe("Main", () => {
   });
 
   test("results endpoint should be reachable", () => {
-    axios.get(resultsEndpoint).then((res) => {
+    return axios.get(resultsEndpoint).then((res) => {
       expect(res.status).toEqual(200);
     });
   });
   test("results should be returned properly", () => {
-    axios.get(resultsEndpoint).then((res) => {
+    return axios.get(resultsEndpoint).then((res) => {
       expect(res.data.length).toEqual(2);
 
       const result = res.data.filter((result) => result.uid === "result2")[0];
@@ -156,7 +156,7 @@ describe("Main", () => {
       expect(result["account"]["apiKey"]).toEqual("tedsapikey");
       expect(result["cost"]).toEqual(12);
       expect(result["buildingType"]["uid"]).toEqual("buildingType-2");
-      expect(result["numStates"]).toEqual(6);
+      expect(result["numStates"]).toEqual(25);
     });
   });
 });
