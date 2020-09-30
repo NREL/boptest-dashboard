@@ -65,22 +65,28 @@ export const ResultEntity = new EntitySchema<Result>({
       nullable: true,
     },
     thermalDiscomfort: {
-      type: Number,
+      type: 'float',
+      scale: 5,
     },
     energyUse: {
-      type: Number,
+      type: 'float',
+      scale: 5,
     },
     cost: {
-      type: Number,
+      type: 'float',
+      scale: 2,
     },
     emissions: {
-      type: Number,
+      type: 'float',
+      scale: 5,
     },
     iaq: {
-      type: Number,
+      type: 'float',
+      scale: 5,
     },
     timeRatio: {
-      type: Number,
+      type: 'float',
+      scale: 5,
     },
     testTimePeriodStart: {
       type: Date,
