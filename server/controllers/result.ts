@@ -35,7 +35,7 @@ function createResultAndAssociatedModels(result: any) {
         deleted: false,
         dateRun: result.dateRun,
         isShared: result.isShared,
-        tags: result.tags,
+        controllerProperties: result.controllerProperties,
         uid: result.uid,
 
         thermalDiscomfort: result.thermalDiscomfort,
@@ -50,12 +50,6 @@ function createResultAndAssociatedModels(result: any) {
         controlStep: result.controlStep,
         priceScenario: result.priceScenario,
         weatherForecastUncertainty: result.weatherForecastUncertainty,
-
-        controllerType: result.controllerType,
-        problemFormulation: result.problemFormulation,
-        modelType: result.modelType,
-        numStates: result.numStates,
-        predictionHorizon: result.predictionHorizon,
 
         account: data[0],
         buildingType: data[1],
