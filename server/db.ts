@@ -59,14 +59,15 @@ export async function seedTestData() {
       uid: 'buildingType-1',
       name: 'BIG building',
       parsedHTML: '<html></html>',
-      detailsURL: 'bigbuilding.com',
+      markdownURL: 'markdown.com',
+      pdfURL: 'bigbuilding.com',
     },
     {
       id: '2',
       uid: 'buildingType-2',
       name: 'small building',
-      parsedHTML: '<html></html>',
-      detailsURL: 'smallbuilding.com',
+      markdownURL: 'markdown.com',
+      pdfURL: 'smallbuilding.com',
     },
   ];
 
