@@ -27,21 +27,24 @@ const accountsPayload = [
   },
 ];
 
+const readmeUrl =
+  "https://raw.githubusercontent.com/NREL/project1-boptest/master/README.md";
+
 const buildingTypesPayload = {
   buildingTypes: [
     {
       id: 1,
       uid: "buildingType-1",
       name: "BIG building",
-      parsedHTML: "<html></html>",
-      detailsURL: "bigbuilding.com",
+      markdownURL: readmeUrl,
+      pdfURL: readmeUrl,
     },
     {
       id: 2,
       uid: "buildingType-2",
       name: "small building",
-      parsedHTML: "<html></html>",
-      detailsURL: "smallbuilding.com",
+      markdownURL: readmeUrl,
+      pdfURL: readmeUrl,
     },
   ],
 };
