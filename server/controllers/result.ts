@@ -1,48 +1,64 @@
+import {getBuildingType} from './../models/BuildingType';
 import {getRepository} from 'typeorm';
 import {getAccountByApiKey} from '../models/Account';
-import {createKPI, KPIData} from '../models/KPI';
 import {createResult, Result, ResultEntity} from '../models/Result';
-import {getTestCaseByUid} from '../models/TestCase';
 
 export function getResults(): Promise<Result[]> {
   // request data
   const resultsRepository = getRepository<Result>(ResultEntity);
   return resultsRepository.find({
-    relations: ['account', 'kpi', 'testcase'],
+    relations: ['account', 'buildingType'],
   });
 }
 
 // this fetches all results that are shared to be shown on
 // both the home page and the results table
-// TODO: Eventually, we will also need to include results for the
-// current user even if they aren't shared (I believe; circle back)
+// we DO NOT want to show nonshared results for the current user
 export function getAllSharedResults(): Promise<Result[]> {
   const resultsRepository = getRepository<Result>(ResultEntity);
   return resultsRepository.find({
-    relations: ['account', 'kpi', 'testcase'],
+    relations: ['account', 'buildingType'],
     where: {
       isShared: true,
     },
   });
 }
 
-// TODO get some error checking up in this bitch
-// need to account for missing testcase uid and account misses too
+// need to account for account misses
 function createResultAndAssociatedModels(result: any) {
-  const newKpi = createKPI(<KPIData>result.kpi);
   const account = getAccountByApiKey(result.account.apiKey);
-  const testcase = getTestCaseByUid(result.testcase.uid);
+  const buildingType = getBuildingType(result.buildingType.id);
 
-  return Promise.all([newKpi, account, testcase])
+  return Promise.all([account, buildingType])
     .then(data => {
       const resultData = {
+        deleted: false,
         dateRun: result.dateRun,
         isShared: result.isShared,
         tags: result.tags,
         uid: result.uid,
-        kpi: data[0],
-        account: data[1],
-        testcase: data[2],
+
+        thermalDiscomfort: result.thermalDiscomfort,
+        energyUse: result.energyUse,
+        cost: result.cost,
+        emissions: result.emissions,
+        iaq: result.iaq,
+        timeRatio: result.timeRatio,
+
+        testTimePeriodStart: result.testTimePeriodStart,
+        testTimePeriodEnd: result.testTimePeriodEnd,
+        controlStep: result.controlStep,
+        priceScenario: result.priceScenario,
+        weatherForecastUncertainty: result.weatherForecastUncertainty,
+
+        controllerType: result.controllerType,
+        problemFormulation: result.problemFormulation,
+        modelType: result.modelType,
+        numStates: result.numStates,
+        predictionHorizon: result.predictionHorizon,
+
+        account: data[0],
+        buildingType: data[1],
       };
 
       return createResult(resultData);
@@ -58,4 +74,30 @@ export function createResults(results: any) {
       return createResultAndAssociatedModels(result);
     })
   );
+}
+
+export function removeResults(ids: number[]): Promise<void>[] {
+  const repo = getRepository<Result>(ResultEntity);
+  return ids.map((id: number) => {
+    return repo
+      .findOneOrFail(id)
+      .then(result => {
+        result.deleted = true;
+        repo.save(result);
+      })
+      .catch(() => console.log('unable to remove result', id));
+  });
+}
+
+export function shareResults(ids: number[]): Promise<void>[] {
+  const repo = getRepository<Result>(ResultEntity);
+  return ids.map((id: number) => {
+    return repo
+      .findOneOrFail(id)
+      .then(result => {
+        result.isShared = !result.isShared;
+        repo.save(result);
+      })
+      .catch(() => console.log('unable to update shared value of result', id));
+  });
 }

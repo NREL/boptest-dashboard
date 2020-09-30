@@ -58,3 +58,16 @@ export function createAccount(data: AccountData): Promise<Account> {
   const accountRepo = getRepository<Account>(AccountEntity);
   return accountRepo.save(data);
 }
+
+export function updateName(id: number, newName: string): Promise<void> {
+  const repo = getRepository<Account>(AccountEntity);
+
+  // get current account
+  return repo
+    .findOneOrFail(id)
+    .then(account => {
+      account.name = newName;
+      repo.save(account);
+    })
+    .catch(err => console.log('could not update name for account', err));
+}

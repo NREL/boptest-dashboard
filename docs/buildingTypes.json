@@ -1,0 +1,11 @@
+{
+  "buildingTypes": [
+    {
+      "uid": "13245kasdjfn",
+      "name": "Posty Building 3.0",
+      // These 2 urls need to be from trusted sources and the raw version of the git link
+      "pdfURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/someFile.pdf",
+      "markdownURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/README.md"
+    }
+  ]
+}

@@ -21,7 +21,7 @@ import FilterListIcon from '@material-ui/icons/FilterList';
 
 interface Data {
   resultUid: string;
-  testCase: string;
+  buildingType: string;
   dateRun: Date;
   totalEnergy: number;
   thermalDiscomfort: number;
@@ -36,15 +36,15 @@ interface Data {
 const createDataFromResult = (result): Data => {
   return {
     resultUid: result.uid,
-    testCase: result.testcase.name,
+    buildingType: result.buildingType.name,
     dateRun: result.dateRun,
-    totalEnergy: result.kpi.energyUse,
-    thermalDiscomfort: result.kpi.thermalDiscomfort,
-    aqDiscomfort: result.kpi.iaq,
-    energy: result.kpi.energyUse,
-    cost: result.kpi.cost,
-    emissions: result.kpi.emissions,
-    compTimeRatio: result.kpi.timeRatio,
+    totalEnergy: result.energyUse,
+    thermalDiscomfort: result.thermalDiscomfort,
+    aqDiscomfort: result.iaq,
+    energy: result.energyUse,
+    cost: result.cost,
+    emissions: result.emissions,
+    compTimeRatio: result.timeRatio,
     isShared: result.isShared,
   };
 };
@@ -104,10 +104,10 @@ interface HeadCell {
 
 const headCells: HeadCell[] = [
   {
-    id: 'testCase',
+    id: 'buildingType',
     numeric: false,
     disablePadding: true,
-    label: 'Test Case',
+    label: 'Building Type',
   },
   {id: 'dateRun', numeric: false, disablePadding: false, label: 'Date Run'},
   {
@@ -492,7 +492,9 @@ export default function DashboardResultsTable(props) {
                         scope="row"
                         padding="none"
                       >
-                        <Typography variant="body1">{row.testCase}</Typography>
+                        <Typography variant="body1">
+                          {row.buildingType}
+                        </Typography>
                       </TableCell>
                       <TableCell align="center">
                         <Typography variant="body1">{dateString}</Typography>

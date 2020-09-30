@@ -1,9 +1,8 @@
-import {entityList} from './models/Entities';
-import 'reflect-metadata';
 import {createConnection, getConnection} from 'typeorm';
 import {createAccounts} from './controllers/account';
-import {createTestCases} from './controllers/testcase';
+import {createBuildingTypes} from './controllers/buildingTypes';
 import {createResults} from './controllers/result';
+import {entityList} from './models/Entities';
 
 export function connectToDb(withSync: boolean = false) {
   createConnection({
@@ -53,27 +52,21 @@ export async function seedTestData() {
     },
   ];
 
-  // create testcases
-  const testcases = [
+  // create buildingTypes
+  const buildingTypes = [
     {
-      uid: 'uidTest1',
-      name: 'testcase1',
-      cosimulationStart: '2020-08-04T23:00:00.000Z',
-      cosimulationEnd: '2020-08-04T23:00:00.000Z',
-      controlStep: 'control1',
-      priceScenario: 'pscene1',
-      uncertaintyDist: 'uncertain1',
-      buildingType: 'building-large',
+      id: '1',
+      uid: 'buildingType-1',
+      name: 'BIG building',
+      parsedHTML: '<html></html>',
+      detailsURL: 'bigbuilding.com',
     },
     {
-      uid: 'uidTest2',
-      name: 'testcase2',
-      cosimulationStart: '2020-08-04T23:00:00.000Z',
-      cosimulationEnd: '2020-08-04T23:00:00.000Z',
-      controlStep: 'control2',
-      priceScenario: 'pscene2',
-      uncertaintyDist: 'uncertain2',
-      buildingType: 'building-large',
+      id: '2',
+      uid: 'buildingType-2',
+      name: 'small building',
+      parsedHTML: '<html></html>',
+      detailsURL: 'smallbuilding.com',
     },
   ];
 
@@ -86,17 +79,24 @@ export async function seedTestData() {
       account: {
         apiKey: 'jerrysapikey',
       },
-      kpi: {
-        thermalDiscomfort: 6,
-        energyUse: 5,
-        cost: 100,
-        emissions: 19,
-        iaq: 43,
-        timeRatio: 900,
-      },
-      testcase: {
-        uid: 'uidTest1',
-      },
+      thermalDiscomfort: 6,
+      energyUse: 5,
+      cost: 100,
+      emissions: 19,
+      iaq: 43,
+      timeRatio: 900,
+      tags: {},
+      testTimePeriodStart: new Date(),
+      testTimePeriodEnd: new Date(),
+      controlStep: 'controlStep',
+      priceScenario: 'priceScenario',
+      weatherForecastUncertainty: 'forecast-unknown',
+      controllerType: 'controllerType1',
+      problemFormulation: 'problem1',
+      modelType: 'modelType1',
+      numStates: 15,
+      predictionHorizon: 700,
+      buildingType: buildingTypes[0],
     },
     {
       dateRun: '2020-08-04T23:00:00.000Z',
@@ -105,25 +105,28 @@ export async function seedTestData() {
       account: {
         apiKey: 'carlsapikey',
       },
-      kpi: {
-        thermalDiscomfort: 62,
-        energyUse: 15,
-        cost: 12,
-        emissions: 11,
-        iaq: 430,
-        timeRatio: 1200,
-      },
-      testcase: {
-        uid: 'uidTest2',
-      },
-      tags: {
-        numStates: 6,
-        controllerType: 'controller-big',
-      },
+      thermalDiscomfort: 62,
+      energyUse: 15,
+      cost: 12,
+      emissions: 11,
+      iaq: 430,
+      timeRatio: 1200,
+      tags: {},
+      testTimePeriodStart: new Date(),
+      testTimePeriodEnd: new Date(),
+      controlStep: 'controlStep',
+      priceScenario: 'priceScenario',
+      weatherForecastUncertainty: 'forecast-unknown',
+      controllerType: 'controllerType2',
+      problemFormulation: 'problem2',
+      modelType: 'modelType2',
+      numStates: 25,
+      predictionHorizon: 8000,
+      buildingType: buildingTypes[1],
     },
   ];
 
   return createAccounts(accounts)
-    .then(res => createTestCases(testcases))
+    .then(res => createBuildingTypes(buildingTypes))
     .then(res => createResults(results));
 }
