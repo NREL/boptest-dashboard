@@ -11,15 +11,11 @@ import TableSortLabel from '@material-ui/core/TableSortLabel';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
-import Checkbox from '@material-ui/core/Checkbox';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
-import DeleteIcon from '@material-ui/icons/Delete';
-import FilterListIcon from '@material-ui/icons/FilterList';
 
 interface Data {
   resultUid: string;
-  buildingType: string;
+  accountUsername: string;
+  buildingTypeName: string;
   dateRun: Date;
   totalEnergy: number;
   thermalDiscomfort: number;
@@ -28,12 +24,19 @@ interface Data {
   cost: number; //total operations cost
   emissions: number;
   compTimeRatio: number;
+  controllerProperties: JSON;
+  testTimePeriodStart: Date;
+  testTimePeriodEnd: Date;
+  controlStep: string;
+  priceScenario: string;
+  weatherForecastUncertainty: string;
 }
 
 const createDataFromResult = (result): Data => {
   return {
     resultUid: result.uid,
-    buildingType: result.buildingType.name,
+    accountUsername: result.account.name,
+    buildingTypeName: result.buildingType.name,
     dateRun: result.dateRun,
     totalEnergy: result.energyUse,
     thermalDiscomfort: result.thermalDiscomfort,
@@ -42,6 +45,12 @@ const createDataFromResult = (result): Data => {
     cost: result.cost,
     emissions: result.emissions,
     compTimeRatio: result.timeRatio,
+    controllerProperties: result.controllerProperties,
+    testTimePeriodStart: result.testTimePeriodStart,
+    testTimePeriodEnd: result.testTimePeriodEnd,
+    controlStep: result.controlStep,
+    priceScenario: result.priceScenario,
+    weatherForecastUncertainty: result.weatherForecastUncertainty,
   };
 };
 
@@ -100,7 +109,7 @@ interface HeadCell {
 
 const headCells: HeadCell[] = [
   {
-    id: 'buildingType',
+    id: 'buildingTypeName',
     numeric: false,
     disablePadding: false,
     label: 'Building Type',
@@ -265,7 +274,6 @@ export default function ResultsTable(props) {
   const classes = useStyles();
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Data>('dateRun');
-  const [selected, setSelected] = React.useState<string[]>([]);
   const [rows, setRows] = React.useState<Data[]>([]);
 
   // set the rows from the results that we get
@@ -331,7 +339,7 @@ export default function ResultsTable(props) {
                         padding="default"
                       >
                         <Typography variant="body1">
-                          {row.buildingType}
+                          {row.buildingTypeName}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
