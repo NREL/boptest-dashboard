@@ -1,13 +1,21 @@
+import {buildingTypeRouter} from './../routes/buildingTypeRoutes';
 import {EntitySchema, getRepository} from 'typeorm';
+import axios from 'axios';
 
 import {Result} from './Result';
+
+const TRUSTED_SOURCES = [
+  'https://github.com/NREL/boptest-dashboard',
+  'https://github.com/NREL/project1-boptest/tree/master/testcases/',
+];
 
 export interface BuildingType {
   id: number;
   uid: string;
   name: string;
-  parsedHTML: string;
-  detailsURL: string;
+  markdown: string | null;
+  markdownURL: string;
+  pdfURL: string;
   results: Result[];
 }
 
@@ -28,10 +36,14 @@ export const BuildingTypeEntity = new EntitySchema<BuildingType>({
     name: {
       type: String,
     },
-    parsedHTML: {
+    markdown: {
+      type: String,
+      nullable: true,
+    },
+    markdownURL: {
       type: String,
     },
-    detailsURL: {
+    pdfURL: {
       type: String,
     },
   },
@@ -48,9 +60,31 @@ export const BuildingTypeEntity = new EntitySchema<BuildingType>({
 export function createBuildingType(
   data: BuildingTypeData
 ): Promise<BuildingType> {
+  // need to check both URLs to make sure they're from a trusted source
+  if (!fromTrustedSource(data)) {
+    throw new Error('The URLs are not from a trusted source.');
+  }
   const buildingTypeRepo = getRepository<BuildingType>(BuildingTypeEntity);
 
-  return buildingTypeRepo.save(data);
+  // need to get the markdown from the markdownURL, then save the new buildingType
+  return axios.get(data.markdownURL).then(res => {
+    data.markdown = res.data;
+    return buildingTypeRepo.save(data);
+  });
+}
+
+// this method tells us if the URLs given are from trusted sources
+function fromTrustedSource(data: BuildingTypeData): Boolean {
+  if (
+    !data.markdownURL.startsWith(TRUSTED_SOURCES[0]) &&
+    !data.markdownURL.startsWith(TRUSTED_SOURCES[1]) &&
+    !data.pdfURL.startsWith(TRUSTED_SOURCES[0]) &&
+    !data.pdfURL.startsWith(TRUSTED_SOURCES[1])
+  ) {
+    return false;
+  }
+
+  return true;
 }
 
 export function getBuildingType(id: number): Promise<BuildingType> {

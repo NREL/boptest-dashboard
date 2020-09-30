@@ -4,6 +4,7 @@ import path from 'path';
 import bodyParser from 'body-parser';
 
 import {accountRouter} from './routes/accountRoutes';
+import {buildingTypeRouter} from './routes/buildingTypeRoutes';
 import {appRouter} from './routes/appRoutes';
 import {resultRouter} from './routes/resultRoutes';
 import {setupRouter} from './routes/setupRoutes';
@@ -19,6 +20,7 @@ app.use(express.static(path.join(__dirname, '/usr/client/build')));
 // define routes
 app.use('/api/setup', setupRouter);
 app.use('/api/accounts', accountRouter);
+app.use('/api/buildingTypes', buildingTypeRouter);
 app.use('/api/results', resultRouter);
 app.use('/', appRouter);
 
