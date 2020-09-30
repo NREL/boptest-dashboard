@@ -52,22 +52,24 @@ export async function seedTestData() {
     },
   ];
 
+  const readmeUrl =
+    'https://raw.githubusercontent.com/NREL/project1-boptest/master/README.md';
+
   // create buildingTypes
   const buildingTypes = [
     {
       id: '1',
       uid: 'buildingType-1',
       name: 'BIG building',
-      parsedHTML: '<html></html>',
-      markdownURL: 'markdown.com',
-      pdfURL: 'bigbuilding.com',
+      markdownURL: readmeUrl,
+      pdfURL: readmeUrl,
     },
     {
       id: '2',
       uid: 'buildingType-2',
       name: 'small building',
-      markdownURL: 'markdown.com',
-      pdfURL: 'smallbuilding.com',
+      markdownURL: readmeUrl,
+      pdfURL: readmeUrl,
     },
   ];
 

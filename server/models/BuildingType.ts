@@ -6,7 +6,7 @@ import {Result} from './Result';
 
 const TRUSTED_SOURCES = [
   'https://github.com/NREL/boptest-dashboard',
-  'https://github.com/NREL/project1-boptest/tree/master/testcases/',
+  'https://raw.githubusercontent.com/NREL/project1-boptest/master',
 ];
 
 export interface BuildingType {
