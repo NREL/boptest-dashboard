@@ -22,6 +22,7 @@ interface Data {
   aqDiscomfort: number; //indoor air quality discomfort
   energy: number; //total energy consumption
   cost: number; //total operations cost
+  timeRatio: number;
   emissions: number;
   compTimeRatio: number;
   controllerProperties: JSON;
@@ -43,6 +44,7 @@ const createDataFromResult = (result): Data => {
     aqDiscomfort: result.iaq,
     energy: result.energyUse,
     cost: result.cost,
+    timeRatio: result.timeRatio,
     emissions: result.emissions,
     compTimeRatio: result.timeRatio,
     controllerProperties: result.controllerProperties,
