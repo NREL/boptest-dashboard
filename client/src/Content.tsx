@@ -4,6 +4,7 @@ import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 
 import {About} from './Pages/About';
 import {ApiKey} from './Pages/ApiKey';
+import {Signup} from './Pages/Auth/Signup';
 import {Dashboard} from './Pages/Dashboard';
 import {Docs} from './Pages/Docs';
 import {Home} from './Pages/Home';
@@ -40,6 +41,9 @@ export const Content: React.FC = () => {
         </Route>
         <Route path={AppRoute.Settings}>
           <Settings />
+        </Route>
+        <Route path={AppRoute.Register}>
+          <Signup />
         </Route>
         <Route path={AppRoute.Home}>
           <Home />
