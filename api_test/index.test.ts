@@ -161,7 +161,7 @@ describe("Main", () => {
       expect(result["account"]["apiKey"]).toEqual("tedsapikey");
       expect(result["cost"]).toEqual(12);
       expect(result["buildingType"]["uid"]).toEqual("buildingType-2");
-      expect(result["numStates"]).toEqual(25);
+      expect(result["controllerProperties"]["numStates"]).toEqual(25);
     });
   });
 });
