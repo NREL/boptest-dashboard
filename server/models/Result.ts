@@ -9,7 +9,7 @@ export interface Result {
   deleted: boolean;
   dateRun: Date;
   isShared: boolean;
-  tags: JSON;
+  controllerProperties: JSON;
 
   // KPI stuff
   thermalDiscomfort: number;
@@ -25,13 +25,6 @@ export interface Result {
   controlStep: string;
   priceScenario: string;
   weatherForecastUncertainty: string;
-
-  // Controller Type stuff
-  controllerType: string;
-  problemFormulation: string;
-  modelType: string;
-  numStates: number;
-  predictionHorizon: number;
 
   account: Account;
   buildingType: BuildingType;
@@ -60,7 +53,7 @@ export const ResultEntity = new EntitySchema<Result>({
     isShared: {
       type: Boolean,
     },
-    tags: {
+    controllerProperties: {
       type: 'jsonb',
       nullable: true,
     },
@@ -105,21 +98,6 @@ export const ResultEntity = new EntitySchema<Result>({
     },
     buildingType: {
       type: String,
-    },
-    controllerType: {
-      type: String,
-    },
-    problemFormulation: {
-      type: String,
-    },
-    modelType: {
-      type: String,
-    },
-    numStates: {
-      type: Number,
-    },
-    predictionHorizon: {
-      type: Number,
     },
   },
   relations: {
