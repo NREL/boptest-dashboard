@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Link} from 'react-router-dom';
+import {Link, useHistory} from 'react-router-dom';
 import axios from 'axios';
 import {Button, TextField, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
@@ -27,24 +27,32 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: 'auto',
     },
     registerButton: {
-      justifyContent: 'center',
+      alignSelf: 'flex-end',
       padding: '0 16px 0 16px',
       width: '25%',
       backgroundColor: 'rgb(0, 150, 136)',
       color: 'white',
     },
     actionItems: {
+      padding: '16px 0 0 0',
+      width: '80%',
+      margin: 'auto',
       display: 'flex',
       flexDirection: 'row',
       justifyContent: 'space-between',
+    },
+    cancelLink: {
+      alignSelf: 'flex-start',
     },
   })
 );
 
 const registerEndpoint = '/api/auth/signup';
 
-export const Signup: React.FC = () => {
+export const Signup: React.FC = props => {
   const classes = useStyles();
+
+  const history = useHistory();
 
   // state values for all the text fields
   const [username, setUsername] = React.useState('');
@@ -67,12 +75,8 @@ export const Signup: React.FC = () => {
 
   // need to do some error handling here and also send request to backend
   const registerAccount = () => {
-    console.log(username);
-    console.log(email);
-    console.log(password);
-    console.log(confirmPassword);
-
     if (password !== confirmPassword) {
+      // TODO front end errors for issues in the UI
       console.log('show an error message here passwords do not match');
       return;
     }
@@ -83,16 +87,15 @@ export const Signup: React.FC = () => {
       password,
     };
 
-    console.log(signupData);
-
     axios
       .post(registerEndpoint, signupData)
       .then(res => {
         // need to set the user as logged in via context and stash the token
         const signupResponse = res.data;
-        console.log('welcome to Boptest', signupResponse.username);
 
         // redirect to the home page or user dashboard at this point?
+        // redirect to the Confirm page
+        history.push(`/confirm/${email}`);
       })
       .catch(err => console.log('could not signup the user', err));
   };
@@ -137,7 +140,7 @@ export const Signup: React.FC = () => {
         />
         {/* buttons */}
         <div className={classes.actionItems}>
-          <Link to={'/'} className={classes.field}>
+          <Link to={'/'} className={classes.cancelLink}>
             Cancel
           </Link>
           <Button

@@ -17,6 +17,14 @@ export function createAccounts(accounts: any): Promise<Account[]> {
   );
 }
 
+export function getUser(email: string): Promise<Account> {
+  const repo = getRepository<Account>(AccountEntity);
+
+  return repo.findOneOrFail({
+    email: email,
+  });
+}
+
 export function createAccountFromCognitoUser(
   user: CognitoUser,
   signupData: SignupData

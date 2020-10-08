@@ -5,6 +5,11 @@ export interface SignupData {
   password: string;
 }
 
+export interface ConfirmData {
+  username: string;
+  verificationCode: string;
+}
+
 export interface LoginData {
   email: string;
   password: string;

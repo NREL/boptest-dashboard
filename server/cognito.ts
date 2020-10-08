@@ -1,20 +1,27 @@
-import {SignupData} from './../common/interfaces';
+import {ConfirmData, LoginData, SignupData} from './../common/interfaces';
 import {
+  AuthenticationDetails,
   CognitoUserPool,
   CognitoUserAttribute,
   CognitoUser,
 } from 'amazon-cognito-identity-js';
+import {getUser} from 'controllers/account';
 
 const userPoolId = 'us-east-2_bRRaBKHKB';
 const appClientId = 'qf1rkdnu575bahbtmhb1hblat';
 
+const getUserPool = (): CognitoUserPool => {
+  var poolData = {
+    UserPoolId: userPoolId,
+    ClientId: appClientId,
+  };
+
+  return new CognitoUserPool(poolData);
+};
+
 export function signupUser(signupData: SignupData) {
   return new Promise((promiseRes, promiseRej) => {
-    var poolData = {
-      UserPoolId: userPoolId,
-      ClientId: appClientId,
-    };
-    var userPool = new CognitoUserPool(poolData);
+    var userPool = getUserPool();
 
     var attributeList = [];
 
@@ -27,12 +34,12 @@ export function signupUser(signupData: SignupData) {
 
     attributeList.push(attributeEmail);
 
+    // sign up with email here as username, so that logging in can be done via email too
     userPool.signUp(
-      signupData.username,
+      signupData.email,
       signupData.password,
       attributeList,
       [],
-      // onSignup()
       function (err, result) {
         if (err) {
           console.log(err.message || JSON.stringify(err));
@@ -42,11 +49,60 @@ export function signupUser(signupData: SignupData) {
         if (result) {
           promiseRes(result);
         } else {
-          console.log('something went wrong, unable to register user');
           promiseRej('something went wrong, unable to register user');
           return;
         }
       }
     );
+  });
+}
+
+export function confirmRegistration(confirmData: ConfirmData) {
+  return new Promise((promiseRes, promiseRej) => {
+    const userPool = getUserPool();
+
+    var userData = {
+      Username: confirmData.username,
+      Pool: userPool,
+    };
+
+    var cognitoUser = new CognitoUser(userData);
+    cognitoUser.confirmRegistration(
+      confirmData.verificationCode,
+      true,
+      function (err, result) {
+        if (err) {
+          promiseRej(err);
+        }
+        promiseRes(result);
+      }
+    );
+  });
+}
+
+export function loginUser(loginData: LoginData) {
+  return new Promise((promiseRes, promiseRej) => {
+    var authenticationData = {
+      Username: loginData.email,
+      Password: loginData.password,
+    };
+
+    var authenticationDetails = new AuthenticationDetails(authenticationData);
+
+    var userPool = getUserPool();
+    var userData = {
+      Username: loginData.email,
+      Pool: userPool,
+    };
+
+    var cognitoUser = new CognitoUser(userData);
+    cognitoUser.authenticateUser(authenticationDetails, {
+      onSuccess: function (result) {
+        promiseRes(result);
+      },
+      onFailure: function (err) {
+        promiseRej(err);
+      },
+    });
   });
 }
