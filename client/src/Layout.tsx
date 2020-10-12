@@ -35,7 +35,7 @@ export const Layout: React.FC = () => {
           <Route path={AppRoute.Register}>
             <Signup />
           </Route>
-          <Route path={'*'}>
+          <Route>
             <MiniDrawer />
           </Route>
         </Switch>
