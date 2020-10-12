@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import bodyParser from 'body-parser';
+import session from 'express-session';
 
 import {accountRouter} from './routes/accountRoutes';
 import {buildingTypeRouter} from './routes/buildingTypeRoutes';
@@ -14,6 +15,24 @@ import {connectToDb} from './db';
 const app: express.Application = express();
 app.use(cors());
 app.use(bodyParser.json());
+
+const SESSION_SECRET = 'keyboard cat';
+const SESSION_NAME = 'sid';
+
+const ONE_HOUR = 1000 * 60 * 60;
+
+app.use(
+  session({
+    name: SESSION_NAME,
+    secret: SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: ONE_HOUR,
+      sameSite: true,
+    },
+  })
+);
 
 // serve static files from the React app
 app.use(express.static(path.join(__dirname, '/usr/client/build')));

@@ -2,6 +2,7 @@ import express from 'express';
 import {confirmRegistration} from './../cognito';
 import {SignupData, LoginData, ConfirmData} from './../../common/interfaces';
 import {login, signup} from './../controllers/auth';
+import {Account} from './../models/Account';
 
 export const authRouter = express.Router();
 
@@ -43,7 +44,11 @@ authRouter.post('/login', (req: express.Request, res: express.Response) => {
   };
 
   login(loginData)
-    .then(user => {
+    .then((user: Account) => {
+      if (req.session) {
+        req.session.userId = user.id;
+        req.session.email = user.email;
+      }
       res.json(user);
     })
     .catch(err => {
@@ -51,11 +56,17 @@ authRouter.post('/login', (req: express.Request, res: express.Response) => {
     });
 });
 
+authRouter.get('/userInfo', (req: express.Request, res: express.Response) => {
+  res.json(req.cookies);
+});
+
 // authRouter.post('/logout', (req: express.Request, res: express.Response) => {
 //   const email = req.body.email;
 //   logout(email)
 //     .then(user => {
 //       res.json(user);
+//       req.session.destroy();
+//       res.clearCookie('sid');
 //     })
 //     .catch(err => console.log('Unable to log out user with email', email));
 // });
