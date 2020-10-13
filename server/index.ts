@@ -1,3 +1,4 @@
+import {SESSION_NAME} from './constants';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -17,7 +18,6 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const SESSION_SECRET = 'keyboard cat';
-const SESSION_NAME = 'sid';
 
 const ONE_HOUR = 1000 * 60 * 60;
 

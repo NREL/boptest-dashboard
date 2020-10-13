@@ -4,6 +4,7 @@ import {Link, useHistory} from 'react-router-dom';
 import {Button, TextField, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {useUser} from './../../Context/user-context';
 import {LoginData} from './../../../../common/interfaces';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -62,6 +63,8 @@ export const Login: React.FC = () => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
 
+  const {setAuthedEmail, setAuthedName} = useUser();
+
   const handleEmailChange = e => {
     setEmail(e.target.value);
   };
@@ -79,7 +82,8 @@ export const Login: React.FC = () => {
       .post(loginEndpoint, loginData)
       .then(res => {
         // need to set the user as logged in via context and stash the token
-        const loginResponse = res.data;
+        setAuthedEmail(res.data.email);
+        setAuthedName(res.data.name);
 
         // redirect to the home page
         history.push('/');

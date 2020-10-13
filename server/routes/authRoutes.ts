@@ -1,3 +1,4 @@
+import {SESSION_NAME} from './../constants';
 import express from 'express';
 import {confirmRegistration} from './../cognito';
 import {SignupData, LoginData, ConfirmData} from './../../common/interfaces';
@@ -46,27 +47,44 @@ authRouter.post('/login', (req: express.Request, res: express.Response) => {
   login(loginData)
     .then((user: Account) => {
       if (req.session) {
-        req.session.userId = user.id;
         req.session.email = user.email;
+        req.session.name = user.name;
       }
-      res.json(user);
+
+      const data = {
+        email: user.email,
+        name: user.name,
+      };
+
+      res.json(data);
     })
     .catch(err => {
       res.status(500).send('Unable to login user with err: ' + err);
     });
 });
 
-authRouter.get('/userInfo', (req: express.Request, res: express.Response) => {
-  res.json(req.cookies);
+authRouter.get('/info', (req: express.Request, res: express.Response) => {
+  if (req.session && req.session.name && req.session.email) {
+    const response = {
+      name: req.session.name,
+      email: req.session.email,
+    };
+
+    res.json(response);
+  } else {
+    res.status(403).send('User is not logged in');
+  }
 });
 
-// authRouter.post('/logout', (req: express.Request, res: express.Response) => {
-//   const email = req.body.email;
-//   logout(email)
-//     .then(user => {
-//       res.json(user);
-//       req.session.destroy();
-//       res.clearCookie('sid');
-//     })
-//     .catch(err => console.log('Unable to log out user with email', email));
-// });
+authRouter.post('/logout', (req: express.Request, res: express.Response) => {
+  if (req.session) {
+    req.session.destroy(err => {
+      if (err) {
+        console.log('Unable to destroy session', err);
+        res.status(500).send('Unable to logout, please try again');
+      }
+    });
+    res.clearCookie(SESSION_NAME);
+    res.status(200).send('Logged out successfully');
+  }
+});
