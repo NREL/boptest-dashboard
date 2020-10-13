@@ -40,7 +40,6 @@ export function createAccountFromCognitoUser(
   const accountData = {
     name: signupData.username,
     email: signupData.email,
-    password: signupData.password,
     apiKey: apiKey,
   };
 
