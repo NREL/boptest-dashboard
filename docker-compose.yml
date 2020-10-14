@@ -5,6 +5,8 @@ services:
     build: ./server
     environment:
       DATABASE_URL: postgres://admin:pass@postgres:5432/boptestdb
+    env_file:
+      - ./server/.env
     ports:
       - "8080:8080"
     depends_on:

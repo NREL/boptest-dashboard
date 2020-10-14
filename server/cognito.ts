@@ -5,10 +5,9 @@ import {
   CognitoUserAttribute,
   CognitoUser,
 } from 'amazon-cognito-identity-js';
-import {getUser} from 'controllers/account';
 
-const userPoolId = 'us-east-2_bRRaBKHKB';
-const appClientId = 'qf1rkdnu575bahbtmhb1hblat';
+const userPoolId = process.env.COGNITO_USER_POOL_ID || '';
+const appClientId = process.env.COGNITO_APP_CLIENT_ID || '';
 
 const getUserPool = (): CognitoUserPool => {
   var poolData = {
