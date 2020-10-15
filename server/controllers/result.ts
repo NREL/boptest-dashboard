@@ -1,3 +1,4 @@
+import {SignatureDetails} from './../../common/interfaces';
 import {getBuildingType} from './../models/BuildingType';
 import {getRepository} from 'typeorm';
 import {getAccountByApiKey} from '../models/Account';
@@ -94,4 +95,122 @@ export function shareResults(ids: number[]): Promise<void>[] {
       })
       .catch(() => console.log('unable to update shared value of result', id));
   });
+}
+
+export function getSignatureDetailsForResult(
+  id: number
+): Promise<SignatureDetails> {
+  const repo = getRepository<Result>(ResultEntity);
+
+  return repo.findOneOrFail(id).then(result => {
+    return repo
+      .find({
+        where: {
+          controlStep: result.controlStep,
+          priceScenario: result.priceScenario,
+          weatherForecastUncertainty: result.weatherForecastUncertainty,
+        },
+      })
+      .then(results => {
+        return getKPIRanges(results, result);
+      });
+  });
+}
+
+function getKPIRanges(results: Result[], result: Result): SignatureDetails {
+  var tdMin = result.thermalDiscomfort;
+  var tdMax = result.thermalDiscomfort;
+
+  var energyMin = result.energyUse;
+  var energyMax = result.energyUse;
+
+  var costMin = result.cost;
+  var costMax = result.cost;
+
+  var emissionsMin = result.emissions;
+  var emissionsMax = result.emissions;
+
+  var iaqMin = result.iaq;
+  var iaqMax = result.iaq;
+
+  var timeMin = result.iaq;
+  var timeMax = result.iaq;
+
+  results.forEach(res => {
+    if (res.thermalDiscomfort < tdMin) {
+      tdMin = res.thermalDiscomfort;
+    }
+
+    if (res.thermalDiscomfort > tdMax) {
+      tdMax = res.thermalDiscomfort;
+    }
+
+    if (res.energyUse < energyMin) {
+      energyMin = res.energyUse;
+    }
+
+    if (res.energyUse > energyMax) {
+      energyMax = res.energyUse;
+    }
+
+    if (res.cost < costMin) {
+      costMin = res.cost;
+    }
+
+    if (res.cost > costMax) {
+      costMax = res.cost;
+    }
+
+    if (res.emissions < emissionsMin) {
+      emissionsMin = res.emissions;
+    }
+
+    if (res.emissions > emissionsMax) {
+      emissionsMax = res.emissions;
+    }
+
+    if (res.iaq < iaqMin) {
+      iaqMin = res.iaq;
+    }
+
+    if (res.iaq > iaqMax) {
+      iaqMin = res.iaq;
+    }
+
+    if (res.timeRatio < timeMin) {
+      timeMin = res.timeRatio;
+    }
+
+    if (res.timeRatio > timeMax) {
+      timeMax = res.timeRatio;
+    }
+  });
+
+  return {
+    numResults: results.length,
+    thermalDiscomfort: {
+      min: tdMin,
+      max: tdMax,
+    },
+    energyUse: {
+      min: energyMin,
+      max: energyMax,
+    },
+    cost: {
+      min: costMin,
+      max: costMax,
+    },
+    emissions: {
+      min: emissionsMin,
+      max: emissionsMax,
+    },
+    iaq: {
+      min: iaqMin,
+      max: iaqMax,
+    },
+    timeRatio: {
+      min: timeMin,
+      max: timeMax,
+    },
+  };
 }
