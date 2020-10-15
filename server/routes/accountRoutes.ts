@@ -1,7 +1,7 @@
 import express from 'express';
 
-import {getAccounts} from '../controllers/account';
-import {updateName} from '../models/Account';
+import {getAccount, getAccounts} from '../controllers/account';
+import {Account, getAccountByApiKey, updateName} from '../models/Account';
 
 export const accountRouter = express.Router();
 
@@ -12,6 +12,36 @@ accountRouter.get('/', (req: express.Request, res: express.Response) => {
     })
     .catch(err => console.log('Unable to get accounts' + err));
 });
+
+// gets an account
+accountRouter.get('/:id', (req: express.Request, res: express.Response) => {
+  getAccount(Number(req.params.id))
+    .then(account => res.json(account))
+    .catch(err => {
+      console.log(`Unable to get account ${req.params.id}`, err);
+      res.status(500).send('Unable to get account.');
+    });
+});
+
+// check if an apiKey is valid
+accountRouter.get(
+  '/apiKey/:key',
+  (req: express.Request, res: express.Response) => {
+    getAccountByApiKey(req.params.key)
+      .then((account: Account) => {
+        if (account) {
+          res.json(account.email);
+        } else {
+          res.status(404).send(`API key ${req.params.key} doesn't exist`);
+        }
+      })
+      .catch(() =>
+        res
+          .status(500)
+          .send(`Unable to fetch API key ${req.params.key}, please try again`)
+      );
+  }
+);
 
 // GET /api/accounts/dummy
 accountRouter.get('/dummy', (req: express.Request, res: express.Response) => {
