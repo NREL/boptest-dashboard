@@ -3,6 +3,8 @@ import {CognitoUser} from 'amazon-cognito-identity-js';
 import {getRepository} from 'typeorm';
 import {Account, AccountEntity, createAccount} from '../models/Account';
 
+import crypto from 'crypto';
+
 export function getAccounts(): Promise<Account[]> {
   // request data
   const accountsRepository = getRepository<Account>(AccountEntity);
@@ -31,11 +33,7 @@ export function createAccountFromCognitoUser(
 ) {
   const repo = getRepository<Account>(AccountEntity);
 
-  // going to need to make our api key here
-  // const apiKey = createApiKey();
-  const apiKey = '123apikey';
-
-  // probably need to store tokens somehow too from cognito
+  const apiKey = createApiKey();
 
   const accountData = {
     name: signupData.username,
@@ -44,4 +42,8 @@ export function createAccountFromCognitoUser(
   };
 
   return repo.save(accountData);
+}
+
+function createApiKey(): string {
+  return crypto.randomBytes(60).toString('hex');
 }
