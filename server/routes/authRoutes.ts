@@ -1,4 +1,3 @@
-import {SESSION_NAME} from './../constants';
 import express from 'express';
 import {confirmRegistration} from './../cognito';
 import {SignupData, LoginData, ConfirmData} from './../../common/interfaces';
@@ -84,7 +83,7 @@ authRouter.post('/logout', (req: express.Request, res: express.Response) => {
         res.status(500).send('Unable to logout, please try again');
       }
     });
-    res.clearCookie(SESSION_NAME);
+    res.clearCookie(process.env.SESSION_NAME!);
     res.status(200).send('Logged out successfully');
   }
 });
