@@ -127,6 +127,7 @@ export const Signup: React.FC = props => {
           required
           label="Password"
           variant="outlined"
+          type="password"
           className={classes.field}
           onChange={handlePasswordChange}
         />
@@ -135,6 +136,7 @@ export const Signup: React.FC = props => {
           required
           label="Confirm Password"
           variant="outlined"
+          type="password"
           className={classes.field}
           onChange={handleConfirmPasswordChange}
         />

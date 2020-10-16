@@ -110,6 +110,7 @@ export const Login: React.FC = () => {
           required
           label="Password"
           variant="outlined"
+          type="password"
           className={classes.field}
           onChange={handlePasswordChange}
         />
