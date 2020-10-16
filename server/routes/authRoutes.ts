@@ -1,5 +1,4 @@
 import express from 'express';
-import {confirmRegistration} from './../cognito';
 import {SignupData, LoginData, ConfirmData} from './../../common/interfaces';
 import {confirm, login, signup} from './../controllers/auth';
 import {Account} from './../models/Account';
@@ -14,8 +13,8 @@ authRouter.post('/signup', (req: express.Request, res: express.Response) => {
   };
 
   signup(signupData)
-    .then(user => {
-      res.json(user);
+    .then(() => {
+      res.status(200).send('User successfully signed up');
     })
     .catch(err => {
       res.status(500).send('Unable to sign up user with err: ' + err);
