@@ -5,6 +5,7 @@ import {Button, TextField, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import {ConfirmData} from './../../../../common/interfaces';
+import {useUser} from './../../Context/user-context';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -48,6 +49,8 @@ export const Confirm: React.FC = () => {
 
   const history = useHistory();
 
+  const {setAuthedEmail, setAuthedName} = useUser();
+
   let {username} = useParams<ConfirmParams>();
 
   // state values for all the text fields
@@ -67,10 +70,11 @@ export const Confirm: React.FC = () => {
       .post(confirmEndpoint, confirmData)
       .then(res => {
         // need to set the user as logged in via context and stash the token
-        const confirmResponse = res.data;
+        setAuthedEmail(res.data.email);
+        setAuthedName(res.data.name);
 
-        // redirect to login page
-        history.push('/login');
+        // redirect to home page
+        history.push('/');
       })
       .catch(err => console.log('could not confirm the user', err));
   };

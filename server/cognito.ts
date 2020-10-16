@@ -4,10 +4,11 @@ import {
   CognitoUserPool,
   CognitoUserAttribute,
   CognitoUser,
+  CognitoUserSession,
 } from 'amazon-cognito-identity-js';
 
-const userPoolId = process.env.COGNITO_USER_POOL_ID || '';
-const appClientId = process.env.COGNITO_APP_CLIENT_ID || '';
+const userPoolId = process.env.COGNITO_USER_POOL_ID!;
+const appClientId = process.env.COGNITO_APP_CLIENT_ID!;
 
 const getUserPool = (): CognitoUserPool => {
   var poolData = {
@@ -56,7 +57,9 @@ export function signupUser(signupData: SignupData) {
   });
 }
 
-export function confirmRegistration(confirmData: ConfirmData) {
+export function confirmRegistration(
+  confirmData: ConfirmData
+): Promise<CognitoUser> {
   return new Promise((promiseRes, promiseRej) => {
     const userPool = getUserPool();
 
@@ -73,13 +76,13 @@ export function confirmRegistration(confirmData: ConfirmData) {
         if (err) {
           promiseRej(err);
         }
-        promiseRes(result);
+        promiseRes(cognitoUser);
       }
     );
   });
 }
 
-export function loginUser(loginData: LoginData) {
+export function loginUser(loginData: LoginData): Promise<CognitoUserSession> {
   return new Promise((promiseRes, promiseRej) => {
     var authenticationData = {
       Username: loginData.email,

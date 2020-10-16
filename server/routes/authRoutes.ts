@@ -1,7 +1,7 @@
 import express from 'express';
 import {confirmRegistration} from './../cognito';
 import {SignupData, LoginData, ConfirmData} from './../../common/interfaces';
-import {login, signup} from './../controllers/auth';
+import {confirm, login, signup} from './../controllers/auth';
 import {Account} from './../models/Account';
 
 export const authRouter = express.Router();
@@ -28,9 +28,18 @@ authRouter.post('/confirm', (req: express.Request, res: express.Response) => {
     verificationCode: req.body.verificationCode,
   };
 
-  confirmRegistration(data)
-    .then(result => {
-      res.json(result);
+  confirm(data)
+    .then((user: Account) => {
+      if (req.session) {
+        req.session.email = user.email;
+        req.session.name = user.name;
+      }
+      const data = {
+        email: user.email,
+        name: user.name,
+      };
+
+      res.json(data);
     })
     .catch(err => {
       res.status(500).send('Unable to confirm user with err: ' + err);
