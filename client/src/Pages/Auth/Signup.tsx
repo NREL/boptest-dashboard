@@ -89,11 +89,7 @@ export const Signup: React.FC = props => {
 
     axios
       .post(registerEndpoint, signupData)
-      .then(res => {
-        // need to set the user as logged in via context and stash the token
-        const signupResponse = res.data;
-
-        // redirect to the home page or user dashboard at this point?
+      .then(() => {
         // redirect to the Confirm page
         history.push(`/confirm/${email}`);
       })
