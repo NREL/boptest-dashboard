@@ -1,9 +1,10 @@
 import React from 'react';
 import {useHistory, useParams} from 'react-router-dom';
 import axios from 'axios';
-import {Button, TextField, Typography} from '@material-ui/core';
+import {Button, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import {ConfirmData} from './../../../../common/interfaces';
 import {useUser} from './../../Context/user-context';
 
@@ -14,17 +15,23 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '60%',
       margin: 'auto',
     },
+    paper: {
+      padding: '16px 56px 56px 40px',
+      width: '60%',
+      margin: 'auto',
+    },
     fields: {
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
-      padding: '16px 56px 56px 40px',
-      width: '70%',
-      margin: 'auto',
     },
     field: {
-      padding: '16px 0 16px 0',
+      padding: '0 0 16px 0',
       width: '80%',
+      margin: 'auto',
+    },
+    validateField: {
+      width: '100%',
       margin: 'auto',
     },
     signInButton: {
@@ -83,26 +90,33 @@ export const Confirm: React.FC = () => {
 
   return (
     <div className={classes.root}>
-      <Paper className={classes.fields}>
-        <Typography variant="h6" className={classes.field}>
-          {title}
-        </Typography>
-        <TextField
-          id="code"
-          required
-          label="Confirmation Code"
-          variant="outlined"
-          className={classes.field}
-          onChange={handleConfirmationCodeChange}
-        />
-        <Button
-          variant="contained"
-          size="small"
-          className={classes.signInButton}
-          onClick={confirmUser}
-        >
-          Confirm
-        </Button>
+      <Paper className={classes.paper}>
+        <ValidatorForm onSubmit={confirmUser} className={classes.fields}>
+          <Typography variant="h6" className={classes.field}>
+            {title}
+          </Typography>
+          <div className={classes.field}>
+            <TextValidator
+              label="Confirmation Code"
+              onChange={handleConfirmationCodeChange}
+              id="code"
+              name="code"
+              variant="outlined"
+              value={confirmationCode}
+              validators={['required']}
+              errorMessages={['This field is required']}
+              className={classes.validateField}
+            />
+          </div>
+          <Button
+            variant="contained"
+            size="small"
+            type="submit"
+            className={classes.signInButton}
+          >
+            Confirm
+          </Button>
+        </ValidatorForm>
       </Paper>
     </div>
   );

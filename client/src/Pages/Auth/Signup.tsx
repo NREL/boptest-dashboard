@@ -1,9 +1,10 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Link, useHistory} from 'react-router-dom';
 import axios from 'axios';
-import {Button, TextField, Typography} from '@material-ui/core';
+import {Button, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import {SignupData} from './../../../../common/interfaces';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -13,17 +14,23 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '60%',
       margin: 'auto',
     },
+    paper: {
+      padding: '16px 56px 56px 40px',
+      width: '60%',
+      margin: 'auto',
+    },
     fields: {
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
-      padding: '16px 56px 56px 40px',
-      width: '70%',
-      margin: 'auto',
     },
     field: {
-      padding: '16px 0 16px 0',
+      padding: '0 0 16px 0',
       width: '80%',
+      margin: 'auto',
+    },
+    validateField: {
+      width: '100%',
       margin: 'auto',
     },
     registerButton: {
@@ -34,7 +41,7 @@ const useStyles = makeStyles((theme: Theme) =>
       color: 'white',
     },
     actionItems: {
-      padding: '16px 0 0 0',
+      padding: '48px 0 0 0',
       width: '80%',
       margin: 'auto',
       display: 'flex',
@@ -96,60 +103,98 @@ export const Signup: React.FC = props => {
       .catch(err => console.log('could not signup the user', err));
   };
 
+  useEffect(() => {
+    // custom rule will have name 'isPasswordMatch'
+    ValidatorForm.addValidationRule('isPasswordMatch', value => {
+      if (value !== password) {
+        return false;
+      }
+      return true;
+    });
+  });
+
   return (
     <div className={classes.root}>
-      <Paper className={classes.fields}>
-        <Typography variant="h6" className={classes.field}>
-          REGISTER
-        </Typography>
-        <TextField
-          id="username"
-          required
-          label="User Name"
-          variant="outlined"
-          className={classes.field}
-          onChange={handleUsernameChange}
-        />
-        <TextField
-          id="email"
-          required
-          label="Email Address"
-          variant="outlined"
-          className={classes.field}
-          onChange={handleEmailChange}
-        />
-        <TextField
-          id="password"
-          required
-          label="Password"
-          variant="outlined"
-          type="password"
-          className={classes.field}
-          onChange={handlePasswordChange}
-        />
-        <TextField
-          id="confirm_password"
-          required
-          label="Confirm Password"
-          variant="outlined"
-          type="password"
-          className={classes.field}
-          onChange={handleConfirmPasswordChange}
-        />
-        {/* buttons */}
-        <div className={classes.actionItems}>
-          <Link to={'/'} className={classes.cancelLink}>
-            Cancel
-          </Link>
-          <Button
-            variant="contained"
-            size="small"
-            className={classes.registerButton}
-            onClick={registerAccount}
-          >
-            Register
-          </Button>
-        </div>
+      <Paper className={classes.paper}>
+        <ValidatorForm onSubmit={registerAccount} className={classes.fields}>
+          <Typography variant="h6" className={classes.field}>
+            REGISTER
+          </Typography>
+          <div className={classes.field}>
+            <TextValidator
+              label="User Name"
+              onChange={handleUsernameChange}
+              id="username"
+              name="username"
+              variant="outlined"
+              value={username}
+              validators={['required']}
+              errorMessages={['This field is required']}
+              className={classes.validateField}
+            />
+          </div>
+          <div className={classes.field}>
+            <TextValidator
+              label="Email"
+              onChange={handleEmailChange}
+              id="email"
+              name="email"
+              variant="outlined"
+              value={email}
+              validators={['required', 'isEmail']}
+              errorMessages={[
+                'This field is required',
+                'This field needs to be an email address',
+              ]}
+              className={classes.validateField}
+            />
+          </div>
+          <div className={classes.field}>
+            <TextValidator
+              label="Password"
+              onChange={handlePasswordChange}
+              id="password"
+              name="password"
+              type="password"
+              variant="outlined"
+              value={password}
+              validators={['required']}
+              errorMessages={['This field is required']}
+              className={classes.validateField}
+            />
+          </div>
+          <div className={classes.field}>
+            <TextValidator
+              label="Confirm Password"
+              onChange={handleConfirmPasswordChange}
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              variant="outlined"
+              value={confirmPassword}
+              validators={['isPasswordMatch', 'required']}
+              errorMessages={[
+                'Passwords do not match',
+                'This field is required',
+              ]}
+              className={classes.validateField}
+            />
+          </div>
+          {/* buttons */}
+          <div className={classes.actionItems}>
+            <Link to={'/'} className={classes.cancelLink}>
+              Cancel
+            </Link>
+            <Button
+              variant="contained"
+              size="small"
+              type="submit"
+              className={classes.registerButton}
+            >
+              Register
+            </Button>
+          </div>
+        </ValidatorForm>
       </Paper>
     </div>
   );

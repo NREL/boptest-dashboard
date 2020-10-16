@@ -1,9 +1,10 @@
 import React from 'react';
 import axios from 'axios';
 import {Link, useHistory} from 'react-router-dom';
-import {Button, TextField, Typography} from '@material-ui/core';
+import {Button, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import {useUser} from './../../Context/user-context';
 import {LoginData} from './../../../../common/interfaces';
 
@@ -14,17 +15,23 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '60%',
       margin: 'auto',
     },
+    paper: {
+      padding: '16px 56px 56px 40px',
+      width: '60%',
+      margin: 'auto',
+    },
     fields: {
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
-      padding: '16px 56px 56px 40px',
-      width: '70%',
-      margin: 'auto',
     },
     field: {
-      padding: '16px 0 16px 0',
+      padding: '0 0 16px 0',
       width: '80%',
+      margin: 'auto',
+    },
+    validateField: {
+      width: '100%',
       margin: 'auto',
     },
     signInButton: {
@@ -45,9 +52,11 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     forgotPassword: {
       alignSelf: 'flex-start',
+      textDecoration: 'none',
     },
     registerLink: {
       alignSelf: 'flex-end',
+      textDecoration: 'none',
     },
   })
 );
@@ -93,44 +102,59 @@ export const Login: React.FC = () => {
 
   return (
     <div className={classes.root}>
-      <Paper className={classes.fields}>
-        <Typography variant="h6" className={classes.field}>
-          SIGN IN
-        </Typography>
-        <TextField
-          id="email"
-          required
-          label="Email Address"
-          variant="outlined"
-          className={classes.field}
-          onChange={handleEmailChange}
-        />
-        <TextField
-          id="password"
-          required
-          label="Password"
-          variant="outlined"
-          type="password"
-          className={classes.field}
-          onChange={handlePasswordChange}
-        />
-        {/* buttons */}
-        <Button
-          variant="contained"
-          size="small"
-          className={classes.signInButton}
-          onClick={signIn}
-        >
-          SIGN IN
-        </Button>
-        <div className={classes.actionItems}>
-          <Link to={'/'} className={classes.forgotPassword}>
-            Forgot Password
-          </Link>
-          <Link to={'/register'} className={classes.registerLink}>
-            Create an Account
-          </Link>
-        </div>
+      <Paper className={classes.paper}>
+        <ValidatorForm onSubmit={signIn} className={classes.fields}>
+          <Typography variant="h6" className={classes.field}>
+            SIGN IN
+          </Typography>
+          <div className={classes.field}>
+            <TextValidator
+              label="Email"
+              onChange={handleEmailChange}
+              id="email"
+              name="email"
+              variant="outlined"
+              value={email}
+              validators={['required', 'isEmail']}
+              errorMessages={[
+                'This field is required',
+                'This field needs to be an email address',
+              ]}
+              className={classes.validateField}
+            />
+          </div>
+          <div className={classes.field}>
+            <TextValidator
+              label="Password"
+              onChange={handlePasswordChange}
+              id="password"
+              name="password"
+              type="password"
+              variant="outlined"
+              value={password}
+              validators={['required']}
+              errorMessages={['This field is required']}
+              className={classes.validateField}
+            />
+          </div>
+          {/* buttons */}
+          <Button
+            variant="contained"
+            size="small"
+            className={classes.signInButton}
+            type="submit"
+          >
+            SIGN IN
+          </Button>
+          <div className={classes.actionItems}>
+            <Link to={'/'} className={classes.forgotPassword}>
+              Forgot Password
+            </Link>
+            <Link to={'/register'} className={classes.registerLink}>
+              Create an Account
+            </Link>
+          </div>
+        </ValidatorForm>
       </Paper>
     </div>
   );
