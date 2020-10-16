@@ -69,7 +69,7 @@ export const Confirm: React.FC = () => {
     axios
       .post(confirmEndpoint, confirmData)
       .then(res => {
-        // need to set the user as logged in via context and stash the token
+        // need to set the user as logged in via context
         setAuthedEmail(res.data.email);
         setAuthedName(res.data.name);
 
