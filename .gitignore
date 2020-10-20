@@ -6,6 +6,7 @@ build
 # pg also includes the env vars used to set it up, but that will change
 pg
 
+*/.env
 */.idea/
 */.vscode/
 */node_modules/

@@ -3,7 +3,11 @@ services:
   server_test:
     build: ./server
     environment:
-      DATABASE_URL: postgres://admin:pass@postgres_test:5432/boptestdb
+      - COGNITO_USER_POOL_ID
+      - COGNITO_APP_CLIENT_ID
+      - SESSION_NAME
+      - SESSION_SECRET
+      - DATABASE_URL=postgres://admin:pass@postgres_test:5432/boptestdb
     ports:
       - "8080:8080"
     depends_on:
@@ -12,6 +16,7 @@ services:
       - ./server:/usr/src/app/:z
       - /usr/src/app/node_modules #ignore node_modules (they are installed in the container)
       - ./client/build:/usr/client/build:z
+      - ./common:/usr/src/common:z
   postgres_test:
     restart: always
     image: "postgres"

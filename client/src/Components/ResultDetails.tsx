@@ -15,7 +15,6 @@ interface ResultDetailsProps {
 export const ResultDetails: React.FC<ResultDetailsProps> = props => {
   // this useEffect will be used to get the testcase signature for ranges if applicable
   // useEffect(() => {}, []);
-  console.log(props.result);
   return (
     <div>
       <Grid container spacing={5}>

@@ -4,6 +4,9 @@ export enum AppRoute {
   Dashboard = '/dashboard',
   Docs = '/documentation',
   Home = '/',
+  Confirm = '/confirm/:username',
+  Login = '/login',
+  Register = '/register',
   Results = '/results',
   Settings = '/settings',
 }
@@ -14,6 +17,9 @@ export enum Title {
   Dashboard = 'My Dashboard',
   Docs = 'Test Cases',
   Home = 'Objectively and quantitatively evaluate building control algorithms',
+  Confirm = 'Confirm your email address',
+  Login = 'Login',
+  Register = 'Register',
   Results = 'Test Results',
   Settings = 'My Settings',
 }

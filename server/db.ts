@@ -36,19 +36,16 @@ export async function seedTestData() {
       name: 'Jerry',
       email: 'jerbear@gmail.com',
       apiKey: 'jerrysapikey',
-      password: 'jerryspass',
     },
     {
       name: 'Carl',
       email: 'badcarl@gmail.com',
       apiKey: 'carlsapikey',
-      password: 'carlspass',
     },
     {
       name: 'Ted',
       email: 'teddybare@gmail.com',
       apiKey: 'tedsapikey',
-      password: 'tedspass',
     },
   ];
 

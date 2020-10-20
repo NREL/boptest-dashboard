@@ -11,19 +11,16 @@ const accountsPayload = [
     apiKey: "jerrysapikey",
     email: "jerbear@gmail.com",
     name: "Jerry",
-    password: "jerryspass",
   },
   {
     apiKey: "carlsapikey",
     email: "badcarl@gmail.com",
     name: "Carl",
-    password: "carlspass",
   },
   {
     apiKey: "tedsapikey",
     email: "teddybare@gmail.com",
     name: "Ted",
-    password: "tedspass",
   },
 ];
 
@@ -142,7 +139,6 @@ describe("Main", () => {
 
       expect(jerrysAccount["apiKey"]).toEqual("jerrysapikey");
       expect(jerrysAccount["email"]).toEqual("jerbear@gmail.com");
-      expect(jerrysAccount["password"]).toEqual("jerryspass");
       expect(jerrysAccount["results"][0]["uid"]).toEqual("result1");
     });
   });

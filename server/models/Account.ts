@@ -6,7 +6,6 @@ export interface Account {
   id: number;
   name: string;
   email: string;
-  password: string;
   apiKey: string;
   results: Result[];
 }
@@ -27,9 +26,6 @@ export const AccountEntity = new EntitySchema<Account>({
     email: {
       type: String,
       unique: true,
-    },
-    password: {
-      type: String,
     },
     apiKey: {
       type: String,

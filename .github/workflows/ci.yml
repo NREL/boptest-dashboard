@@ -23,4 +23,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Backend Tests
+        env:
+          COGNITO_USER_POOL_ID: ${{ secrets.COGNITO_USER_POOL_ID }}
+          COGNITO_APP_CLIENT_ID: ${{ secrets.COGNITO_APP_CLIENT_ID }}
+          SESSION_NAME: ${{ secrets.SESSION_NAME }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
         run: docker-compose -f test-conf.yml down -v && docker-compose -f test-conf.yml run api_test && docker-compose -f test-conf.yml down -v
