@@ -1,4 +1,3 @@
-// TODO add shared interfaces between client and server here
 export interface SignupData {
   username: string;
   email: string;

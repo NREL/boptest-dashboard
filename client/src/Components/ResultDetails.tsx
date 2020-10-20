@@ -1,20 +1,35 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
+import axios from 'axios';
 import Typography from '@material-ui/core/Typography';
 import {Divider, Grid} from '@material-ui/core';
 import List from '@material-ui/core/List';
-import ListItem, {ListItemProps} from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import {SignatureDetails} from '../../../common/interfaces';
 
 interface ResultDetailsProps {
   result: any;
 }
 
+const getSignatureEndpoint = (resultId: string) => {
+  return `/api/results/${resultId}/signature`;
+};
+
 // props here are just going to be a result. Need to type it with an interface
 // once we have the shared models
 export const ResultDetails: React.FC<ResultDetailsProps> = props => {
+  const [details, setDetails] = useState<SignatureDetails | undefined>(
+    undefined
+  );
+
   // this useEffect will be used to get the testcase signature for ranges if applicable
-  // useEffect(() => {}, []);
+  useEffect(() => {
+    axios.get(getSignatureEndpoint(props.result.id)).then(response => {
+      setDetails(response.data);
+      console.log('response details', details);
+    });
+  }, [props.result]);
+
   return (
     <div>
       <Grid container spacing={5}>
