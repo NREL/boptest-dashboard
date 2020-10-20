@@ -26,8 +26,7 @@ interface Data {
   emissions: number;
   compTimeRatio: number;
   controllerProperties: JSON;
-  testTimePeriodStart: Date;
-  testTimePeriodEnd: Date;
+  testTimePeriod: string;
   controlStep: string;
   priceScenario: string;
   weatherForecastUncertainty: string;
@@ -48,8 +47,7 @@ const createDataFromResult = (result): Data => {
     emissions: result.emissions,
     compTimeRatio: result.timeRatio,
     controllerProperties: result.controllerProperties,
-    testTimePeriodStart: result.testTimePeriodStart,
-    testTimePeriodEnd: result.testTimePeriodEnd,
+    testTimePeriod: result.testTimePeriod,
     controlStep: result.controlStep,
     priceScenario: result.priceScenario,
     weatherForecastUncertainty: result.weatherForecastUncertainty,

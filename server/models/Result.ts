@@ -20,8 +20,7 @@ export interface Result {
   timeRatio: number;
 
   // Building Type stuff (formerly testcase stuff)
-  testTimePeriodStart: Date;
-  testTimePeriodEnd: Date;
+  testTimePeriod: string;
   controlStep: string;
   priceScenario: string;
   weatherForecastUncertainty: string;
@@ -81,11 +80,8 @@ export const ResultEntity = new EntitySchema<Result>({
       type: 'float',
       scale: 5,
     },
-    testTimePeriodStart: {
-      type: Date,
-    },
-    testTimePeriodEnd: {
-      type: Date,
+    testTimePeriod: {
+      type: String,
     },
     controlStep: {
       type: String,

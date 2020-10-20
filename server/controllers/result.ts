@@ -46,8 +46,7 @@ function createResultAndAssociatedModels(result: any) {
         iaq: result.iaq,
         timeRatio: result.timeRatio,
 
-        testTimePeriodStart: result.testTimePeriodStart,
-        testTimePeriodEnd: result.testTimePeriodEnd,
+        testTimePeriod: result.testTimePeriod,
         controlStep: result.controlStep,
         priceScenario: result.priceScenario,
         weatherForecastUncertainty: result.weatherForecastUncertainty,
