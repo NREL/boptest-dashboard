@@ -105,6 +105,7 @@ export function getSignatureDetailsForResult(
     return repo
       .find({
         where: {
+          testTimePeriod: result.testTimePeriod,
           controlStep: result.controlStep,
           priceScenario: result.priceScenario,
           weatherForecastUncertainty: result.weatherForecastUncertainty,
