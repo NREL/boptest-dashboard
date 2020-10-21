@@ -45,6 +45,8 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
     });
   }, [props.result]);
 
+  var dateString = new Date(props.result.dateRun).toLocaleString();
+
   return (
     <div className={classes.idTable}>
       <Typography variant="subtitle2" className={classes.sectionHeader}>
@@ -116,7 +118,7 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
               <Typography variant="body2">Simulation Date</Typography>
             </TableCell>
             <TableCell>
-              <Typography variant="body1">{props.result.dateRun}</Typography>
+              <Typography variant="body1">{dateString}</Typography>
             </TableCell>
           </TableRow>
           <TableRow className={classes.grayed}>
