@@ -13,6 +13,7 @@ import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 
 interface Data {
+  id: number;
   resultUid: string;
   accountUsername: string;
   buildingTypeName: string;
@@ -34,6 +35,7 @@ interface Data {
 
 const createDataFromResult = (result): Data => {
   return {
+    id: result.id,
     resultUid: result.uid,
     accountUsername: result.account.name,
     buildingTypeName: result.buildingType.name,
