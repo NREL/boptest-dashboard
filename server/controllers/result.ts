@@ -133,8 +133,8 @@ function getKPIRanges(results: Result[], result: Result): SignatureDetails {
   var iaqMin = result.iaq;
   var iaqMax = result.iaq;
 
-  var timeMin = result.iaq;
-  var timeMax = result.iaq;
+  var timeMin = result.timeRatio;
+  var timeMax = result.timeRatio;
 
   results.forEach(res => {
     if (res.thermalDiscomfort < tdMin) {
