@@ -4,6 +4,7 @@ import {Table, TableBody, TableCell, TableRow} from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import {SignatureDetails} from '../../../common/interfaces';
+import {KPIBarChart} from './KPIBarChart';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -60,65 +61,108 @@ export const KPITable: React.FC<KPITableProps> = props => {
             </Typography>
           </div>
           <Table>
+            <colgroup>
+              <col style={{width: '30%'}} />
+              <col style={{width: '10%'}} />
+              <col style={{width: '60%'}} />
+            </colgroup>
             <TableBody>
               <TableRow>
                 <TableCell>
-                  <Typography variant="h6">Energy [kWh]</Typography>
+                  <Typography variant="body2">Energy [kWh]</Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
                 <TableCell>{props.result.energy}</TableCell>
                 {details.numResults > 3 && (
-                  <TableCell>{buildChart()}</TableCell>
+                  <TableCell>
+                    <KPIBarChart
+                      value={props.result.energy}
+                      min={details.energyUse.min}
+                      max={details.energyUse.max}
+                    />
+                  </TableCell>
                 )}
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <Typography variant="h6">Thermal Discomfort [k-h]</Typography>
+                  <Typography variant="body2">
+                    Thermal Discomfort [k-h]
+                  </Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
                 <TableCell>{props.result.thermalDiscomfort}</TableCell>
                 {details.numResults > 3 && (
-                  <TableCell>{buildChart()}</TableCell>
+                  <TableCell>
+                    <KPIBarChart
+                      value={props.result.thermalDiscomfort}
+                      min={details.thermalDiscomfort.min}
+                      max={details.thermalDiscomfort.max}
+                    />
+                  </TableCell>
                 )}
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <Typography variant="h6">Cost [USD]</Typography>
+                  <Typography variant="body2">Cost [USD]</Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
                 <TableCell>{props.result.cost}</TableCell>
                 {details.numResults > 3 && (
-                  <TableCell>{buildChart()}</TableCell>
+                  <TableCell>
+                    <KPIBarChart
+                      value={props.result.cost}
+                      min={details.cost.min}
+                      max={details.cost.max}
+                    />
+                  </TableCell>
                 )}
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <Typography variant="h6">Emissions [kgCO2]</Typography>
+                  <Typography variant="body2">Emissions [kgCO2]</Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
                 <TableCell>{props.result.emissions}</TableCell>
                 {details.numResults > 3 && (
-                  <TableCell>{buildChart()}</TableCell>
+                  <TableCell>
+                    <KPIBarChart
+                      value={props.result.emissions}
+                      min={details.emissions.min}
+                      max={details.emissions.max}
+                    />
+                  </TableCell>
                 )}
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <Typography variant="h6">IAQ [ppmh]</Typography>
+                  <Typography variant="body2">IAQ [ppmh]</Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
                 <TableCell>{props.result.aqDiscomfort}</TableCell>
                 {details.numResults > 3 && (
-                  <TableCell>{buildChart()}</TableCell>
+                  <TableCell>
+                    <KPIBarChart
+                      value={props.result.aqDiscomfort}
+                      min={details.iaq.min}
+                      max={details.iaq.max}
+                    />
+                  </TableCell>
                 )}
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <Typography variant="h6">Time Ratio</Typography>
+                  <Typography variant="body2">Time Ratio</Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
                 <TableCell>{props.result.compTimeRatio}</TableCell>
                 {details.numResults > 3 && (
-                  <TableCell>{buildChart()}</TableCell>
+                  <TableCell>
+                    <KPIBarChart
+                      value={props.result.compTimeRatio}
+                      min={details.timeRatio.min}
+                      max={details.timeRatio.max}
+                    />
+                  </TableCell>
                 )}
               </TableRow>
             </TableBody>
