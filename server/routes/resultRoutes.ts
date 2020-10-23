@@ -26,7 +26,7 @@ resultRouter.get('/', (req: express.Request, res: express.Response) => {
 resultRouter.get(
   '/:id/signature',
   (req: express.Request, res: express.Response) => {
-    getSignatureDetailsForResult(Number(req.params.id))
+    getSignatureDetailsForResult(req.params.id)
       .then((result: SignatureDetails) => {
         res.json(result);
       })

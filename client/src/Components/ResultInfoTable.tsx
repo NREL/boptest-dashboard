@@ -50,7 +50,7 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
     // prevent the use effect from firing on render if we don't have a result
     if (!props.result) return;
 
-    axios.get(getSignatureEndpoint(props.result.id)).then(response => {
+    axios.get(getSignatureEndpoint(props.result.uid)).then(response => {
       setDetails(response.data);
       console.log('response details', details);
       console.log('response data', response.data);

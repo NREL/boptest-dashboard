@@ -97,24 +97,27 @@ export function shareResults(ids: number[]): Promise<void>[] {
 }
 
 export function getSignatureDetailsForResult(
-  id: number
+  id: string
 ): Promise<SignatureDetails> {
   const repo = getRepository<Result>(ResultEntity);
-
-  return repo.findOneOrFail(id).then(result => {
-    return repo
-      .find({
-        where: {
-          testTimePeriod: result.testTimePeriod,
-          controlStep: result.controlStep,
-          priceScenario: result.priceScenario,
-          weatherForecastUncertainty: result.weatherForecastUncertainty,
-        },
-      })
-      .then(results => {
-        return getKPIRanges(results, result);
-      });
-  });
+  return repo
+    .findOneOrFail({
+      uid: id,
+    })
+    .then(result => {
+      return repo
+        .find({
+          where: {
+            testTimePeriod: result.testTimePeriod,
+            controlStep: result.controlStep,
+            priceScenario: result.priceScenario,
+            weatherForecastUncertainty: result.weatherForecastUncertainty,
+          },
+        })
+        .then(results => {
+          return getKPIRanges(results, result);
+        });
+    });
 }
 
 function getKPIRanges(results: Result[], result: Result): SignatureDetails {
