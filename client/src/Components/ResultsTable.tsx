@@ -14,7 +14,7 @@ import Paper from '@material-ui/core/Paper';
 
 interface Data {
   id: number;
-  resultUid: string;
+  uid: string;
   accountUsername: string;
   buildingTypeName: string;
   dateRun: Date;
@@ -36,7 +36,7 @@ interface Data {
 const createDataFromResult = (result): Data => {
   return {
     id: result.id,
-    resultUid: result.uid,
+    uid: result.uid,
     accountUsername: result.account.name,
     buildingTypeName: result.buildingType.name,
     dateRun: result.dateRun,
@@ -332,7 +332,7 @@ export default function ResultsTable(props) {
                       onClick={event => handleRowClick(event, row)}
                       role="checkbox"
                       tabIndex={-1}
-                      key={row.resultUid}
+                      key={row.uid}
                     >
                       <TableCell
                         component="th"
