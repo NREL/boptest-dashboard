@@ -13,6 +13,25 @@ accountRouter.get('/', (req: express.Request, res: express.Response) => {
     .catch(err => console.log('Unable to get accounts' + err));
 });
 
+// check if an apiKey is valid
+accountRouter.get(
+  '/apiKey/:key',
+  (req: express.Request, res: express.Response) => {
+    getAccountByApiKey(req.params.key)
+      .then((account: Account) => {
+        res.json({email: account.email});
+      })
+      .catch(() => {
+        res.status(404).send(`API key ${req.params.key} doesn't exist`);
+      });
+  }
+);
+
+// GET /api/accounts/dummy
+accountRouter.get('/dummy', (req: express.Request, res: express.Response) => {
+  res.send('Hello world');
+});
+
 // gets an account
 accountRouter.get('/:id', (req: express.Request, res: express.Response) => {
   getAccount(Number(req.params.id))
@@ -21,31 +40,6 @@ accountRouter.get('/:id', (req: express.Request, res: express.Response) => {
       console.log(`Unable to get account ${req.params.id}`, err);
       res.status(500).send('Unable to get account.');
     });
-});
-
-// check if an apiKey is valid
-accountRouter.get(
-  '/apiKey/:key',
-  (req: express.Request, res: express.Response) => {
-    getAccountByApiKey(req.params.key)
-      .then((account: Account) => {
-        if (account) {
-          res.json(account.email);
-        } else {
-          res.status(404).send(`API key ${req.params.key} doesn't exist`);
-        }
-      })
-      .catch(() =>
-        res
-          .status(500)
-          .send(`Unable to fetch API key ${req.params.key}, please try again`)
-      );
-  }
-);
-
-// GET /api/accounts/dummy
-accountRouter.get('/dummy', (req: express.Request, res: express.Response) => {
-  res.send('Hello world');
 });
 
 accountRouter.post('/name', (req: express.Request, res: express.Response) => {
