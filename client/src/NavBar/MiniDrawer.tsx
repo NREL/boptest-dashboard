@@ -149,7 +149,7 @@ export const MiniDrawer: React.FC = () => {
       >
         <div className={classes.toolbar}></div>
         <Divider />
-        <NavBarList />
+        <NavBarList drawerOpen={open} toggleDrawer={handleDrawerClick} />
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
