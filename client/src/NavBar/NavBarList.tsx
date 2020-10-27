@@ -26,7 +26,8 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: theme.palette.background.paper,
     },
     nested: {
-      paddingLeft: theme.spacing(4),
+      padding: '0 0 0 32px',
+      margin: '0 0 0 40px',
     },
     icon: {
       color: 'black',
