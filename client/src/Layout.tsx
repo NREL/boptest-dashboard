@@ -6,6 +6,8 @@ import {AppRoute} from './enums';
 import {MiniDrawer} from './NavBar/MiniDrawer';
 import {Login} from './Pages/Auth/Login';
 import {Confirm} from './Pages/Auth/Confirm';
+import {ConfirmPassword} from './Pages/Auth/ConfirmPassword';
+import {ForgotPassword} from './Pages/Auth/ForgotPassword';
 import {Signup} from './Pages/Auth/Signup';
 import {UserProvider} from './Context/user-context';
 
@@ -36,6 +38,12 @@ export const Layout: React.FC = () => {
             </Route>
             <Route path={AppRoute.Register}>
               <Signup />
+            </Route>
+            <Route path={AppRoute.ForgotPassword}>
+              <ForgotPassword />
+            </Route>
+            <Route path={AppRoute.ConfirmPassword}>
+              <ConfirmPassword />
             </Route>
             <Route>
               <MiniDrawer />

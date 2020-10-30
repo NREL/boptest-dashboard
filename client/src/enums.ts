@@ -3,6 +3,8 @@ export enum AppRoute {
   ApiKey = '/apikey',
   Dashboard = '/dashboard',
   Docs = '/documentation',
+  ConfirmPassword = '/confirm-password',
+  ForgotPassword = '/forgot-password',
   Home = '/',
   Confirm = '/confirm/:username',
   Login = '/login',

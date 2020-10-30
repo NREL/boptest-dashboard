@@ -1,12 +1,11 @@
 import React from 'react';
-import axios from 'axios';
 import {Link, useHistory} from 'react-router-dom';
+import axios from 'axios';
 import {Button, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
-import {useUser} from './../../Context/user-context';
-import {LoginData} from './../../../../common/interfaces';
+import {ConfirmNewPasswordData} from '../../../../common/interfaces';
 import {AppRoute} from '../../enums';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -35,46 +34,41 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '100%',
       margin: 'auto',
     },
-    signInButton: {
-      justifyContent: 'center',
-      padding: '0 16px 0 16px',
-      backgroundColor: 'rgb(0, 150, 136)',
-      color: 'white',
-      width: '80%',
-      margin: 'auto',
-    },
     actionItems: {
-      padding: '16px 0 0 0',
+      padding: '48px 0 0 0',
       width: '80%',
       margin: 'auto',
       display: 'flex',
       flexDirection: 'row',
       justifyContent: 'space-between',
     },
-    forgotPassword: {
+    cancelLink: {
       alignSelf: 'flex-start',
-      textDecoration: 'none',
     },
-    registerLink: {
+    confirmButton: {
       alignSelf: 'flex-end',
-      textDecoration: 'none',
+      padding: '0 16px 0 16px',
+      width: '25%',
+      backgroundColor: 'rgb(0, 150, 136)',
+      color: 'white',
     },
   })
 );
 
-const loginEndpoint = '/api/auth/login';
+const confirmNewPasswordEndpoint = '/api/auth/confirmNewPassword';
 
-export const Login: React.FC = () => {
+export const ConfirmPassword: React.FC = () => {
   const classes = useStyles();
 
-  const history = useHistory();
-
   // state values for all the text fields
+  const [confirmationCode, setConfirmationCode] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const history = useHistory();
 
-  const {setAuthedEmail, setAuthedName} = useUser();
-
+  const handleConfirmationCodeChange = e => {
+    setConfirmationCode(e.target.value);
+  };
   const handleEmailChange = e => {
     setEmail(e.target.value);
   };
@@ -82,31 +76,30 @@ export const Login: React.FC = () => {
     setPassword(e.target.value);
   };
 
-  const signIn = () => {
-    const loginData: LoginData = {
-      email,
-      password,
+  const confirmNewPassword = () => {
+    const confirmNewPassData: ConfirmNewPasswordData = {
+      username: email,
+      verificationCode: confirmationCode,
+      newPassword: password,
     };
 
     axios
-      .post(loginEndpoint, loginData)
-      .then(res => {
-        // need to set the user as logged in via context
-        setAuthedEmail(res.data.email);
-        setAuthedName(res.data.name);
-
-        // redirect to the home page
-        history.push('/');
+      .post(confirmNewPasswordEndpoint, confirmNewPassData)
+      .then(() => {
+        // redirect to the Confirm page
+        history.push(AppRoute.Login);
       })
-      .catch(err => console.log('could not log the user in', err));
+      .catch(err => console.log('could not confirm the new password', err));
   };
+
+  const title = 'CONFIRM PASSWORD';
 
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <ValidatorForm onSubmit={signIn} className={classes.fields}>
+        <ValidatorForm onSubmit={confirmNewPassword} className={classes.fields}>
           <Typography variant="h6" className={classes.field}>
-            SIGN IN
+            {title}
           </Typography>
           <div className={classes.field}>
             <TextValidator
@@ -138,25 +131,31 @@ export const Login: React.FC = () => {
               className={classes.validateField}
             />
           </div>
-          {/* buttons */}
-          <Button
-            variant="contained"
-            size="small"
-            className={classes.signInButton}
-            type="submit"
-          >
-            SIGN IN
-          </Button>
+          <div className={classes.field}>
+            <TextValidator
+              label="Confirmation Code"
+              onChange={handleConfirmationCodeChange}
+              id="code"
+              name="code"
+              variant="outlined"
+              value={confirmationCode}
+              validators={['required']}
+              errorMessages={['This field is required']}
+              className={classes.validateField}
+            />
+          </div>
           <div className={classes.actionItems}>
-            <Link
-              to={AppRoute.ForgotPassword}
-              className={classes.forgotPassword}
+            <Link to={AppRoute.Home} className={classes.cancelLink}>
+              Cancel
+            </Link>
+            <Button
+              variant="contained"
+              size="small"
+              type="submit"
+              className={classes.confirmButton}
             >
-              Forgot Password
-            </Link>
-            <Link to={'/register'} className={classes.registerLink}>
-              Create an Account
-            </Link>
+              Confirm New Password
+            </Button>
           </div>
         </ValidatorForm>
       </Paper>
