@@ -1,3 +1,4 @@
+import {confirmPasswordChange, forgotPassword} from 'cognito';
 import express from 'express';
 import {SignupData, LoginData, ConfirmData} from './../../common/interfaces';
 import {confirm, login, signup} from './../controllers/auth';
@@ -95,3 +96,36 @@ authRouter.post('/logout', (req: express.Request, res: express.Response) => {
     res.status(200).send('Logged out successfully');
   }
 });
+
+// initiate a forgot password flow
+authRouter.post(
+  '/forgotPassword',
+  (req: express.Request, res: express.Response) => {
+    forgotPassword(req.body.email)
+      .then(() => {
+        res.status(200).send('Successfully initiated the forgot password flow');
+      })
+      .catch(err =>
+        res
+          .status(500)
+          .send(
+            `Unable to start the forgot password sequence with error: ${err}`
+          )
+      );
+  }
+);
+
+authRouter.post(
+  '/confirmNewPassword',
+  (req: express.Request, res: express.Response) => {
+    confirmPasswordChange(req.body)
+      .then(() =>
+        res.status(200).send('Successfully confirmed the new password change')
+      )
+      .catch(err =>
+        res
+          .status(500)
+          .send(`Unable to confirm new password with error: ${err}`)
+      );
+  }
+);

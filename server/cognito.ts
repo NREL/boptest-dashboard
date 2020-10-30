@@ -1,4 +1,9 @@
-import {ConfirmData, LoginData, SignupData} from './../common/interfaces';
+import {
+  ConfirmData,
+  ConfirmNewPasswordData,
+  LoginData,
+  SignupData,
+} from './../common/interfaces';
 import {
   AuthenticationDetails,
   CognitoUserPool,
@@ -106,5 +111,74 @@ export function loginUser(loginData: LoginData): Promise<CognitoUserSession> {
         promiseRej(err);
       },
     });
+  });
+}
+
+export function changePassword(
+  oldPass: string,
+  newPass: string
+): Promise<void> {
+  return new Promise((promiseRes, promiseRej) => {
+    // get the current cognito user from local storage
+    const cognitoUser = getUserPool().getCurrentUser();
+    if (!cognitoUser) {
+      promiseRej('Congito user does not exist in current context');
+      return;
+    }
+    cognitoUser.changePassword(oldPass, newPass, function (err) {
+      if (err) {
+        promiseRej(err);
+      } else {
+        promiseRes();
+      }
+    });
+  });
+}
+
+export function forgotPassword(username: string): Promise<void> {
+  return new Promise((promiseRes, promiseRej) => {
+    const userPool = getUserPool();
+
+    var userData = {
+      Username: username,
+      Pool: userPool,
+    };
+
+    var cognitoUser = new CognitoUser(userData);
+
+    cognitoUser.forgotPassword({
+      onSuccess() {
+        promiseRes();
+      },
+      onFailure(err) {
+        promiseRej(err);
+      },
+    });
+  });
+}
+
+export function confirmPasswordChange(
+  confirmData: ConfirmNewPasswordData
+): Promise<void> {
+  return new Promise((promiseRes, promiseRej) => {
+    const userPool = getUserPool();
+    var userData = {
+      Username: confirmData.username,
+      Pool: userPool,
+    };
+    var cognitoUser = new CognitoUser(userData);
+
+    cognitoUser.confirmPassword(
+      confirmData.verificationCode,
+      confirmData.newPassword,
+      {
+        onSuccess() {
+          promiseRes();
+        },
+        onFailure(err) {
+          promiseRej(err);
+        },
+      }
+    );
   });
 }
