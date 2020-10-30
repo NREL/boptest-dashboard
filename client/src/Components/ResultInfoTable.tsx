@@ -31,6 +31,27 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
+const camelCaseToTitleCaseWithSpaces = (camelCase: string): string => {
+  return camelCase
+    .replace(/([A-Z])/g, match => ` ${match}`)
+    .replace(/^./, match => match.toUpperCase());
+};
+
+const getFlattenedObj = obj => {
+  const flattenedPairs = [];
+  const traverse = obj => {
+    for (const [key, value] of Object.entries(obj)) {
+      if (typeof value === 'string' || typeof value === 'number') {
+        flattenedPairs.push([key, value]);
+      } else if (typeof value === 'object') {
+        traverse(value);
+      }
+    }
+  };
+  traverse(obj);
+  return flattenedPairs;
+};
+
 interface ResultInfoTableProps {
   result: any;
 }
@@ -44,17 +65,23 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
   const [details, setDetails] = useState<SignatureDetails | undefined>(
     undefined
   );
+  const [flattenedProperties, setFlattenedProperties] = useState([]);
 
   // propulate the signature details
   useEffect(() => {
     // prevent the use effect from firing on render if we don't have a result
     if (!props.result) return;
 
+    // get the signature details for the result
     axios.get(getSignatureEndpoint(props.result.uid)).then(response => {
       setDetails(response.data);
       console.log('response details', details);
       console.log('response data', response.data);
     });
+
+    // get the entire object of controller properties ready to go
+    // and split into a flattened structure we can map over
+    setFlattenedProperties(getFlattenedObj(props.result.controllerProperties));
   }, [props.result]);
 
   var dateString = new Date(props.result.dateRun).toLocaleString();
@@ -161,77 +188,30 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
                 </Typography>
               </TableCell>
             </TableRow>
-            {props.result.controllerProperties &&
-              props.result.controllerProperties.length != 0 && (
-                <>
-                  <TableRow>
-                    <TableCell colSpan={2}>
-                      <Typography
-                        variant="subtitle2"
-                        className={classes.sectionHeader}
-                      >
-                        CONTROLLER PROPERTIES
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow className={classes.grayed}>
-                    <TableCell>
-                      <Typography variant="body2">Controller Type</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body1">
-                        {props.result.controllerProperties.controllerType}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <Typography variant="body2">
-                        Problem Formulation
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body1">
-                        {props.result.controllerProperties.problemFormulation}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow className={classes.grayed}>
-                    <TableCell>
-                      <Typography variant="body2">
-                        Controller Model Type
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body1">
-                        {props.result.controllerProperties.modelType}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <Typography variant="body2">Number of States</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body1">
-                        {props.result.controllerProperties.numStates}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow className={classes.grayed}>
-                    <TableCell>
-                      <Typography variant="body2">
-                        Prediction Horizon
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body1">
-                        {props.result.controllerProperties.predictionHorizon}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                </>
-              )}
+            {flattenedProperties.length > 0 && (
+              <TableRow>
+                <TableCell colSpan={2}>
+                  <Typography
+                    variant="subtitle2"
+                    className={classes.sectionHeader}
+                  >
+                    CONTROLLER PROPERTIES
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            )}
+            {flattenedProperties.map((pair, idx) => (
+              <TableRow className={idx % 2 === 0 ? classes.grayed : ''}>
+                <TableCell>
+                  <Typography variant="body2">
+                    {camelCaseToTitleCaseWithSpaces(pair[0])}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body1">{pair[1]}</Typography>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
