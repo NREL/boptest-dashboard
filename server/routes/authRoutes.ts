@@ -1,4 +1,4 @@
-import {confirmPasswordChange, forgotPassword} from 'cognito';
+import {confirmPasswordChange, forgotPassword} from '../cognito';
 import express from 'express';
 import {SignupData, LoginData, ConfirmData} from './../../common/interfaces';
 import {confirm, login, signup} from './../controllers/auth';

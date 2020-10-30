@@ -119,7 +119,7 @@ export const ConfirmPassword: React.FC = () => {
           </div>
           <div className={classes.field}>
             <TextValidator
-              label="Password"
+              label="New Password"
               onChange={handlePasswordChange}
               id="password"
               name="password"
