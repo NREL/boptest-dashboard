@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Link, useHistory} from 'react-router-dom';
 import axios from 'axios';
 import {Button, Typography} from '@material-ui/core';
@@ -64,6 +64,7 @@ export const ConfirmPassword: React.FC = () => {
   const [confirmationCode, setConfirmationCode] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
   const history = useHistory();
 
   const handleConfirmationCodeChange = e => {
@@ -74,6 +75,9 @@ export const ConfirmPassword: React.FC = () => {
   };
   const handlePasswordChange = e => {
     setPassword(e.target.value);
+  };
+  const handleConfirmPasswordChange = e => {
+    setConfirmPassword(e.target.value);
   };
 
   const confirmNewPassword = () => {
@@ -93,6 +97,16 @@ export const ConfirmPassword: React.FC = () => {
   };
 
   const title = 'CONFIRM PASSWORD';
+
+  useEffect(() => {
+    // custom rule will have name 'isPasswordMatch'
+    ValidatorForm.addValidationRule('isPasswordMatch', value => {
+      if (value !== password) {
+        return false;
+      }
+      return true;
+    });
+  });
 
   return (
     <div className={classes.root}>
@@ -128,6 +142,23 @@ export const ConfirmPassword: React.FC = () => {
               value={password}
               validators={['required']}
               errorMessages={['This field is required']}
+              className={classes.validateField}
+            />
+          </div>
+          <div className={classes.field}>
+            <TextValidator
+              label="Confirm New Password"
+              onChange={handleConfirmPasswordChange}
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              variant="outlined"
+              value={confirmPassword}
+              validators={['isPasswordMatch', 'required']}
+              errorMessages={[
+                'Passwords do not match',
+                'This field is required',
+              ]}
               className={classes.validateField}
             />
           </div>
