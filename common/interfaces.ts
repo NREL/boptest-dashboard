@@ -14,6 +14,13 @@ export interface LoginData {
   password: string;
 }
 
+export interface Signature {
+  testTimePeriod: string;
+  controlStep: string;
+  priceScenario: string;
+  weatherForecastUncertainty: string;
+}
+
 export interface SignatureDetails {
   numResults: number;
   thermalDiscomfort: {
