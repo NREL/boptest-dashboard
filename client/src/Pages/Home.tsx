@@ -6,37 +6,9 @@ const textSample1 = ` October arrived, spreading a damp chill over the grounds a
 
 Raindrops the size of bullets thundered on the castle windows for days on end; the lake rose, the flower beds turned into muddy streams, and Hagrid's pumpkins swelled to the size of garden sheds. Oliver Wood's enthusiasm for regular training sessions, however, was not dampened, which was why Harry was to be found, late one stormy Saturday afternoon a few days before Halloween, returning to Gryffindor Tower, drenched to the skin and splattered with mud.`;
 
-const textSample2 = `He stumbled to a halt, clutching at the stone wall, listening with all his might, looking around, squinting up and down the dimly lit passageway.
-
-"Harry, what're you -?"
-
-"It's that voice again - shut up a minute -"
-
-". . . soo hungry . . . for so long . . ."
-
-"Listen!" said Harry urgently, and Ron and Hermione froze, watching him.
-
-". . . kill . . . time to kill . . ."
-
-The voice was growing fainter. Harry was sure it was moving away - moving upward. A mixture of fear and excitement gripped him as he stared at the dark ceiling; how could it be moving upward? Was it a phantom, to whom stone ceilings didn't matter?
-
-"This way," he shouted, and he began to run, up the stairs, into the entrance hall. It was no good hoping to hear anything here, the babble of talk from the Halloween feast was echoing out of the Great Hall. Harry sprinted up the marble staircase to the first floor, Ron and Hermione clattering behind him.
-
-"Harry, what're we -"
-
-"SHH!"
-
-Harry strained his ears. Distantly, from the floor above, and growing fainter still, he heard the voice: ". . . I smell blood. . . . I SMELL BLOOD!"
-
-His stomach lurched -
-
-"It's going to kill someone!" he shouted, and ignoring Ron's and Hermione's bewildered faces, he ran up the next flight of steps three at a time, trying to listen over his own pounding footsteps -
-
-Harry hurtled around the whole of the second floor, Ron and Hermione panting behind him, not stopping until they turned a corner into the last, deserted passage.`;
-
-const controlsAlgorithm = `The need for advanced control strategies (ACS) in buildings is growing due to emerging objectives to reduce energy consumption, integrate with district thermal networks, and improve responsiveness and service to occupants.`;
-const virtualBuildings = `The BOPTEST (Building Operation TESTing) Framework consists of a set of Modelica models that represent different buildings with different HVAC systems in different climate zones. BOPTEST exposes the "control points" of these models using a standard, familiar API that allows control algorithms to interact with the models as if they are physical buildings. The BOPTEST Framework also includes standardized key performance indicators (KPI) and reports and infrastrcuture for simulation-based comparison, benchmarking, and debugging of ACS.`;
-const resultsDesc = `BOPTEST is an open and level playing field on which different control algorithms can be quantitatively benchmarked and compared. In addition, it is a virtual environment field that supports meaningful experiements with control algorithms without the need for physical installations in existing buildings.`;
+const controlsAlgorithm = `The need for advanced control strategies (ACS) in buildings is growing due to emerging objectives to reduce energy consumption, integrate with the electric power grid, integrate with district thermal networks, and improve responsiveness and service to occupants.`;
+const virtualBuildings = `The BOPTEST (Building Operation Testing) Framework consists of a set of expertly designed Modelica models that span a range of building types, HVAC system configurations, and climate zones. BOPTEST exposes the "control points" of these models using a simple web based API that allows control algorithms to interact with the models as if they are physical buildings.`;
+const resultsDesc = `BOPTEST generates standard key performance indicators (KPIs) and provides a interface to share results, which enables comparisons, benchmarking, and debugging of ACS. BOPTEST is an open and level playing field on which different control algorithms can be quantitatively evaluated. In addition, BOPTEST is a virtual environment that supports meaningful experiments with control algorithms without the need for physical installations in buildings.`;
 const docsButtonText = 'Get Started With The Docs';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -111,7 +83,6 @@ export const Home: React.FC = () => {
           <Box fontWeight="fontWeightBold">
             <Typography variant="h6">LATEST TEST RESULTS</Typography>
           </Box>
-          <Typography variant="body1">{textSample2}</Typography>
         </Grid>
       </Grid>
     </div>
