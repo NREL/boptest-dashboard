@@ -1,33 +1,5 @@
-import {BuildingType} from './BuildingType';
+import {Result} from '../../common/interfaces';
 import {EntitySchema, getRepository} from 'typeorm';
-
-import {Account} from './Account';
-
-export interface Result {
-  id: number;
-  uid: string;
-  deleted: boolean;
-  dateRun: Date;
-  isShared: boolean;
-  controllerProperties: JSON;
-
-  // KPI stuff
-  thermalDiscomfort: number;
-  energyUse: number;
-  cost: number;
-  emissions: number;
-  iaq: number;
-  timeRatio: number;
-
-  // Building Type stuff (formerly testcase stuff)
-  testTimePeriod: string;
-  controlStep: string;
-  priceScenario: string;
-  weatherForecastUncertainty: string;
-
-  account: Account;
-  buildingType: BuildingType;
-}
 
 export type ResultData = Omit<Result, 'id'>;
 

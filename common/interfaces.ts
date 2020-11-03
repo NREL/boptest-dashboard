@@ -14,13 +14,6 @@ export interface LoginData {
   password: string;
 }
 
-export interface Signature {
-  testTimePeriod: string;
-  controlStep: string;
-  priceScenario: string;
-  weatherForecastUncertainty: string;
-}
-
 export interface SignatureDetails {
   numResults: number;
   thermalDiscomfort: {
@@ -47,4 +40,56 @@ export interface SignatureDetails {
     min: number;
     max: number;
   };
+}
+
+export interface BuildingType {
+  id: number;
+  uid: string;
+  name: string;
+  markdown: string | null;
+  markdownURL: string;
+  pdfURL: string;
+  results: Result[];
+}
+
+export interface Account {
+  id: number;
+  name: string;
+  email: string;
+  apiKey: string;
+  results: Result[];
+}
+
+export type Signature = Pick<
+  Result,
+  | "testTimePeriod"
+  | "controlStep"
+  | "priceScenario"
+  | "weatherForecastUncertainty"
+>;
+
+export interface Result {
+  id: number;
+  uid: string;
+  deleted: boolean;
+  dateRun: Date;
+  isShared: boolean;
+  controllerProperties: JSON;
+
+  // KPI stuff
+  thermalDiscomfort: number;
+  energyUse: number;
+  cost: number;
+  emissions: number;
+  iaq: number;
+  timeRatio: number;
+
+  // Building Type stuff (formerly testcase stuff)
+  testTimePeriod: string;
+  controlStep: string;
+  priceScenario: string;
+  weatherForecastUncertainty: string;
+
+  account: Account;
+  buildingType: BuildingType;
 }

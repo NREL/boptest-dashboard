@@ -2,7 +2,8 @@ import {SignatureDetails} from './../../common/interfaces';
 import {getBuildingType} from './../models/BuildingType';
 import {getRepository} from 'typeorm';
 import {getAccountByApiKey} from '../models/Account';
-import {createResult, Result, ResultEntity} from '../models/Result';
+import {createResult, ResultEntity} from '../models/Result';
+import {Result} from '../../common/interfaces';
 
 export function getResults(): Promise<Result[]> {
   // request data
@@ -100,6 +101,7 @@ export function getSignatureDetailsForResult(
   id: string
 ): Promise<SignatureDetails> {
   const repo = getRepository<Result>(ResultEntity);
+
   return repo
     .findOneOrFail({
       uid: id,
