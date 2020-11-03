@@ -37,10 +37,7 @@ app.use(
 
 // serve static files from the React app
 app.use(express.static(path.join(__dirname, '/usr/client/build')));
-app.use(
-  '/assets',
-  express.static(path.join(__dirname, '/usr/client/src/static/assets'))
-);
+app.use('/assets', express.static(path.join(__dirname, '/usr/client/assets')));
 
 // define routes
 app.use('/api/auth', authRouter);
