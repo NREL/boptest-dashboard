@@ -2,6 +2,7 @@ export enum AppRoute {
   About = '/about',
   ApiKey = '/apikey',
   Dashboard = '/dashboard',
+  Doc = '/doc',
   Docs = '/documentation',
   Home = '/',
   Confirm = '/confirm/:username',
