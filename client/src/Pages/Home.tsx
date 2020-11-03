@@ -23,12 +23,21 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: '8px 16px 0 16px',
       backgroundColor: 'rgb(236, 239, 240)',
     },
-    icon: {
+    imageContainer: {
       padding: '0 0 32px 0',
+      display: 'flex',
+      justifyContent: 'left',
+      alignItems: 'center',
+      overflow: 'hidden',
+    },
+    image: {
+      flexShrink: 0,
+      width: '90%',
+      height: '40%',
     },
     docsButton: {
       textAlign: 'center',
-      padding: '16px 0 0 0',
+      padding: '16px',
       backgroundColor: 'rgb(0, 150, 136)',
       color: 'white',
     },
@@ -45,9 +54,12 @@ export const Home: React.FC = () => {
         {/* this grid item holds the chunkier left side with a long image and text on bottom */}
         <Grid item xs={9}>
           {/* make new grid here for inside the other grid */}
-          <Typography variant="body1" className={classes.icon}>
-            {textSample1}
-          </Typography>
+          <div className={classes.imageContainer}>
+            <img
+              src="./assets/workflow-diagram.svg"
+              className={classes.image}
+            />
+          </div>
           <Grid container spacing={3} className={classes.descriptions}>
             <Grid item xs={4}>
               <Box fontWeight="fontWeightBold">
@@ -57,7 +69,7 @@ export const Home: React.FC = () => {
               <Button
                 className={classes.docsButton}
                 variant="contained"
-                size="medium"
+                size="large"
               >
                 {docsButtonText}
               </Button>
