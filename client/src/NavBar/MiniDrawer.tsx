@@ -68,6 +68,9 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       justifyContent: 'space-between',
     },
+    boptestIcon: {
+      width: '10%',
+    },
     content: {
       flexGrow: 1,
       padding: theme.spacing(1),
@@ -128,7 +131,10 @@ export const MiniDrawer: React.FC = () => {
             <MenuIcon />
           </IconButton>
           <div className={classes.titlebar}>
-            <Typography variant="h6">Boptest Icon</Typography>
+            <img
+              src="./assets/boptest-logo.svg"
+              className={classes.boptestIcon}
+            />
             <Typography variant="h6">{title}</Typography>
             <AuthInfo />
           </div>
