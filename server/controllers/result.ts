@@ -3,7 +3,8 @@ import {getBuildingType} from './../models/BuildingType';
 import {getRepository} from 'typeorm';
 import {getAccountByApiKey} from '../models/Account';
 import {createResult, ResultEntity} from '../models/Result';
-import {Result} from '../../common/interfaces';
+import {Result, Signature} from '../../common/interfaces';
+import {resultRouter} from 'routes/resultRoutes';
 
 export function getResults(): Promise<Result[]> {
   // request data
@@ -101,20 +102,20 @@ export function getSignatureDetailsForResult(
   id: string
 ): Promise<SignatureDetails> {
   const repo = getRepository<Result>(ResultEntity);
-
   return repo
     .findOneOrFail({
       uid: id,
     })
     .then(result => {
+      const signature: Signature = {
+        testTimePeriod: result.testTimePeriod,
+        controlStep: result.controlStep,
+        priceScenario: result.priceScenario,
+        weatherForecastUncertainty: result.weatherForecastUncertainty,
+      };
       return repo
         .find({
-          where: {
-            testTimePeriod: result.testTimePeriod,
-            controlStep: result.controlStep,
-            priceScenario: result.priceScenario,
-            weatherForecastUncertainty: result.weatherForecastUncertainty,
-          },
+          where: {signature},
         })
         .then(results => {
           return getKPIRanges(results, result);
