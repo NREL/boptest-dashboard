@@ -6,6 +6,12 @@ import {AccountEntity, createAccount} from '../models/Account';
 
 import crypto from 'crypto';
 
+export function getAccount(id: number): Promise<Account> {
+  const repo = getRepository<Account>(AccountEntity);
+
+  return repo.findOneOrFail(id);
+}
+
 export function getAccounts(): Promise<Account[]> {
   // request data
   const accountsRepository = getRepository<Account>(AccountEntity);
