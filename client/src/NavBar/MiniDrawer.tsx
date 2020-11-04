@@ -69,7 +69,7 @@ const useStyles = makeStyles((theme: Theme) =>
       justifyContent: 'space-between',
     },
     boptestIcon: {
-      width: '10%',
+      width: '7%',
     },
     content: {
       flexGrow: 1,
