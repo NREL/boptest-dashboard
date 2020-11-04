@@ -107,7 +107,7 @@ export function getSignatureDetailsForResult(
       uid: id,
     })
     .then(result => {
-      const signature: Signature = {
+      const targetSignature: Signature = {
         testTimePeriod: result.testTimePeriod,
         controlStep: result.controlStep,
         priceScenario: result.priceScenario,
@@ -115,7 +115,7 @@ export function getSignatureDetailsForResult(
       };
       return repo
         .find({
-          where: {...signature},
+          where: {...targetSignature},
         })
         .then(results => {
           return getKPIRanges(results, result);
