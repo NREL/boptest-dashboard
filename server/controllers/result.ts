@@ -4,7 +4,6 @@ import {getRepository} from 'typeorm';
 import {getAccountByApiKey} from '../models/Account';
 import {createResult, ResultEntity} from '../models/Result';
 import {Result, Signature} from '../../common/interfaces';
-import {resultRouter} from 'routes/resultRoutes';
 
 export function getResults(): Promise<Result[]> {
   // request data
@@ -107,7 +106,12 @@ export function getSignatureDetailsForResult(
       uid: id,
     })
     .then(result => {
-      const targetSignature = result as Signature;
+      const targetSignature: Signature = {
+        testTimePeriod: result.testTimePeriod,
+        controlStep: result.controlStep,
+        priceScenario: result.priceScenario,
+        weatherForecastUncertainty: result.weatherForecastUncertainty,
+      };
       return repo
         .find({
           where: {...targetSignature},
