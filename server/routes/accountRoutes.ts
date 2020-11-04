@@ -1,7 +1,8 @@
 import express from 'express';
 
 import {getAccount, getAccounts} from '../controllers/account';
-import {Account, getAccountByApiKey, updateName} from '../models/Account';
+import {Account} from '../../common/interfaces';
+import {getAccountByApiKey, updateName} from '../models/Account';
 
 export const accountRouter = express.Router();
 
