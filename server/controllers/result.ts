@@ -107,12 +107,7 @@ export function getSignatureDetailsForResult(
       uid: id,
     })
     .then(result => {
-      const targetSignature: Signature = {
-        testTimePeriod: result.testTimePeriod,
-        controlStep: result.controlStep,
-        priceScenario: result.priceScenario,
-        weatherForecastUncertainty: result.weatherForecastUncertainty,
-      };
+      const targetSignature = result as Signature;
       return repo
         .find({
           where: {...targetSignature},
