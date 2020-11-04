@@ -62,6 +62,12 @@ export function createBuildingType(
   });
 }
 
+export function getBuildingTypes(): Promise<BuildingType[]> {
+  const repo = getRepository<BuildingType>(BuildingTypeEntity);
+
+  return repo.find();
+}
+
 // this method tells us if the URLs given are from trusted sources
 function fromTrustedSource(data: BuildingTypeData): Boolean {
   if (

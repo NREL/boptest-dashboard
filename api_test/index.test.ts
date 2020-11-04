@@ -270,4 +270,20 @@ describe("Main", () => {
       expect(res.data.numResults).toEqual(1);
     });
   });
+  test("API validation endpoint should return email when a match is found", () => {
+    const apiKeyEndoint = `http://${process.env.SERVER_HOST}:8080/api/accounts/apiKey/tedsapikey`;
+    return axios.get(apiKeyEndoint).then((res) => {
+      expect(res.status).toEqual(200);
+      expect(res.data.email).toEqual("teddybare@gmail.com");
+    });
+  });
+  test("API validation endpoint should return 404 not found when apiKey doesn't exist", () => {
+    const apiKeyEndoint = `http://${process.env.SERVER_HOST}:8080/api/accounts/apiKey/blahfakeapikey`;
+
+    // need to check the response status in the caught error because the axios call
+    // technically fails when it gets a non-successful HTTP response code
+    return axios.get(apiKeyEndoint).catch((err) => {
+      expect(err.response.status).toEqual(404);
+    });
+  });
 });

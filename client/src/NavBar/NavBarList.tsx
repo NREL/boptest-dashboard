@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {useEffect} from 'react';
+import axios from 'axios';
 
 import {makeStyles, Theme, createStyles} from '@material-ui/core/styles';
 import Collapse from '@material-ui/core/Collapse';
@@ -25,7 +26,8 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: theme.palette.background.paper,
     },
     nested: {
-      paddingLeft: theme.spacing(4),
+      padding: '0 0 0 32px',
+      margin: '0 0 0 40px',
     },
     icon: {
       color: 'black',
@@ -33,12 +35,41 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export const NavBarList: React.FC = () => {
-  const classes = useStyles();
-  const [open, setOpen] = React.useState(false);
+interface NavBarListProps {
+  drawerOpen: boolean;
+  toggleDrawer;
+}
 
-  const handleClick = () => {
-    setOpen(!open);
+export const NavBarList: React.FC<NavBarListProps> = props => {
+  const classes = useStyles();
+  const [openDash, setOpenDash] = React.useState(false);
+  const [openDocs, setOpenDocs] = React.useState(false);
+
+  const [buildingTypes, setBuildingTypes] = React.useState([]);
+  const buildingTypesEndpoint = '/api/buildingTypes';
+
+  useEffect(() => {
+    axios.get(buildingTypesEndpoint).then(result => {
+      setBuildingTypes(result.data);
+    });
+  }, []);
+
+  const handleDashClick = () => {
+    if (props.drawerOpen) {
+      setOpenDash(!openDash);
+    } else {
+      props.toggleDrawer();
+      setOpenDash(true);
+    }
+  };
+
+  const handleDocsClick = () => {
+    if (props.drawerOpen) {
+      setOpenDocs(!openDocs);
+    } else {
+      props.toggleDrawer();
+      setOpenDocs(true);
+    }
   };
 
   return (
@@ -53,21 +84,53 @@ export const NavBarList: React.FC = () => {
         </ListItemIcon>
         <ListItemText primary="Home" />
       </ListItem>
-      <ListItem button component={Link} to={AppRoute.Docs}>
+
+      <ListItem
+        button
+        onClick={handleDocsClick}
+        component={Link}
+        to={AppRoute.Docs}
+      >
         <ListItemIcon>
           <DocsIcon className={classes.icon} />
         </ListItemIcon>
         <ListItemText primary="Documentation" />
+        {openDocs ? <ExpandLess /> : <ExpandMore />}
       </ListItem>
+
+      <Collapse in={openDocs && props.drawerOpen} timeout="auto" unmountOnExit>
+        <List component="div" disablePadding>
+          {buildingTypes.map((buildingType, index) => {
+            return (
+              <ListItem
+                key={index}
+                button
+                className={classes.nested}
+                component={Link}
+                to={{
+                  pathname: AppRoute.Doc,
+                  state: {
+                    buildingType: buildingType,
+                  },
+                }}
+              >
+                <ListItemText primary={buildingType.name} />
+              </ListItem>
+            );
+          })}
+        </List>
+      </Collapse>
+
       <ListItem button component={Link} to={AppRoute.Results}>
         <ListItemIcon>
           <ChartIcon className={classes.icon} />
         </ListItemIcon>
         <ListItemText primary="Test Results" />
       </ListItem>
+
       <ListItem
         button
-        onClick={handleClick}
+        onClick={handleDashClick}
         component={Link}
         to={AppRoute.Dashboard}
       >
@@ -75,9 +138,9 @@ export const NavBarList: React.FC = () => {
           <PersonIcon className={classes.icon} />
         </ListItemIcon>
         <ListItemText primary="Dashboard" />
-        {open ? <ExpandLess /> : <ExpandMore />}
+        {openDash ? <ExpandLess /> : <ExpandMore />}
       </ListItem>
-      <Collapse in={open} timeout="auto" unmountOnExit>
+      <Collapse in={openDash && props.drawerOpen} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
           <ListItem
             button
