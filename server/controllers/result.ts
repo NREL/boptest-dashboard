@@ -115,7 +115,7 @@ export function getSignatureDetailsForResult(
       };
       return repo
         .find({
-          where: {signature},
+          where: {...signature},
         })
         .then(results => {
           return getKPIRanges(results, result);
