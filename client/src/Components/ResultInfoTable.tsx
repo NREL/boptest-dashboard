@@ -70,7 +70,7 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
   // propulate the signature details
   useEffect(() => {
     // prevent the use effect from firing on render if we don't have a result
-    if (!props.result) return;
+    if (props.result === undefined) return;
 
     // get the signature details for the result
     axios.get(getSignatureEndpoint(props.result.uid)).then(response => {

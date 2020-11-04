@@ -41,7 +41,7 @@ export const KPITable: React.FC<KPITableProps> = props => {
   // propulate the signature details
   useEffect(() => {
     // prevent the use effect from firing on render if we don't have a result
-    if (!props.result) return;
+    if (props.result === undefined) return;
 
     axios.get(getSignatureEndpoint(props.result.uid)).then(response => {
       setDetails(response.data);
