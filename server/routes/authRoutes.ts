@@ -1,4 +1,8 @@
-import {confirmPasswordChange, forgotPassword} from '../cognito';
+import {
+  changePassword,
+  confirmPasswordChange,
+  forgotPassword,
+} from '../cognito';
 import express from 'express';
 import {SignupData, LoginData, ConfirmData} from './../../common/interfaces';
 import {confirm, login, signup} from './../controllers/auth';
@@ -126,6 +130,22 @@ authRouter.post(
         res
           .status(500)
           .send(`Unable to confirm new password with error: ${err}`)
+      );
+  }
+);
+
+authRouter.post(
+  '/changePassword',
+  (req: express.Request, res: express.Response) => {
+    console.log('made it to change password router');
+    changePassword(req.body)
+      .then(() => res.status(200).send('Successfully changed your password'))
+      .catch(err => {
+        console.log('err from the change password call is', err);
+        res
+          .status(500)
+          .send(`Unable to change your password with error: ${err}`)
+      }
       );
   }
 );
