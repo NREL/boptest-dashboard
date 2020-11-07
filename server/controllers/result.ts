@@ -70,16 +70,16 @@ export function createResults(results: any) {
   );
 }
 
-export function removeResults(ids: number[]): Promise<void>[] {
+export function removeResults(uids: string[]): Promise<void>[] {
   const repo = getRepository<Result>(ResultEntity);
-  return ids.map((id: number) => {
+  return uids.map((uid: string) => {
     return repo
-      .findOneOrFail(id)
+      .findOneOrFail({uid: uid})
       .then(result => {
         result.deleted = true;
         repo.save(result);
       })
-      .catch(() => console.log('unable to remove result', id));
+      .catch(() => console.log('unable to remove result', uid));
   });
 }
 

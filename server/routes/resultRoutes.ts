@@ -26,10 +26,8 @@ resultRouter.post('/', (req: express.Request, res: express.Response) => {
 });
 
 resultRouter.post('/remove', (req: express.Request, res: express.Response) => {
-  // remove all these results from the db. Probs getting a list of ids.
-  // (potentially full results tho)
-
-  Promise.all(removeResults(req.body.resultIds))
+  // remove all these results from the db. Probs getting a list of uids.
+  Promise.all(removeResults(req.body.resultUids))
     .then(() => {
       res.sendStatus(200);
     })

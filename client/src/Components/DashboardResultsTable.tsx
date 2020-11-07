@@ -1,4 +1,5 @@
 import React, {useEffect} from 'react';
+import axios from 'axios';
 import clsx from 'clsx';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -420,6 +421,18 @@ export default function DashboardResultsTable(props) {
     setChecked(true);
   };
 
+  const removeResults = () => {
+    const removeEndpoint = '/api/results/remove';
+    // POST up the select array (a list of Result uids)
+    const data = {resultUids: selected};
+    axios.post(removeEndpoint, data)
+      .then(
+        // need to do something here to tell the parent component to refetch
+        // the results since we just removed some and they should disappear
+      )
+      .catch(err => console.log('Unable to remove results with error', err));
+  };
+
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
@@ -428,7 +441,7 @@ export default function DashboardResultsTable(props) {
           numSelected={selected.length}
         />
         <div>
-          <Button className={classes.button} variant="contained" size="small">
+          <Button className={classes.button} variant="contained" size="small" onClick={removeResults}>
             Remove Test Results
           </Button>
           <Button className={classes.button} variant="contained" size="small">
