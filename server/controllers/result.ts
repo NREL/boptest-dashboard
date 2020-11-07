@@ -19,6 +19,7 @@ export function getAllSharedResults(): Promise<Result[]> {
   return resultsRepository.find({
     relations: ['account', 'buildingType'],
     where: {
+      deleted: false,
       isShared: true,
     },
   });
@@ -32,6 +33,7 @@ export function getAllResultsForUser(email: string): Promise<Result[]> {
   return repo.find({
     relations: ['account', 'buildingType'],
     where: {
+      deleted: false,
       account: account,
     },
   });
