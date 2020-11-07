@@ -1,6 +1,7 @@
 import express from 'express';
 
 import {
+  getAllResultsForUser,
   getAllSharedResults,
   createResults,
   removeResults,
@@ -15,6 +16,14 @@ resultRouter.get('/', (req: express.Request, res: express.Response) => {
       res.json(results);
     })
     .catch(err => console.log('Unable to get results' + err));
+});
+
+resultRouter.get('/:email', (req: express.Request, res: express.Response) => {
+  getAllResultsForUser(req.params.email)
+    .then(results => {
+      res.json(results);
+    })
+    .catch(err => console.log(`Unable to get results for user ${req.params.email}`, err));
 });
 
 resultRouter.post('/', (req: express.Request, res: express.Response) => {

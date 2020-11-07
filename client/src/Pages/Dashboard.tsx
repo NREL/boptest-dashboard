@@ -5,15 +5,18 @@ import DashboardResultsTable from '../Components/DashboardResultsTable';
 import {Modal} from '../Components/Modal';
 import {ResultDetails} from '../Components/ResultDetails';
 
-const endpoint = '/api/results';
+import {useUser} from '../Context/user-context';
 
 export const Dashboard: React.FC = () => {
   const [results, setResults] = useState([]);
   const [showResultModal, setShowResultModal] = useState(false);
   const [selectedResult, setSelectedResult] = useState(null);
 
+  const {authedEmail} = useUser();
+
   // build out simple data fetcher straight in the useEffect for now
   useEffect(() => {
+    const endpoint = `/api/results/${authedEmail}`;
     axios.get(endpoint).then(response => {
       setResults(response.data);
     });

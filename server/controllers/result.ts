@@ -1,6 +1,6 @@
 import {getBuildingType} from './../models/BuildingType';
 import {getRepository} from 'typeorm';
-import {getAccountByApiKey} from '../models/Account';
+import {getAccountByApiKey, getAccountByEmail} from '../models/Account';
 import {createResult, Result, ResultEntity} from '../models/Result';
 
 export function getResults(): Promise<Result[]> {
@@ -20,6 +20,19 @@ export function getAllSharedResults(): Promise<Result[]> {
     relations: ['account', 'buildingType'],
     where: {
       isShared: true,
+    },
+  });
+}
+
+export function getAllResultsForUser(email: string): Promise<Result[]> {
+  const repo = getRepository<Result>(ResultEntity);
+
+  const account = getAccountByEmail(email);
+
+  return repo.find({
+    relations: ['account', 'buildingType'],
+    where: {
+      account: account,
     },
   });
 }

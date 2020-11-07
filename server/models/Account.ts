@@ -50,6 +50,14 @@ export function getAccountByApiKey(apiKey: string): Promise<Account> {
   });
 }
 
+export function getAccountByEmail(email: string): Promise<Account> {
+  const repo = getRepository<Account>(AccountEntity);
+
+  return repo.findOneOrFail({
+    email: email,
+  });
+}
+
 export function createAccount(data: AccountData): Promise<Account> {
   const accountRepo = getRepository<Account>(AccountEntity);
   return accountRepo.save(data);
