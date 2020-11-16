@@ -15,6 +15,7 @@ services:
       - ./server:/usr/src/app/:z
       - /usr/src/app/node_modules #ignore node_modules (they are installed in the container)
       - ./client/build:/usr/client/build:z
+      - ./client/src/static/assets:/usr/client/assets:z
       - ./common:/usr/src/common:z
   pg:
     image: "postgres"
