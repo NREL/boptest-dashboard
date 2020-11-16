@@ -1,14 +1,5 @@
+import {Account} from '../../common/interfaces';
 import {EntitySchema, getRepository} from 'typeorm';
-
-import {Result} from './Result';
-
-export interface Account {
-  id: number;
-  name: string;
-  email: string;
-  apiKey: string;
-  results: Result[];
-}
 
 export type AccountData = Omit<Account, 'results'>;
 

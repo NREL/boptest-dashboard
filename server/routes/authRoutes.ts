@@ -1,7 +1,11 @@
 import express from 'express';
-import {SignupData, LoginData, ConfirmData} from './../../common/interfaces';
+import {
+  Account,
+  SignupData,
+  LoginData,
+  ConfirmData,
+} from './../../common/interfaces';
 import {confirm, login, signup} from './../controllers/auth';
-import {Account} from './../models/Account';
 
 export const authRouter = express.Router();
 

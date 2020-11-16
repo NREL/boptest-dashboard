@@ -1,23 +1,12 @@
-import {buildingTypeRouter} from './../routes/buildingTypeRoutes';
 import {EntitySchema, getRepository} from 'typeorm';
 import axios from 'axios';
 
-import {Result} from './Result';
+import {BuildingType} from '../../common/interfaces';
 
 const TRUSTED_SOURCES = [
   'https://github.com/NREL/boptest-dashboard',
   'https://raw.githubusercontent.com/NREL/project1-boptest/master',
 ];
-
-export interface BuildingType {
-  id: number;
-  uid: string;
-  name: string;
-  markdown: string | null;
-  markdownURL: string;
-  pdfURL: string;
-  results: Result[];
-}
 
 export type BuildingTypeData = Omit<BuildingType, 'results'>;
 
