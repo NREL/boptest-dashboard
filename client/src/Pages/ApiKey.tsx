@@ -1,4 +1,5 @@
-import React from 'react';
+import axios from 'axios';
+import React, {useEffect} from 'react';
 import {Box, Button, TextField, Typography} from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 
@@ -36,8 +37,25 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
+const apiKeySelector: string = 'user-api-key';
+
+const copyApiKeyToClipboard = () => {
+  let copyText = document.getElementById(apiKeySelector) as HTMLInputElement;;
+  copyText.select();
+  copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+  document.execCommand("copy");
+}
+
 export const ApiKey: React.FC = () => {
   const classes = useStyles();
+
+  const [apiKey, setApiKey] = React.useState([]);
+
+  useEffect(() => {
+    axios.get('/api/auth/key').then(res => {
+      setApiKey(res.data.apiKey);
+    });
+  }, []);
 
   return (
     <div className={classes.root}>
@@ -51,16 +69,15 @@ export const ApiKey: React.FC = () => {
         honestly fine here.
       </Typography>
       <div className={classes.apiKeyOps}>
-        <Button className={classes.apiKeyButton} variant="contained">
-          Generate API Key
-        </Button>
         <TextField
+          id={apiKeySelector}
           className={classes.apiKeyText}
-          value="apikey147912738127y3817y2378kjasdnfkjasdkfnjsakdjfnaksdjk"
+          value={apiKey}
           variant="outlined"
           inputProps={{maxLength: 128}}
         />
         <Button
+          onClick={() => copyApiKeyToClipboard() }
           className={classes.apiKeyButton}
           variant="contained"
           size="small"

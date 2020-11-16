@@ -7,6 +7,7 @@ import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import {useUser} from './../../Context/user-context';
 import {LoginData} from './../../../../common/interfaces';
+import {AppRoute} from '../../enums';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -147,7 +148,10 @@ export const Login: React.FC = () => {
             SIGN IN
           </Button>
           <div className={classes.actionItems}>
-            <Link to={'/'} className={classes.forgotPassword}>
+            <Link
+              to={AppRoute.ForgotPassword}
+              className={classes.forgotPassword}
+            >
               Forgot Password
             </Link>
             <Link to={'/register'} className={classes.registerLink}>

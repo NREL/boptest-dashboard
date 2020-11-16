@@ -1,14 +1,17 @@
+import {SignatureDetails} from './../../common/interfaces';
 import express from 'express';
 
 import {
   getAllResultsForUser,
   getAllSharedResults,
+  getSignatureDetailsForResult,
   createResults,
   removeResults,
   shareResults,
 } from '../controllers/result';
 
 export const resultRouter = express.Router();
+const TESTING: boolean = process.env.CONTEXT! === 'testing';
 
 resultRouter.get('/', (req: express.Request, res: express.Response) => {
   getAllSharedResults()
@@ -19,12 +22,32 @@ resultRouter.get('/', (req: express.Request, res: express.Response) => {
 });
 
 resultRouter.get('/:email', (req: express.Request, res: express.Response) => {
-  getAllResultsForUser(req.params.email)
+  let email: string = '';
+  if(TESTING) {
+    email = req.params.email;
+  } else if (req.session != undefined) {
+    email = req.session.email;
+  }
+  getAllResultsForUser(email)
     .then(results => {
       res.json(results);
     })
     .catch(err => console.log(`Unable to get results for user ${req.params.email}`, err));
 });
+// this endpoint is going to be hit a lot if the user is cicking into
+// the detail view of results in the results table.
+// I'd suggest a future optimization of memcached with the values of
+// the signature so that we don't have to query the table as much.
+resultRouter.get(
+  '/:id/signature',
+  (req: express.Request, res: express.Response) => {
+    getSignatureDetailsForResult(req.params.id)
+      .then((result: SignatureDetails) => {
+        res.json(result);
+      })
+      .catch(err => console.log('Unable to get signature for result', err));
+  }
+);
 
 resultRouter.post('/', (req: express.Request, res: express.Response) => {
   createResults(req.body.results)

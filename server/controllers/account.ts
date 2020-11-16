@@ -1,7 +1,8 @@
 import {SignupData} from './../../common/interfaces';
 import {CognitoUser} from 'amazon-cognito-identity-js';
 import {getRepository} from 'typeorm';
-import {Account, AccountEntity, createAccount} from '../models/Account';
+import {Account} from '../../common/interfaces';
+import {AccountEntity, createAccount} from '../models/Account';
 
 import crypto from 'crypto';
 

@@ -1,7 +1,17 @@
+import {
+  changePassword,
+  confirmPasswordChange,
+  forgotPassword,
+} from '../cognito';
 import express from 'express';
-import {SignupData, LoginData, ConfirmData} from './../../common/interfaces';
+import {
+  Account,
+  SignupData,
+  LoginData,
+  ConfirmData,
+} from './../../common/interfaces';
 import {confirm, login, signup} from './../controllers/auth';
-import {Account} from './../models/Account';
+import {getUser} from '../controllers/account';
 
 export const authRouter = express.Router();
 
@@ -57,12 +67,10 @@ authRouter.post('/login', (req: express.Request, res: express.Response) => {
         req.session.email = user.email;
         req.session.name = user.name;
       }
-
       const data = {
         email: user.email,
         name: user.name,
       };
-
       res.json(data);
     })
     .catch(err => {
@@ -76,8 +84,22 @@ authRouter.get('/info', (req: express.Request, res: express.Response) => {
       name: req.session.name,
       email: req.session.email,
     };
-
     res.json(response);
+  } else {
+    res.status(403).send('User is not logged in');
+  }
+});
+
+authRouter.get('/key', (req: express.Request, res: express.Response) => {
+  console.log(req.session);
+  if (req.session && req.session.name && req.session.email) {
+    getUser(req.session.email)
+      .then((user: Account) => {
+        res.json({"apiKey": user.apiKey})
+      })
+      .catch(err => {
+        res.status(501).send(err);
+      });
   } else {
     res.status(403).send('User is not logged in');
   }
@@ -95,3 +117,52 @@ authRouter.post('/logout', (req: express.Request, res: express.Response) => {
     res.status(200).send('Logged out successfully');
   }
 });
+
+// initiate a forgot password flow
+authRouter.post(
+  '/forgotPassword',
+  (req: express.Request, res: express.Response) => {
+    forgotPassword(req.body.email)
+      .then(() => {
+        res.status(200).send('Successfully initiated the forgot password flow');
+      })
+      .catch(err =>
+        res
+          .status(500)
+          .send(
+            `Unable to start the forgot password sequence with error: ${err}`
+          )
+      );
+  }
+);
+
+authRouter.post(
+  '/confirmNewPassword',
+  (req: express.Request, res: express.Response) => {
+    confirmPasswordChange(req.body)
+      .then(() =>
+        res.status(200).send('Successfully confirmed the new password change')
+      )
+      .catch(err =>
+        res
+          .status(500)
+          .send(`Unable to confirm new password with error: ${err}`)
+      );
+  }
+);
+
+authRouter.post(
+  '/changePassword',
+  (req: express.Request, res: express.Response) => {
+    console.log('made it to change password router');
+    changePassword(req.body)
+      .then(() => res.status(200).send('Successfully changed your password'))
+      .catch(err => {
+        console.log('err from the change password call is', err);
+        res
+          .status(500)
+          .send(`Unable to change your password with error: ${err}`)
+      }
+      );
+  }
+);

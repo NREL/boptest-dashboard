@@ -18,25 +18,25 @@ app.use(bodyParser.json());
 
 const SESSION_NAME = process.env.SESSION_NAME!;
 const SESSION_SECRET = process.env.SESSION_SECRET!;
-
-const ONE_HOUR = 1000 * 60 * 60;
+const IN_PROD: boolean = process.env.CONTEXT! === 'production';
 
 app.use(
   session({
     name: SESSION_NAME,
     secret: SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
     cookie: {
-      maxAge: ONE_HOUR,
+      maxAge: 8*60*60*1000, // 8 Hours
       sameSite: true,
-      secure: app.get('env') === 'production',
+      secure: IN_PROD,
     },
   })
 );
 
 // serve static files from the React app
 app.use(express.static(path.join(__dirname, '/usr/client/build')));
+app.use('/assets', express.static(path.join(__dirname, '/usr/client/assets')));
 
 // define routes
 app.use('/api/auth', authRouter);
