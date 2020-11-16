@@ -96,10 +96,7 @@ export const Home: React.FC = () => {
           <Box fontWeight="fontWeightBold">
             <Typography variant="h6">LATEST TEST RESULTS</Typography>
           </Box>
-<<<<<<< HEAD
           <ResultsQuickView />
-=======
->>>>>>> master
         </Grid>
       </Grid>
     </div>
