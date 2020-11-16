@@ -4,6 +4,8 @@ export enum AppRoute {
   Dashboard = '/dashboard',
   Doc = '/doc',
   Docs = '/documentation',
+  ConfirmPassword = '/confirm-password',
+  ForgotPassword = '/forgot-password',
   Home = '/',
   Confirm = '/confirm/:username',
   Login = '/login',

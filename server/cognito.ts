@@ -1,4 +1,10 @@
-import {ConfirmData, LoginData, SignupData} from './../common/interfaces';
+import {
+  ChangePasswordData,
+  ConfirmData,
+  ConfirmNewPasswordData,
+  LoginData,
+  SignupData,
+} from './../common/interfaces';
 import {
   AuthenticationDetails,
   CognitoUserPool,
@@ -106,5 +112,84 @@ export function loginUser(loginData: LoginData): Promise<CognitoUserSession> {
         promiseRej(err);
       },
     });
+  });
+}
+
+export function changePassword(data: ChangePasswordData): Promise<void> {
+  return new Promise((promiseRes, promiseRej) => {
+    // get the current cognito user from local storage
+    const cognitoUser = getUserPool().getCurrentUser();
+    if (!cognitoUser) {
+      console.log('cannot get the cognito user');
+      promiseRej('Congito user does not exist in current context');
+      return;
+    }
+
+    // need to authenticate the current user with cognito
+    cognitoUser.getSession(function(err: any, session: any) {
+      if (err) {
+        promiseRej(err);
+        return;
+      }
+
+      // we have a valid cognito session, so we can change the password
+      cognitoUser.changePassword(data.oldPassword, data.newPassword, function (
+        err
+      ) {
+        if (err) {
+          promiseRej(err);
+        } else {
+          promiseRes();
+        }
+      });
+    });
+  });
+}
+
+export function forgotPassword(username: string): Promise<void> {
+  return new Promise((promiseRes, promiseRej) => {
+    const userPool = getUserPool();
+
+    var userData = {
+      Username: username,
+      Pool: userPool,
+    };
+
+    var cognitoUser = new CognitoUser(userData);
+
+    cognitoUser.forgotPassword({
+      onSuccess() {
+        promiseRes();
+      },
+      onFailure(err) {
+        promiseRej(err);
+      },
+    });
+  });
+}
+
+export function confirmPasswordChange(
+  confirmData: ConfirmNewPasswordData
+): Promise<void> {
+  return new Promise((promiseRes, promiseRej) => {
+    const userPool = getUserPool();
+    var userData = {
+      Username: confirmData.username,
+      Pool: userPool,
+    };
+    var cognitoUser = new CognitoUser(userData);
+
+    cognitoUser.confirmPassword(
+      confirmData.verificationCode,
+      confirmData.newPassword,
+      {
+        onSuccess() {
+          promiseRes();
+        },
+        onFailure(err) {
+          promiseRej(err);
+        },
+      }
+    );
   });
 }
