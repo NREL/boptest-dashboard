@@ -13,7 +13,8 @@ import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 
 interface Data {
-  resultUid: string;
+  id: number;
+  uid: string;
   accountUsername: string;
   buildingTypeName: string;
   dateRun: Date;
@@ -26,8 +27,7 @@ interface Data {
   emissions: number;
   compTimeRatio: number;
   controllerProperties: JSON;
-  testTimePeriodStart: Date;
-  testTimePeriodEnd: Date;
+  testTimePeriod: string;
   controlStep: string;
   priceScenario: string;
   weatherForecastUncertainty: string;
@@ -35,7 +35,8 @@ interface Data {
 
 const createDataFromResult = (result): Data => {
   return {
-    resultUid: result.uid,
+    id: result.id,
+    uid: result.uid,
     accountUsername: result.account.name,
     buildingTypeName: result.buildingType.name,
     dateRun: result.dateRun,
@@ -48,8 +49,7 @@ const createDataFromResult = (result): Data => {
     emissions: result.emissions,
     compTimeRatio: result.timeRatio,
     controllerProperties: result.controllerProperties,
-    testTimePeriodStart: result.testTimePeriodStart,
-    testTimePeriodEnd: result.testTimePeriodEnd,
+    testTimePeriod: result.testTimePeriod,
     controlStep: result.controlStep,
     priceScenario: result.priceScenario,
     weatherForecastUncertainty: result.weatherForecastUncertainty,
@@ -332,7 +332,7 @@ export default function ResultsTable(props) {
                       onClick={event => handleRowClick(event, row)}
                       role="checkbox"
                       tabIndex={-1}
-                      key={row.resultUid}
+                      key={row.uid}
                     >
                       <TableCell
                         component="th"

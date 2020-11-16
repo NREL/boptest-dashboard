@@ -4,7 +4,9 @@ build
 
 # ignore the entirety of the db volume for now
 # pg also includes the env vars used to set it up, but that will change
-pg
+pg/db_data
+pg/scripts
+pg/database.env
 
 */.env
 */.idea/

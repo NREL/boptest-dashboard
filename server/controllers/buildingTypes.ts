@@ -1,4 +1,5 @@
-import {createBuildingType, BuildingType} from '../models/BuildingType';
+import {createBuildingType} from '../models/BuildingType';
+import {BuildingType} from '../../common/interfaces';
 
 export function createBuildingTypes(
   buildingTypes: any[]
