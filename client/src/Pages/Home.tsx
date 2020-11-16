@@ -1,6 +1,7 @@
 import React from 'react';
 import {Box, Button, Grid, Typography} from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {ResultsQuickView} from './../Components/ResultsQuickView';
 
 const textSample1 = ` October arrived, spreading a damp chill over the grounds and into the castle. Madam Pomfrey, the nurse, was kept busy by a sudden spate of colds among the staff and students. Her Pepperup potion worked instantly, though it left the drinker smoking at the ears for several hours afterward. Ginny Weasley, who had been looking pale, was bullied into taking some by Percy. The steam pouring from under her vivid hair gave the impression that her whole head was on fire.
 
@@ -95,6 +96,10 @@ export const Home: React.FC = () => {
           <Box fontWeight="fontWeightBold">
             <Typography variant="h6">LATEST TEST RESULTS</Typography>
           </Box>
+<<<<<<< HEAD
+          <ResultsQuickView />
+=======
+>>>>>>> master
         </Grid>
       </Grid>
     </div>
