@@ -16,8 +16,6 @@ const useStyles = makeStyles((theme: Theme) =>
     pageLayout: {
       display: 'flex',
       flexDirection: 'row',
-      height: '100vh',
-      margin: '-8px',
     },
   })
 );
