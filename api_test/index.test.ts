@@ -185,13 +185,13 @@ describe("Main", () => {
   beforeAll((done) => {
     return axios
       .post(accountEndpoint, accountsPayload)
-      .then(() => {
-        return axios.post(buildingTypesEndpoint, buildingTypesPayload);
-      })
-      .then(() => {
-        return axios.post(resultsEndpoint, resultPayload);
-      })
-      .then(() => done());
+      .then(() => axios.post(buildingTypesEndpoint, buildingTypesPayload))
+      .then(() => axios.post(resultsEndpoint, resultPayload))
+      .then(() => done())
+      .catch(err => {
+        console.log(err);
+        done();
+      });
   });
 
   test("dummy endpoint should be reachable", () => {
