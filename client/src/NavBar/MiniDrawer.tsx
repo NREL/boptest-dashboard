@@ -67,6 +67,10 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '100%',
       display: 'flex',
       justifyContent: 'space-between',
+      alignItems: 'center'
+    },
+    titlebarTitle: {
+      textAlign:'center'
     },
     boptestIcon: {
       width: '7%',
@@ -135,7 +139,7 @@ export const MiniDrawer: React.FC = () => {
               src="./assets/boptest-logo.svg"
               className={classes.boptestIcon}
             />
-            <Typography variant="h6">{title}</Typography>
+            <Typography variant="h6" className={classes.titlebarTitle}>{title}</Typography>
             <AuthInfo />
           </div>
         </Toolbar>

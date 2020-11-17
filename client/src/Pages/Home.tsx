@@ -42,6 +42,9 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'rgb(0, 150, 136)',
       color: 'white',
     },
+    wideGridItem: {
+      borderRight: '1px solid lightgray'
+    }
   })
 );
 
@@ -53,7 +56,7 @@ export const Home: React.FC = () => {
       {/* this grid holds the entire page to split into 2 horizontal slices */}
       <Grid container spacing={4}>
         {/* this grid item holds the chunkier left side with a long image and text on bottom */}
-        <Grid item xs={9}>
+        <Grid className={classes.wideGridItem} item xs={9}>
           {/* make new grid here for inside the other grid */}
           <div className={classes.imageContainer}>
             <img
