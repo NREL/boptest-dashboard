@@ -64,7 +64,7 @@ export const AuthInfo: React.FC = () => {
       {loggedIn ? (
         <div className={classes.lineItem}>
           <Link to={'/'} className={classes.link} onClick={logOut}>
-            <Typography variant="h6">Sign Out</Typography>
+            <ColorButton variant="outlined">Sign Out</ColorButton>
           </Link>
           <Divider
             orientation="vertical"
@@ -73,13 +73,13 @@ export const AuthInfo: React.FC = () => {
             className={classes.divider}
           />
           <Link to={'/dashboard'} className={classes.link}>
-            <Typography variant="h6">{authedName}</Typography>
+            <ColorButton variant="outlined">{authedName}</ColorButton>
           </Link>
         </div>
       ) : (
         <div className={classes.lineItem}>
           <Link to={'/login'} className={classes.link}>
-          <ColorButton variant="outlined">Sign In</ColorButton>
+            <ColorButton variant="outlined">Sign In</ColorButton>
           </Link>
           <Divider
             orientation="vertical"
