@@ -143,11 +143,12 @@ authRouter.post(
       .then(() =>
         res.status(200).send('Successfully confirmed the new password change')
       )
-      .catch(err =>
-        res
+      .catch(err => {
+        console.log(err);
+        return res
           .status(500)
-          .send(`Unable to confirm new password with error: ${err}`)
-      );
+          .json(err)
+      });
   }
 );
 

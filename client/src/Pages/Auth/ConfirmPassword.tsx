@@ -3,10 +3,14 @@ import {Link, useHistory} from 'react-router-dom';
 import axios from 'axios';
 import {Button, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import {ConfirmNewPasswordData} from '../../../../common/interfaces';
 import {AppRoute} from '../../enums';
+
+const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -65,6 +69,8 @@ export const ConfirmPassword: React.FC = () => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [snackMessage, setSnackMessage] = React.useState('');
+  const [snackMessageOpen, setSnackMessageOpen] = React.useState(false);
   const history = useHistory();
 
   const handleConfirmationCodeChange = e => {
@@ -80,6 +86,11 @@ export const ConfirmPassword: React.FC = () => {
     setConfirmPassword(e.target.value);
   };
 
+  const handleSnackMessageClose = (_, reason) => {
+    if (reason === 'clickaway') { return; }
+    setSnackMessageOpen(false);
+  };
+
   const confirmNewPassword = () => {
     const confirmNewPassData: ConfirmNewPasswordData = {
       username: email,
@@ -93,7 +104,13 @@ export const ConfirmPassword: React.FC = () => {
         // redirect to the Confirm page
         history.push(AppRoute.Login);
       })
-      .catch(err => console.log('could not confirm the new password', err));
+      .catch(error => {
+        console.log(error.response.data);  
+        console.log(error.response.status);  
+        console.log(error.response.headers);
+        setSnackMessage(error.response.data.message);
+        setSnackMessageOpen(true);
+      });
   };
 
   const title = 'CONFIRM PASSWORD';
@@ -190,6 +207,11 @@ export const ConfirmPassword: React.FC = () => {
           </div>
         </ValidatorForm>
       </Paper>
+      <Snackbar open={snackMessageOpen} autoHideDuration={6000} onClose={handleSnackMessageClose}>
+        <Alert onClose={handleSnackMessageClose} severity="error">
+          {snackMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
