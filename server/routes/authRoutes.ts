@@ -79,7 +79,7 @@ authRouter.get('/info', (req: express.Request, res: express.Response) => {
     const response = {
       name: req.session.name,
       email: req.session.email,
-      id: Number(req.session.userId),
+      userId: Number(req.session.userId),
     };
     res.json(response);
   } else {

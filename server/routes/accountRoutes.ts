@@ -44,7 +44,10 @@ accountRouter.get('/:id', (req: express.Request, res: express.Response) => {
 });
 
 accountRouter.patch('/name', (req: express.Request, res: express.Response) => {
-  updateName(req.body.id, req.body.name)
-    .then(() => res.sendStatus(200))
+  updateName(req.body.userId, req.body.newName)
+    .then(() => {
+      if (req.session) { req.session.name = req.body.newName; }
+      res.sendStatus(200)
+    })
     .catch(err => res.status(500).json(err));
 });

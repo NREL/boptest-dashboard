@@ -17,6 +17,7 @@ type Props = {
 const UserProvider = ({children}: Props) => {
   const [authedEmail, setAuthedEmail] = React.useState('');
   const [authedName, setAuthedName] = React.useState('');
+  const [authedId, setAuthedId] = React.useState('');
 
   const userInfoEndpoint = '/api/auth/info';
 
@@ -25,9 +26,9 @@ const UserProvider = ({children}: Props) => {
     axios
       .get(userInfoEndpoint)
       .then(result => {
-        console.log(result);
         setAuthedEmail(result.data.email);
         setAuthedName(result.data.name);
+        setAuthedId(result.data.userId);
       })
       .catch(err => {
         console.log('couldnt get user info', err);
@@ -36,7 +37,7 @@ const UserProvider = ({children}: Props) => {
 
   return (
     <UserContext.Provider
-      value={{authedEmail, setAuthedEmail, authedName, setAuthedName}}
+      value={{authedEmail, setAuthedEmail, authedName, setAuthedName, authedId}}
     >
       {children}
     </UserContext.Provider>

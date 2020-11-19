@@ -78,10 +78,11 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const changePasswordEndpoint = '/api/auth/changePassword';
+const changeUserNameEndpoint = '/api/accounts/name';
 
 export const Settings: React.FC = () => {
 
-  const {authedEmail, authedName, setAuthedName} = useUser();
+  const {authedEmail, authedName, authedId} = useUser();
   const classes = useStyles();
 
   const [username, setUsername] = useState('');
@@ -129,7 +130,8 @@ export const Settings: React.FC = () => {
   };
 
   const changeUserName = () => {
-    // setAuthedName('asdf');
+    axios.patch(changeUserNameEndpoint, {userId: authedId, newName: username})
+      .then(() => location.reload())
   };
 
   const changePassword = () => {
