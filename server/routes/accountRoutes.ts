@@ -43,12 +43,8 @@ accountRouter.get('/:id', (req: express.Request, res: express.Response) => {
     });
 });
 
-accountRouter.post('/name', (req: express.Request, res: express.Response) => {
+accountRouter.patch('/name', (req: express.Request, res: express.Response) => {
   updateName(req.body.id, req.body.name)
-    .then(() => {
-      res.sendStatus(200);
-    })
-    .catch(err =>
-      res.status(500).send('Unable to update name of account: ' + err)
-    );
+    .then(() => res.sendStatus(200))
+    .catch(err => res.status(500).json(err));
 });

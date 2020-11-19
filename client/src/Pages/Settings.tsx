@@ -13,6 +13,10 @@ import Button from '@material-ui/core/Button';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import {ChangePasswordData} from '../../../common/interfaces';
 import {useUser} from '../Context/user-context';
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
+
+const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -76,14 +80,16 @@ const useStyles = makeStyles((theme: Theme) =>
 const changePasswordEndpoint = '/api/auth/changePassword';
 
 export const Settings: React.FC = () => {
+
+  const {authedEmail, authedName, setAuthedName} = useUser();
   const classes = useStyles();
 
   const [username, setUsername] = useState('');
   const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
-  const {authedEmail} = useUser();
+  const [snackMessageOpen, setSnackMessageOpen] = React.useState(false);
+  const [snackMessage, setSnackMessage] = React.useState(['msg', 'severity']);
 
   const handleUserNameChange = event => {
     setUsername(event.target.value);
@@ -99,6 +105,11 @@ export const Settings: React.FC = () => {
 
   const handleConfirmPasswordChange = event => {
     setConfirmPassword(event.target.value);
+  };
+
+  const handleSnackMessageClose = (_, reason) => {
+    if (reason === 'clickaway') { return; }
+    setSnackMessageOpen(false);
   };
 
   useEffect(() => {
@@ -118,15 +129,10 @@ export const Settings: React.FC = () => {
   };
 
   const changeUserName = () => {
-    // make a call to change the username of the current user
+    // setAuthedName('asdf');
   };
 
   const changePassword = () => {
-    console.log(
-      `calling change password with ${password} and ${confirmPassword} from ${oldPassword}`
-    );
-
-    console.log('email', authedEmail);
 
     const data: ChangePasswordData = {
       email: authedEmail,
@@ -136,8 +142,20 @@ export const Settings: React.FC = () => {
 
     axios
       .post(changePasswordEndpoint, data)
-      .then(() => {})
-      .catch(err => alert(`Could not change your password. Error: ${err}`));
+      .then(() => {
+        setSnackMessage(['Password successfully updated', 'success']);
+        setSnackMessageOpen(true);
+        setOldPassword('');
+        setConfirmPassword('');
+        setPassword('');
+      })
+      .catch(err => {
+        setSnackMessage([err.response.data.message, 'error']);
+        setSnackMessageOpen(true);
+        setOldPassword('');
+        setConfirmPassword('');
+        setPassword('');
+      });
   };
 
   return (
@@ -154,7 +172,7 @@ export const Settings: React.FC = () => {
         <TextField
           value={username}
           variant="outlined"
-          placeholder="User Name"
+          placeholder={authedName}
           size="small"
           className={classes.field}
           onChange={event => handleUserNameChange(event)}
@@ -226,30 +244,6 @@ export const Settings: React.FC = () => {
           </Button>
         </div>
       </ValidatorForm>
-      {/* <div className={classes.fieldContainer}>
-        <TextField
-          variant="outlined"
-          placeholder="Password"
-          size="small"
-          type="password"
-          onChange={event => handlePasswordChange(event)}
-          className={classes.passwordField}
-        ></TextField>
-        <div className={classes.applyButton}></div>
-      </div>
-      <div className={classes.fieldContainer}>
-        <TextField
-          variant="outlined"
-          placeholder="Confirm Password"
-          size="small"
-          type="password"
-          onChange={event => handleConfirmPasswordChange(event)}
-          className={classes.field}
-        ></TextField>
-        <Button type="submit" className={classes.applyButton}>
-          Apply
-        </Button>
-      </div> */}
       <Box fontWeight="fontWeightBold">
         <Typography variant="h6" className={classes.item}>
           Share My Test Results
@@ -290,6 +284,11 @@ export const Settings: React.FC = () => {
         You can choose which results to share or keep private on your dashboard
         page.
       </Typography>
+      <Snackbar open={snackMessageOpen} autoHideDuration={6000} onClose={handleSnackMessageClose}>
+        <Alert onClose={handleSnackMessageClose} severity={snackMessage[1]}>
+          {snackMessage[0]}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

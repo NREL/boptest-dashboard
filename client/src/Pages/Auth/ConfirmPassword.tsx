@@ -105,9 +105,6 @@ export const ConfirmPassword: React.FC = () => {
         history.push(AppRoute.Login);
       })
       .catch(error => {
-        console.log(error.response.data);  
-        console.log(error.response.status);  
-        console.log(error.response.headers);
         setSnackMessage(error.response.data.message);
         setSnackMessageOpen(true);
       });

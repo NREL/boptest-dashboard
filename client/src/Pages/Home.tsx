@@ -1,4 +1,5 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import {Box, Button, Grid, Typography} from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import {ResultsQuickView} from './../Components/ResultsQuickView';
@@ -44,7 +45,11 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     wideGridItem: {
       borderRight: '1px solid lightgray'
-    }
+    },
+    link: {
+      color: 'white',
+      textDecoration: 'none',
+    },
   })
 );
 
@@ -70,13 +75,15 @@ export const Home: React.FC = () => {
                 <Typography variant="h6">CONTROLS ALGORITHM</Typography>
               </Box>
               <Typography variant="body1">{controlsAlgorithm}</Typography>
-              <Button
-                className={classes.docsButton}
-                variant="contained"
-                size="large"
-              >
-                {docsButtonText}
-              </Button>
+              <Link to={'/documentation'} className={classes.link}>
+                <Button
+                  className={classes.docsButton}
+                  variant="contained"
+                  size="large"
+                >
+                  {docsButtonText}
+                </Button>
+              </Link>
             </Grid>
             <Grid item xs={4}>
               <Box fontWeight="fontWeightBold">

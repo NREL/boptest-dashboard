@@ -14,7 +14,6 @@ import {AppRoute} from '../../enums';
 
 const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;
 
-
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -81,6 +80,7 @@ export const Login: React.FC = () => {
   const [password, setPassword] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [snackMessageOpen, setSnackMessageOpen] = React.useState(false);
+  const [snackMessage, setSnackMessage] = React.useState('');
 
   const {setAuthedEmail, setAuthedName} = useUser();
 
@@ -112,8 +112,8 @@ export const Login: React.FC = () => {
       })
       .catch(err => {
         setIsLoading(false);
+        setSnackMessage(err.response.data.message);
         setSnackMessageOpen(true);
-        console.log('could not log the user in', err)
       });
   };
 
@@ -181,7 +181,7 @@ export const Login: React.FC = () => {
       }
       <Snackbar open={snackMessageOpen} autoHideDuration={6000} onClose={handleSnackMessageClose}>
         <Alert onClose={handleSnackMessageClose} severity="error">
-          Incorrect Email/Password Combination
+          {snackMessage}
         </Alert>
       </Snackbar>
     </div>

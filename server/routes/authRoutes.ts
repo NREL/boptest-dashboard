@@ -26,9 +26,7 @@ authRouter.post('/signup', (req: express.Request, res: express.Response) => {
     .then(() => {
       res.status(200).send('User successfully signed up');
     })
-    .catch(err => {
-      res.status(500).send('Unable to sign up user with err: ' + err);
-    });
+    .catch(err => res.status(500).json(err));
 });
 
 authRouter.post('/confirm', (req: express.Request, res: express.Response) => {
@@ -42,6 +40,7 @@ authRouter.post('/confirm', (req: express.Request, res: express.Response) => {
       if (req.session) {
         req.session.email = user.email;
         req.session.name = user.name;
+        req.session.userId = `${user.id}`;
       }
       const data = {
         email: user.email,
@@ -50,9 +49,7 @@ authRouter.post('/confirm', (req: express.Request, res: express.Response) => {
 
       res.json(data);
     })
-    .catch(err => {
-      res.status(500).send('Unable to confirm user with err: ' + err);
-    });
+    .catch(err => res.status(500).json(err));
 });
 
 authRouter.post('/login', (req: express.Request, res: express.Response) => {
@@ -66,6 +63,7 @@ authRouter.post('/login', (req: express.Request, res: express.Response) => {
       if (req.session) {
         req.session.email = user.email;
         req.session.name = user.name;
+        req.session.userId = `${user.id}`
       }
       const data = {
         email: user.email,
@@ -73,9 +71,7 @@ authRouter.post('/login', (req: express.Request, res: express.Response) => {
       };
       res.json(data);
     })
-    .catch(err => {
-      res.status(500).send('Unable to login user with err: ' + err);
-    });
+    .catch(err => res.status(500).json(err));
 });
 
 authRouter.get('/info', (req: express.Request, res: express.Response) => {
@@ -83,6 +79,7 @@ authRouter.get('/info', (req: express.Request, res: express.Response) => {
     const response = {
       name: req.session.name,
       email: req.session.email,
+      id: Number(req.session.userId),
     };
     res.json(response);
   } else {
@@ -140,15 +137,8 @@ authRouter.post(
   '/confirmNewPassword',
   (req: express.Request, res: express.Response) => {
     confirmPasswordChange(req.body)
-      .then(() =>
-        res.status(200).send('Successfully confirmed the new password change')
-      )
-      .catch(err => {
-        console.log(err);
-        return res
-          .status(500)
-          .json(err)
-      });
+      .then(() => res.status(200).send('Successfully confirmed the new password change'))
+      .catch(err => res.status(500).json(err));
   }
 );
 
@@ -158,12 +148,6 @@ authRouter.post(
     console.log('made it to change password router');
     changePassword(req.body)
       .then(() => res.status(200).send('Successfully changed your password'))
-      .catch(err => {
-        console.log('err from the change password call is', err);
-        res
-          .status(500)
-          .send(`Unable to change your password with error: ${err}`)
-      }
-      );
+      .catch(err => res.status(500).json(err));
   }
 );

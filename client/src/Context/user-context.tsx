@@ -25,6 +25,7 @@ const UserProvider = ({children}: Props) => {
     axios
       .get(userInfoEndpoint)
       .then(result => {
+        console.log(result);
         setAuthedEmail(result.data.email);
         setAuthedName(result.data.name);
       })
