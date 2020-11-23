@@ -38,7 +38,6 @@ export const AuthInfo: React.FC = () => {
   const classes = useStyles();
 
   const {authedEmail, setAuthedEmail, authedName, setAuthedName} = useUser();
-
   const loggedIn = authedEmail && authedEmail !== '';
 
   const logoutEndpoint = '/api/auth/logout';
