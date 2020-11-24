@@ -54,7 +54,7 @@ resultRouter.post('/', (req: express.Request, res: express.Response) => {
     .then(() => {
       res.sendStatus(200);
     })
-    .catch(err => res.status(500).send('Unable to create entities: ' + err));
+    .catch(err => res.status(500).json(err));
 });
 
 resultRouter.post('/remove', (req: express.Request, res: express.Response) => {

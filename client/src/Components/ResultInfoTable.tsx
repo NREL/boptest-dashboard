@@ -61,6 +61,7 @@ const getSignatureEndpoint = (resultId: string) => {
 };
 
 export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
+  console.log(props)
   const classes = useStyles();
   const [details, setDetails] = useState<SignatureDetails | undefined>(
     undefined
@@ -184,7 +185,7 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
               </TableCell>
               <TableCell>
                 <Typography variant="body1">
-                  chris.berger@devetry.comkjdflajsdflahdflajshdfjahsdbfh
+                  {props.result.accountEmail}
                 </Typography>
               </TableCell>
             </TableRow>

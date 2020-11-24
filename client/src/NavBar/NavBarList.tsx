@@ -94,8 +94,6 @@ export const NavBarList: React.FC<NavBarListProps> = props => {
       <ListItem
         button
         onClick={handleDocsClick}
-        component={Link}
-        to={AppRoute.Docs}
       >
         <ListItemIcon>
           <DocsIcon className={classes.icon} />

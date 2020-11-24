@@ -4,6 +4,7 @@ import {BuildingType} from '../../common/interfaces';
 export function createBuildingTypes(
   buildingTypes: any[]
 ): Promise<BuildingType[]> {
+  console.log(buildingTypes);
   // Use a reducer so that we can coerce our async calls to a set run order
   let firstBuilding = buildingTypes.shift();
   return buildingTypes.reduce(

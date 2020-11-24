@@ -73,9 +73,9 @@ function createResultAndAssociatedModels(result: any) {
 
       return createResult(resultData);
     })
-    .catch(err =>
-      console.log('Something went wrong in the mega creation method', err)
-    );
+    // .catch(err =>
+    //   console.log('Something went wrong in the mega creation method', err)
+    // );
 }
 
 export function createResults(results: any) {

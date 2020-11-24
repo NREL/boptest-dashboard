@@ -6,6 +6,8 @@ import {BuildingType} from '../../common/interfaces';
 const TRUSTED_SOURCES = [
   'https://github.com/NREL/boptest-dashboard',
   'https://raw.githubusercontent.com/NREL/project1-boptest/master',
+  'https://raw.githubusercontent.com/p-gonzo/',
+  'https://github.com/p-gonzo/'
 ];
 
 export type BuildingTypeData = Omit<BuildingType, 'results'>;
@@ -49,8 +51,7 @@ export const BuildingTypeEntity = new EntitySchema<BuildingType>({
 export function createBuildingType(
   data: BuildingTypeData
 ): Promise<BuildingType> {
-  // need to check both URLs to make sure they're from a trusted source
-  if (!fromTrustedSource(data)) {
+  if (!urlIsFromTrustedSource(data.markdownURL) || !urlIsFromTrustedSource(data.pdfURL)) {
     throw new Error('The URLs are not from a trusted source.');
   }
   const buildingTypeRepo = getRepository<BuildingType>(BuildingTypeEntity);
@@ -68,18 +69,11 @@ export function getBuildingTypes(): Promise<BuildingType[]> {
   return repo.find();
 }
 
-// this method tells us if the URLs given are from trusted sources
-function fromTrustedSource(data: BuildingTypeData): Boolean {
-  if (
-    !data.markdownURL.startsWith(TRUSTED_SOURCES[0]) &&
-    !data.markdownURL.startsWith(TRUSTED_SOURCES[1]) &&
-    !data.pdfURL.startsWith(TRUSTED_SOURCES[0]) &&
-    !data.pdfURL.startsWith(TRUSTED_SOURCES[1])
-  ) {
-    return false;
+function urlIsFromTrustedSource(url: String): Boolean {
+  for (let i = 0 ; i < TRUSTED_SOURCES.length; i++) {
+    if (url.startsWith(TRUSTED_SOURCES[i])) { return true; }
   }
-
-  return true;
+  return false;
 }
 
 export function getBuildingType(id: number): Promise<BuildingType> {

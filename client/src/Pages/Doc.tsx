@@ -25,8 +25,11 @@ export const Doc: React.FC = () => {
 
   return (
     <div className={classes.root}>
-      <Typography variant="h6">{buildingType.name}</Typography>
+      <Typography variant="h3">{buildingType.name}</Typography>
       <ReactMarkdown source={buildingType.markdown} escapeHtml={false} />
+      <Typography variant="h5">
+        <a target="_blank" href={buildingType.pdfURL}>Download PDF</a>
+      </Typography>
     </div>
   );
 };

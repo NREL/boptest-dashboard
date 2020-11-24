@@ -16,6 +16,7 @@ interface Data {
   id: number;
   uid: string;
   accountUsername: string;
+  accountEmail: string;
   buildingTypeName: string;
   dateRun: Date;
   totalEnergy: number;
@@ -38,6 +39,7 @@ const createDataFromResult = (result): Data => {
     id: result.id,
     uid: result.uid,
     accountUsername: result.account.name,
+    accountEmail: result.account.email,
     buildingTypeName: result.buildingType.name,
     dateRun: result.dateRun,
     totalEnergy: result.energyUse,

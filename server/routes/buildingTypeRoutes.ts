@@ -7,11 +7,15 @@ import {getBuildingTypes} from '../models/BuildingType';
 export const buildingTypeRouter = express.Router();
 
 buildingTypeRouter.post('/', (req: express.Request, res: express.Response) => {
+  console.log(req.body)
   createBuildingTypes(req.body.buildingTypes)
     .then(buildingTypes => {
       res.json(buildingTypes);
     })
-    .catch(err => console.log('Unable to create building types' + err));
+    .catch(err => {
+      console.log(err);
+      res.status(500).json(err);
+    });
 });
 
 buildingTypeRouter.get('/', (req: express.Request, res: express.Response) => {

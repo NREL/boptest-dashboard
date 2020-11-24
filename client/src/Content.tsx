@@ -6,7 +6,6 @@ import {About} from './Pages/About';
 import {ApiKey} from './Pages/ApiKey';
 import {Dashboard} from './Pages/Dashboard';
 import {Doc} from './Pages/Doc';
-import {Docs} from './Pages/Docs';
 import {Home} from './Pages/Home';
 import {Results} from './Pages/Results';
 import {Settings} from './Pages/Settings';
@@ -32,9 +31,6 @@ export const Content: React.FC = () => {
         </Route>
         <Route path={AppRoute.Dashboard}>
           <Dashboard />
-        </Route>
-        <Route path={AppRoute.Docs}>
-          <Docs />
         </Route>
         <Route path={AppRoute.Doc}>
           <Doc />
