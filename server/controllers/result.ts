@@ -4,6 +4,7 @@ import {getRepository} from 'typeorm';
 import {getAccountByApiKey, getAccountByEmail} from '../models/Account';
 import {createResult, ResultEntity} from '../models/Result';
 import {Result, Signature} from '../../common/interfaces';
+import { accountRouter } from 'routes/accountRoutes';
 
 export function getResults(): Promise<Result[]> {
   // request data
@@ -30,15 +31,20 @@ export function getAllSharedResults(): Promise<Result[]> {
 export function getAllResultsForUser(email: string): Promise<Result[]> {
   const repo = getRepository<Result>(ResultEntity);
 
-  const account = getAccountByEmail(email);
-
-  return repo.find({
-    relations: ['account', 'buildingType'],
-    where: {
-      deleted: false,
-      account: account,
-    },
-  });
+  return getAccountByEmail(email)
+    .then(targetAccount => {
+      console.log(targetAccount);
+      return repo.find({
+        relations: ['account', 'buildingType'],
+        where: {
+          deleted: false,
+          account: targetAccount,
+        },
+      }).then((data) => {
+        console.log(data);
+        return data;
+      });
+    })
 }
 
 // need to account for account misses

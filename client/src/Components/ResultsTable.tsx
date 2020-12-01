@@ -66,7 +66,7 @@ const createRows = (results): Data[] => {
   results.forEach(result => {
     rows.push(createDataFromResult(result));
   });
-
+  console.log('results 2', results, 'rows 2', rows);
   return rows;
 };
 

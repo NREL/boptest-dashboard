@@ -35,17 +35,25 @@ interface Data {
 
 const createDataFromResult = (result): Data => {
   return {
-    resultUid: result.uid,
-    buildingType: result.buildingType.name,
+    id: result.id,
+    uid: result.uid,
+    accountUsername: result.account.name,
+    accountEmail: result.account.email,
+    buildingTypeName: result.buildingType.name,
     dateRun: result.dateRun,
     totalEnergy: result.energyUse,
     thermalDiscomfort: result.thermalDiscomfort,
     aqDiscomfort: result.iaq,
     energy: result.energyUse,
     cost: result.cost,
+    timeRatio: result.timeRatio,
     emissions: result.emissions,
     compTimeRatio: result.timeRatio,
-    isShared: result.isShared,
+    controllerProperties: result.controllerProperties,
+    testTimePeriod: result.testTimePeriod,
+    controlStep: result.controlStep,
+    priceScenario: result.priceScenario,
+    weatherForecastUncertainty: result.weatherForecastUncertainty,
   };
 };
 
@@ -57,7 +65,7 @@ const createRows = (results): Data[] => {
   results.forEach(result => {
     rows.push(createDataFromResult(result));
   });
-
+  console.log('results 1', results, 'rows 1', rows);
   return rows;
 };
 
@@ -398,13 +406,14 @@ export default function DashboardResultsTable(props) {
         selected.slice(selectedIndex + 1)
       );
     }
-
+    console.log('newSelected', newSelected);
     setSelected(newSelected);
   };
 
   const isSelected = (uid: string) => selected.indexOf(uid) !== -1;
 
   const handleRowClick = (event: React.MouseEvent<unknown>, result: Data) => {
+    console.log('result', result);
     props.setSelectedResult(result);
   };
 

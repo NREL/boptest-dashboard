@@ -21,18 +21,15 @@ resultRouter.get('/', (req: express.Request, res: express.Response) => {
     .catch(err => console.log('Unable to get results' + err));
 });
 
-resultRouter.get('/:email', (req: express.Request, res: express.Response) => {
-  let email: string = '';
-  if(TESTING) {
-    email = req.params.email;
-  } else if (req.session != undefined) {
-    email = req.session.email;
-  }
-  getAllResultsForUser(email)
+resultRouter.get('/my-results', (req: express.Request, res: express.Response) => {
+  if (req.session) {
+    console.log(req.session.email);
+    getAllResultsForUser(req.session.email)
     .then(results => {
       res.json(results);
     })
     .catch(err => console.log(`Unable to get results for user ${req.params.email}`, err));
+  }
 });
 // this endpoint is going to be hit a lot if the user is cicking into
 // the detail view of results in the results table.
@@ -41,6 +38,7 @@ resultRouter.get('/:email', (req: express.Request, res: express.Response) => {
 resultRouter.get(
   '/:id/signature',
   (req: express.Request, res: express.Response) => {
+    console.log(req.params.id);
     getSignatureDetailsForResult(req.params.id)
       .then((result: SignatureDetails) => {
         res.json(result);

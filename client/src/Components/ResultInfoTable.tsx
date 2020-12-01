@@ -61,7 +61,7 @@ const getSignatureEndpoint = (resultId: string) => {
 };
 
 export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
-  console.log(props)
+  console.log('props', props)
   const classes = useStyles();
   const [details, setDetails] = useState<SignatureDetails | undefined>(
     undefined

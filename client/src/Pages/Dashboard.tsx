@@ -16,7 +16,7 @@ export const Dashboard: React.FC = () => {
 
   // build out simple data fetcher straight in the useEffect for now
   useEffect(() => {
-    const endpoint = `/api/results/${authedEmail}`;
+    const endpoint = `/api/results/my-results`;
     axios.get(endpoint).then(response => {
       setResults(response.data);
     });
@@ -29,7 +29,11 @@ export const Dashboard: React.FC = () => {
     }
   }, [selectedResult]);
 
-  const handleChange = result => setSelectedResult(result);
+  const handleChange = result => {
+    let updatedResult = {uid: result.resultUid, ...result}
+    console.log('handleChange', updatedResult);
+    setSelectedResult(updatedResult);
+  };
 
   const closeModal = () => setShowResultModal(false);
 
