@@ -22,6 +22,10 @@ export const AccountEntity = new EntitySchema<Account>({
       type: String,
       unique: true,
     },
+    shareAllResults: {
+      type: Boolean,
+      default: true
+    }
   },
   relations: {
     results: {
