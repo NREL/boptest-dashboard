@@ -2,7 +2,7 @@ import express from 'express';
 
 import {getAccount, getAccounts} from '../controllers/account';
 import {Account} from '../../common/interfaces';
-import {getAccountByApiKey, updateName} from '../models/Account';
+import {getAccountByApiKey, updateName, updateGlobalShare} from '../models/Account';
 
 export const accountRouter = express.Router();
 
@@ -33,21 +33,22 @@ accountRouter.get('/dummy', (req: express.Request, res: express.Response) => {
   res.send('Hello world');
 });
 
-// gets an account
-accountRouter.get('/:id', (req: express.Request, res: express.Response) => {
-  getAccount(Number(req.params.id))
-    .then(account => res.json(account))
-    .catch(err => {
-      console.log(`Unable to get account ${req.params.id}`, err);
-      res.status(500).send('Unable to get account.');
-    });
-});
-
 accountRouter.patch('/name', (req: express.Request, res: express.Response) => {
-  updateName(req.body.userId, req.body.newName)
+  updateName(req!.session!.userId, req.body.newName)
     .then(() => {
-      if (req.session) { req.session.name = req.body.newName; }
+      req!.session!.name = req.body.newName;
       res.sendStatus(200)
     })
     .catch(err => res.status(500).json(err));
+});
+
+accountRouter.patch('/global-share', (req: express.Request, res: express.Response) => {
+  updateGlobalShare(req!.session!.userId, req.body.globalShare)
+  .then(() => {
+    req!.session!.globalShare = req.body.globalShare;
+    res.sendStatus(200)
+  })
+  .catch(err => res.status(500).json(err));
+  // console.log(req.body.globalShare);
+  // res.json(req.body.globalShare);
 });

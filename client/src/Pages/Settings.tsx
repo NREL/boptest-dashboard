@@ -79,10 +79,11 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const changePasswordEndpoint = '/api/auth/changePassword';
 const changeUserNameEndpoint = '/api/accounts/name';
+const changeGlobalShareSettingsEndpoint = '/api/accounts//global-share';
 
 export const Settings: React.FC = () => {
 
-  const {authedEmail, authedName, authedId} = useUser();
+  const {authedEmail, authedName, authedId, globalShareSetting, setGlobalShareSetting} = useUser();
   const classes = useStyles();
 
   const [username, setUsername] = useState('');
@@ -124,9 +125,12 @@ export const Settings: React.FC = () => {
   });
 
   const shareResults = event => {
-    // call the share results endpoint with the new value.
-    //event.target.value will be 'yes' or 'no' based on radio button values below
-    console.log(event.target.value);
+    let shareValue;
+    if (event.target.value === 'yes') { shareValue = true}
+    else if (event.target.value === 'no') { shareValue = false}
+    else { shareValue = null }
+    axios.patch(changeGlobalShareSettingsEndpoint, {globalShare: shareValue})
+      .then(() => location.reload())
   };
 
   const changeUserName = () => {
@@ -251,7 +255,23 @@ export const Settings: React.FC = () => {
           Share My Test Results
         </Typography>
       </Box>
-      <RadioGroup onChange={event => shareResults(event)}>
+      <Typography variant="subtitle2">
+        You can choose which results to share or keep private on your dashboard
+        page.
+      </Typography>
+      <RadioGroup value={globalShareSetting} onChange={event => shareResults(event)}>
+        <FormControlLabel
+          value="default"
+          control={
+            <Radio
+              classes={{
+                root: classes.radioRoot,
+                checked: classes.checked,
+              }}
+            />
+          }
+          label="Default, rusults are public/private on an individual basis"
+        />
         <FormControlLabel
           value="yes"
           control={
@@ -274,18 +294,9 @@ export const Settings: React.FC = () => {
               }}
             />
           }
-          label="Keep all my results private"
+          label="No, keep all results private"
         />
       </RadioGroup>
-      <Box fontWeight="fontWeightBold">
-        <Typography variant="h6" className={classes.item}>
-          About sharing results
-        </Typography>
-      </Box>
-      <Typography variant="subtitle2">
-        You can choose which results to share or keep private on your dashboard
-        page.
-      </Typography>
       <Snackbar open={snackMessageOpen} autoHideDuration={6000} onClose={handleSnackMessageClose}>
         <Alert onClose={handleSnackMessageClose} severity={snackMessage[1]}>
           {snackMessage[0]}

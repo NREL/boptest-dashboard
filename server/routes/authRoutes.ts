@@ -37,10 +37,12 @@ authRouter.post('/confirm', (req: express.Request, res: express.Response) => {
 
   confirm(data)
     .then((user: Account) => {
+      console.log(user)
       if (req.session) {
         req.session.email = user.email;
         req.session.name = user.name;
         req.session.userId = `${user.id}`;
+        req.session.globalShare = user.shareAllResults;
       }
       const data = {
         email: user.email,
@@ -63,7 +65,8 @@ authRouter.post('/login', (req: express.Request, res: express.Response) => {
       if (req.session) {
         req.session.email = user.email;
         req.session.name = user.name;
-        req.session.userId = `${user.id}`
+        req.session.userId = `${user.id}`;
+        req.session.globalShare = user.shareAllResults;
       }
       const data = {
         email: user.email,
@@ -80,6 +83,7 @@ authRouter.get('/info', (req: express.Request, res: express.Response) => {
       name: req.session.name,
       email: req.session.email,
       userId: Number(req.session.userId),
+      globalShare: req.session.globalShare
     };
     res.json(response);
   } else {

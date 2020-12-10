@@ -74,7 +74,7 @@ export interface Account {
   email: string;
   apiKey: string;
   results: Result[];
-  shareAllResults: boolean;
+  shareAllResults: boolean | null;
 
 }
 

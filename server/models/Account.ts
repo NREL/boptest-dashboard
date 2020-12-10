@@ -24,7 +24,7 @@ export const AccountEntity = new EntitySchema<Account>({
     },
     shareAllResults: {
       type: Boolean,
-      default: true
+      nullable: true,
     }
   },
   relations: {
@@ -60,8 +60,6 @@ export function createAccount(data: AccountData): Promise<Account> {
 
 export function updateName(id: number, newName: string): Promise<void> {
   const repo = getRepository<Account>(AccountEntity);
-
-  // get current account
   return repo
     .findOneOrFail(id)
     .then(account => {
@@ -69,4 +67,14 @@ export function updateName(id: number, newName: string): Promise<void> {
       repo.save(account);
     })
     .catch(err => console.log('could not update name for account', err));
+}
+
+export function updateGlobalShare(id: number, userShareSetting: boolean | null): Promise<void> {
+  const repo = getRepository<Account>(AccountEntity);
+  return repo
+    .findOneOrFail(id)
+    .then((account: Account) => {
+      account.shareAllResults = userShareSetting;
+      repo.save(account);
+    })
 }

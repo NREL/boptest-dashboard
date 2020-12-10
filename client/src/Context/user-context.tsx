@@ -14,10 +14,21 @@ type Props = {
   children: React.ReactNode;
 };
 
+const assignGlobalShareSetting = (setter, value) => {
+  console.log(value)
+  let setting = '';
+  if (value === true) { setting = 'yes'}
+  else if (value === false) { setting = 'no'}
+  else { setting = 'default'}
+  console.log(setting)
+  setter(setting);
+}
+
 const UserProvider = ({children}: Props) => {
   const [authedEmail, setAuthedEmail] = React.useState('');
   const [authedName, setAuthedName] = React.useState('');
   const [authedId, setAuthedId] = React.useState('');
+  const [globalShareSetting, setGlobalShareSetting] = React.useState('');
 
   const userInfoEndpoint = '/api/auth/info';
 
@@ -26,9 +37,11 @@ const UserProvider = ({children}: Props) => {
     axios
       .get(userInfoEndpoint)
       .then(result => {
+        console.log(result.data)
         setAuthedEmail(result.data.email);
         setAuthedName(result.data.name);
         setAuthedId(result.data.userId);
+        assignGlobalShareSetting(setGlobalShareSetting, result.data.globalShare);
       })
       .catch(err => {
         console.log('couldnt get user info', err);
@@ -37,7 +50,7 @@ const UserProvider = ({children}: Props) => {
 
   return (
     <UserContext.Provider
-      value={{authedEmail, setAuthedEmail, authedName, setAuthedName, authedId}}
+      value={{authedEmail, setAuthedEmail, authedName, setAuthedName, authedId, globalShareSetting, setGlobalShareSetting}}
     >
       {children}
     </UserContext.Provider>
