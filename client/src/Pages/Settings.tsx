@@ -125,7 +125,7 @@ export const Settings: React.FC = () => {
   });
 
   const shareResults = event => {
-    let shareValue;
+    let shareValue: boolean | null;
     if (event.target.value === 'yes') { shareValue = true}
     else if (event.target.value === 'no') { shareValue = false}
     else { shareValue = null }
