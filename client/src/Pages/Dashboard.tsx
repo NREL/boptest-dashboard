@@ -14,12 +14,15 @@ export const Dashboard: React.FC = () => {
 
   const {authedEmail} = useUser();
 
-  // build out simple data fetcher straight in the useEffect for now
-  useEffect(() => {
-    const endpoint = `/api/results/my-results`;
-    axios.get(endpoint).then(response => {
+  const updateResults = () => {
+    axios.get('/api/results/my-results').then(response => {
       setResults(response.data);
     });
+  }
+
+  // build out simple data fetcher straight in the useEffect for now
+  useEffect(() => {
+    updateResults();
   }, []);
 
   // when we get a selected result, show the result modal
@@ -43,6 +46,7 @@ export const Dashboard: React.FC = () => {
       <DashboardResultsTable
         results={results}
         setSelectedResult={handleChange}
+        updateResults={updateResults}
       />
       {showResultModal && (
         <Modal

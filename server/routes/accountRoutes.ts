@@ -49,6 +49,4 @@ accountRouter.patch('/global-share', (req: express.Request, res: express.Respons
     res.sendStatus(200)
   })
   .catch(err => res.status(500).json(err));
-  // console.log(req.body.globalShare);
-  // res.json(req.body.globalShare);
 });

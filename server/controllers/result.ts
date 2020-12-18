@@ -21,10 +21,19 @@ export function getAllSharedResults(): Promise<Result[]> {
   const resultsRepository = getRepository<Result>(ResultEntity);
   return resultsRepository.find({
     relations: ['account', 'buildingType'],
-    where: {
-      deleted: false,
-      isShared: true,
-    },
+    where: (qb:any) => {
+      qb.where(`
+        ("results"."deleted" = false)
+        AND
+        ("results__account"."shareAllResults" is not false)
+        AND
+        (
+          ("results__account"."shareAllResults" is true)
+          OR
+          ("results"."isShared") = true
+        )
+      `)
+    }
   });
 }
 
@@ -33,7 +42,6 @@ export function getAllResultsForUser(email: string): Promise<Result[]> {
 
   return getAccountByEmail(email)
     .then(targetAccount => {
-      console.log(targetAccount);
       return repo.find({
         relations: ['account', 'buildingType'],
         where: {
@@ -41,7 +49,6 @@ export function getAllResultsForUser(email: string): Promise<Result[]> {
           account: targetAccount,
         },
       }).then((data) => {
-        console.log(data);
         return data;
       });
     })
@@ -76,12 +83,8 @@ function createResultAndAssociatedModels(result: any) {
         account: data[0],
         buildingType: data[1],
       };
-
       return createResult(resultData);
-    })
-    // .catch(err =>
-    //   console.log('Something went wrong in the mega creation method', err)
-    // );
+    });
 }
 
 export function createResults(results: any) {
@@ -105,17 +108,24 @@ export function removeResults(ids: number[]): Promise<void>[] {
   });
 }
 
-export function shareResults(ids: number[]): Promise<void>[] {
+export function toggleShared(id: number, share:boolean, sessionId: number): Promise<any> {
   const repo = getRepository<Result>(ResultEntity);
-  return ids.map((id: number) => {
-    return repo
-      .findOneOrFail(id)
-      .then(result => {
-        result.isShared = !result.isShared;
+  return repo.findOneOrFail({
+    relations: ['account'],
+    where: {
+      id,
+    }
+  })
+    .then((result: Result) => {
+      console.log(sessionId)
+      console.log(result)
+      if (result.account.id === sessionId) {
+        result.isShared = share;
         repo.save(result);
-      })
-      .catch(() => console.log('unable to update shared value of result', id));
-  });
+      } else {
+        throw('Not authorized')
+      }
+    });
 }
 
 export function getSignatureDetailsForResult(

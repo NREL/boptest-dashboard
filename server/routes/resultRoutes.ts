@@ -7,7 +7,7 @@ import {
   getSignatureDetailsForResult,
   createResults,
   removeResults,
-  shareResults,
+  toggleShared
 } from '../controllers/result';
 
 export const resultRouter = express.Router();
@@ -16,6 +16,7 @@ const TESTING: boolean = process.env.CONTEXT! === 'testing';
 resultRouter.get('/', (req: express.Request, res: express.Response) => {
   getAllSharedResults()
     .then(results => {
+      console.log(results)
       res.json(results);
     })
     .catch(err => console.log('Unable to get results' + err));
@@ -23,7 +24,6 @@ resultRouter.get('/', (req: express.Request, res: express.Response) => {
 
 resultRouter.get('/my-results', (req: express.Request, res: express.Response) => {
   if (req.session) {
-    console.log(req.session.email);
     getAllResultsForUser(req.session.email)
     .then(results => {
       res.json(results);
@@ -38,7 +38,6 @@ resultRouter.get('/my-results', (req: express.Request, res: express.Response) =>
 resultRouter.get(
   '/:id/signature',
   (req: express.Request, res: express.Response) => {
-    console.log(req.params.id);
     getSignatureDetailsForResult(req.params.id)
       .then((result: SignatureDetails) => {
         res.json(result);
@@ -66,13 +65,12 @@ resultRouter.post('/remove', (req: express.Request, res: express.Response) => {
     .catch(err => res.status(500).send('Unable to remove entities: ' + err));
 });
 
-resultRouter.post('/share', (req: express.Request, res: express.Response) => {
-  // share all these, potentially a list of full results, or maybe just ids
-  Promise.all(shareResults(req.body.results))
+resultRouter.patch('/share',  (req: express.Request, res: express.Response) => {
+  toggleShared(req.body.id, req.body.share, Number(req!.session!.userId))
     .then(() => {
-      res.sendStatus(200);
+      res.send(200);
     })
-    .catch(err =>
-      res.status(500).send('Unable to update shared value of entities: ' + err)
-    );
+    .catch(err => {
+      res.status(500).json(err);
+    });
 });

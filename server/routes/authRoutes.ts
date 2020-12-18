@@ -37,7 +37,6 @@ authRouter.post('/confirm', (req: express.Request, res: express.Response) => {
 
   confirm(data)
     .then((user: Account) => {
-      console.log(user)
       if (req.session) {
         req.session.email = user.email;
         req.session.name = user.name;
@@ -92,7 +91,6 @@ authRouter.get('/info', (req: express.Request, res: express.Response) => {
 });
 
 authRouter.get('/key', (req: express.Request, res: express.Response) => {
-  console.log(req.session);
   if (req.session && req.session.name && req.session.email) {
     getUser(req.session.email)
       .then((user: Account) => {
@@ -149,7 +147,6 @@ authRouter.post(
 authRouter.post(
   '/changePassword',
   (req: express.Request, res: express.Response) => {
-    console.log('made it to change password router');
     changePassword(req.body)
       .then(() => res.status(200).send('Successfully changed your password'))
       .catch(err => res.status(500).json(err));

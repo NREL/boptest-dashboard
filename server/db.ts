@@ -9,9 +9,9 @@ export function connectToDb(withSync: boolean = false) {
     type: 'postgres',
     url: process.env.DATABASE_URL ?? '',
     entities: entityList,
+    logging: true
   })
     .then(() => {
-      console.log('Connection to postgres created');
       if (withSync) {
         const conn = getConnection();
         conn

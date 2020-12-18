@@ -15,12 +15,10 @@ type Props = {
 };
 
 const assignGlobalShareSetting = (setter, value) => {
-  console.log(value)
   let setting = '';
   if (value === true) { setting = 'yes'}
   else if (value === false) { setting = 'no'}
   else { setting = 'default'}
-  console.log(setting)
   setter(setting);
 }
 
@@ -37,7 +35,6 @@ const UserProvider = ({children}: Props) => {
     axios
       .get(userInfoEndpoint)
       .then(result => {
-        console.log(result.data)
         setAuthedEmail(result.data.email);
         setAuthedName(result.data.name);
         setAuthedId(result.data.userId);

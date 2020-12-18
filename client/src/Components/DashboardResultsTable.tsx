@@ -1,4 +1,5 @@
 import React, {useEffect} from 'react';
+import axios from 'axios';
 import clsx from 'clsx';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -83,6 +84,10 @@ interface EnhancedTableProps {
   order: Order;
   orderBy: string;
   rowCount: number;
+}
+
+const toggleShared = (id: number, share: boolean) => {
+  return axios.patch('/api/results/share', {id, share})
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
@@ -323,7 +328,6 @@ export default function DashboardResultsTable(props) {
   const isSelected = (uid: string) => selected.indexOf(uid) !== -1;
 
   const handleRowClick = (event: React.MouseEvent<unknown>, result: Data) => {
-    console.log('result', result);
     props.setSelectedResult(result);
   };
 
@@ -333,10 +337,14 @@ export default function DashboardResultsTable(props) {
   ) => {
     // need to update the result that is shared. make a call to the API, and update the UI
     event.stopPropagation();
-
-    var actualResult = rows[rows.indexOf(result)];
-    actualResult.isShared = !actualResult.isShared;
-    setChecked(true);
+    console.log(result.id, result.isShared);
+    toggleShared(result.id, !result.isShared)
+      .then(() => props.updateResults())
+      // .then(res => console.log(res));
+      // TODO - handle graceful toggle here
+      // console.log(result.isShared)
+      // result.isShared = !result.isShared;
+      // console.log(result.isShared);
   };
 
   return (
