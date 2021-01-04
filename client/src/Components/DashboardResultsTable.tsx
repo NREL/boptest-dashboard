@@ -321,7 +321,6 @@ export default function DashboardResultsTable(props) {
         selected.slice(selectedIndex + 1)
       );
     }
-    console.log('newSelected', newSelected);
     setSelected(newSelected);
   };
 
@@ -337,14 +336,8 @@ export default function DashboardResultsTable(props) {
   ) => {
     // need to update the result that is shared. make a call to the API, and update the UI
     event.stopPropagation();
-    console.log(result.id, result.isShared);
     toggleShared(result.id, !result.isShared)
       .then(() => props.updateResults())
-      // .then(res => console.log(res));
-      // TODO - handle graceful toggle here
-      // console.log(result.isShared)
-      // result.isShared = !result.isShared;
-      // console.log(result.isShared);
   };
 
   return (

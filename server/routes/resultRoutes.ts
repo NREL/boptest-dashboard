@@ -16,7 +16,6 @@ const TESTING: boolean = process.env.CONTEXT! === 'testing';
 resultRouter.get('/', (req: express.Request, res: express.Response) => {
   getAllSharedResults()
     .then(results => {
-      console.log(results)
       res.json(results);
     })
     .catch(err => console.log('Unable to get results' + err));

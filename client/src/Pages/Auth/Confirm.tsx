@@ -83,7 +83,7 @@ export const Confirm: React.FC = () => {
         // redirect to home page
         history.push('/');
       })
-      .catch(err => console.log('could not confirm the user', err));
+      .catch(err => console.log('could not confirm the user', err)); // TODO
   };
 
   const title = `Confirm your email address (${username})`;

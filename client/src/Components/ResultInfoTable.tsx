@@ -61,7 +61,6 @@ const getSignatureEndpoint = (resultId: string) => {
 };
 
 export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
-  console.log('props', props)
   const classes = useStyles();
   const [details, setDetails] = useState<SignatureDetails | undefined>(
     undefined
@@ -76,8 +75,6 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
     // get the signature details for the result
     axios.get(getSignatureEndpoint(props.result.uid)).then(response => {
       setDetails(response.data);
-      console.log('response details', details);
-      console.log('response data', response.data);
     });
 
     // get the entire object of controller properties ready to go

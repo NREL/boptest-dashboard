@@ -8,8 +8,7 @@ export function connectToDb(withSync: boolean = false) {
   createConnection({
     type: 'postgres',
     url: process.env.DATABASE_URL ?? '',
-    entities: entityList,
-    logging: true
+    entities: entityList
   })
     .then(() => {
       if (withSync) {

@@ -45,8 +45,6 @@ export const KPITable: React.FC<KPITableProps> = props => {
 
     axios.get(getSignatureEndpoint(props.result.uid)).then(response => {
       setDetails(response.data);
-      console.log('response details', details);
-      console.log('response data', response.data);
     });
   }, [props.result]);
 

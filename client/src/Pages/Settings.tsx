@@ -79,7 +79,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const changePasswordEndpoint = '/api/auth/changePassword';
 const changeUserNameEndpoint = '/api/accounts/name';
-const changeGlobalShareSettingsEndpoint = '/api/accounts//global-share';
+const changeGlobalShareSettingsEndpoint = '/api/accounts/global-share';
 
 export const Settings: React.FC = () => {
 

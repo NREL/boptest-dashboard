@@ -34,7 +34,6 @@ export const Dashboard: React.FC = () => {
 
   const handleChange = result => {
     let updatedResult = {uid: result.resultUid, ...result}
-    console.log('handleChange', updatedResult);
     setSelectedResult(updatedResult);
   };
 

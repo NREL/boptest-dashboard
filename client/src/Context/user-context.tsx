@@ -41,7 +41,7 @@ const UserProvider = ({children}: Props) => {
         assignGlobalShareSetting(setGlobalShareSetting, result.data.globalShare);
       })
       .catch(err => {
-        console.log('couldnt get user info', err);
+        console.log('couldnt get user info', err); // TODO
       });
   });
 

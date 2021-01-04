@@ -54,7 +54,7 @@ export const AuthInfo: React.FC = () => {
         setAuthedName('');
       })
       .catch(err => {
-        console.log('unable to log out the user', err);
+        console.log('unable to log out the user', err); // TODO
       });
   }
 

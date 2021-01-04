@@ -34,7 +34,18 @@ export function getAllSharedResults(): Promise<Result[]> {
         )
       `)
     }
-  });
+  })
+  .then(results => {
+    results.forEach(result => {
+      delete result.account.apiKey;
+      delete result.account.shareAllResults;
+      delete result.account.id
+      delete result.buildingType.markdown;
+      delete result.buildingType.markdownURL;
+      delete result.buildingType.pdfURL;
+    });
+    return results;
+  })
 }
 
 export function getAllResultsForUser(email: string): Promise<Result[]> {
