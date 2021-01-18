@@ -17,7 +17,7 @@ import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
-import DeleteIcon from '@material-ui/icons/Delete';
+import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import { Data, createRows, Order, stableSort, HeadCell, getComparator} from '../Lib/TableHelpers';
 
@@ -111,7 +111,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
       <TableRow>
         <TableCell padding="checkbox">
           <Checkbox
-            indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
             inputProps={{'aria-label': 'select all results'}}
@@ -124,7 +123,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
         {headCells.map(headCell => (
           <TableCell
             key={headCell.id}
-            //align={headCell.numeric ? 'right' : 'left'}
             align={'center'}
             padding={headCell.disablePadding ? 'none' : 'default'}
             sortDirection={orderBy === headCell.id ? order : false}
@@ -157,7 +155,7 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
     },
     title: {
       flex: '1 1 100%',
-    },
+    }
   })
 );
 
@@ -191,19 +189,6 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
           {totalResults} Total Results
         </Typography>
       )}
-      {numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <IconButton aria-label="delete">
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <Tooltip title="Filter list">
-          <IconButton aria-label="filter list">
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
-      )}
     </Toolbar>
   );
 };
@@ -219,10 +204,14 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     button: {
       justifyContent: 'center',
-      padding: '0 16px 0 16px',
-      margin: '0 8px 0 8px',
       backgroundColor: 'rgb(0, 150, 136)',
       color: 'white',
+    },
+    downloadButtonContainer: {
+      width: '90%',
+      display: 'flex',
+      flexDirection: 'row-reverse',
+      margin: '0 auto'
     },
     headerCell: {
       fontWeight: 'bold',
@@ -273,7 +262,6 @@ export default function DashboardResultsTable(props) {
 
   const [checked, setChecked] = React.useState<boolean>(false);
 
-  // set the rows from the results that we get
   useEffect(() => {
     setRows(createRows(props.results));
   }, [props]);
@@ -294,7 +282,7 @@ export default function DashboardResultsTable(props) {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelecteds = rows.map(r => r.resultUid);
+      const newSelecteds = rows.map(r => r.id);
       setSelected(newSelecteds);
       return;
     }
@@ -334,11 +322,44 @@ export default function DashboardResultsTable(props) {
     event: React.MouseEvent<unknown>,
     result: Data
   ) => {
-    // need to update the result that is shared. make a call to the API, and update the UI
     event.stopPropagation();
     toggleShared(result.id, !result.isShared)
       .then(() => props.updateResults())
   };
+
+  const downloadResultsToCSV = () => {
+    const rowsToDl = rows.filter(row => selected.indexOf(row.id) !== -1);
+
+    const getFlatKeyValPairFromObj = obj => {
+      const keys = [];
+      const values = [];
+      const traverse = node => {
+        for (const [key, val] of Object.entries(node)) {
+          if (typeof val === 'object') {
+            traverse(val);
+          } else {
+            keys.push(key);
+            values.push(val);
+          }
+        }
+      }
+      traverse(obj);
+      return [keys, values];
+    }
+
+    const headings = [getFlatKeyValPairFromObj(rowsToDl[0])[0]];
+    const values = rowsToDl.map(row => getFlatKeyValPairFromObj(row)[1])
+    const allData = [...headings, ...values];
+  
+    let csvContent = "data:text/csv;charset=utf-8," + allData.map(e => e.join(",")).join("\n");
+    let encodedUri = encodeURI(csvContent);
+    let link = document.createElement("a");
+    
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "data.csv");
+    document.body.appendChild(link);
+    link.click();
+  }
 
   return (
     <div className={classes.root}>
@@ -347,21 +368,22 @@ export default function DashboardResultsTable(props) {
           totalResults={rows.length}
           numSelected={selected.length}
         />
-        <div>
-          <Button className={classes.button} variant="contained" size="small">
-            Remove Test Results
-          </Button>
-          <Button className={classes.button} variant="contained" size="small">
-            Download Test Results
+        <div className={classes.downloadButtonContainer}>
+          <Button 
+            disabled={selected.length === 0}
+            className={classes.button}
+            variant="contained"
+            size="medium"
+            onClick={downloadResultsToCSV}
+          >
+            Download Selected (CSV)
           </Button>
         </div>
         <TableContainer>
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
-            //size={dense ? 'small' : 'medium'}
             size={'medium'}
-            // aria-label="enhanced table"
           >
             <EnhancedTableHead
               classes={classes}
@@ -376,7 +398,7 @@ export default function DashboardResultsTable(props) {
               {stableSort(rows, getComparator(order, orderBy))
                 //.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
-                  const isItemSelected = isSelected(row.resultUid);
+                  const isItemSelected = isSelected(row.id);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   var dateString = new Date(row.dateRun).toLocaleString();
@@ -388,7 +410,7 @@ export default function DashboardResultsTable(props) {
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
-                      key={row.resultUid}
+                      key={row.id}
                       selected={isItemSelected}
                       classes={{selected: classes.selected}}
                       className={classes.tableRow}
@@ -402,7 +424,7 @@ export default function DashboardResultsTable(props) {
                             color: '#078b75',
                           }}
                           onClick={event =>
-                            handleCheckboxClick(event, row.resultUid)
+                            handleCheckboxClick(event, row.id)
                           }
                         />
                       </TableCell>

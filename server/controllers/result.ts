@@ -221,7 +221,7 @@ function getKPIRanges(results: Result[], result: Result): SignatureDetails {
     }
 
     if (res.iaq > iaqMax) {
-      iaqMin = res.iaq;
+      iaqMax = res.iaq;
     }
 
     if (res.timeRatio < timeMin) {
