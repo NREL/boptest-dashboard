@@ -53,16 +53,17 @@ resultRouter.post('/', (req: express.Request, res: express.Response) => {
     .catch(err => res.status(500).json(err));
 });
 
-resultRouter.post('/remove', (req: express.Request, res: express.Response) => {
-  // remove all these results from the db. Probs getting a list of ids.
-  // (potentially full results tho)
-
-  Promise.all(removeResults(req.body.resultIds))
-    .then(() => {
-      res.sendStatus(200);
-    })
-    .catch(err => res.status(500).send('Unable to remove entities: ' + err));
-});
+/*
+Not Implemented for the time being
+Will be a DELETE request
+*/
+// resultRouter.post('/remove', (req: express.Request, res: express.Response) => {
+//   Promise.all(removeResults(req.body.resultIds))
+//     .then(() => {
+//       res.sendStatus(200);
+//     })
+//     .catch(err => res.status(500).send('Unable to remove entities: ' + err));
+// });
 
 resultRouter.patch('/share',  (req: express.Request, res: express.Response) => {
   toggleShared(req.body.id, req.body.share, Number(req!.session!.userId))

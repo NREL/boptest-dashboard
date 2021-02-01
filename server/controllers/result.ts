@@ -4,7 +4,6 @@ import {getRepository} from 'typeorm';
 import {getAccountByApiKey, getAccountByEmail} from '../models/Account';
 import {createResult, ResultEntity} from '../models/Result';
 import {Result, Signature} from '../../common/interfaces';
-import { accountRouter } from 'routes/accountRoutes';
 
 export function getResults(): Promise<Result[]> {
   // request data

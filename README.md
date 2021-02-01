@@ -42,9 +42,9 @@ The last two Environment Variables are comma separated lists of email addresses 
 Example:
 `SUPER_USERS=anemail@gmail.com,anotheremail@gmail.com,finalemail@gmail.com`
 
-The SUPER_USERS have access to all routes in the app including ones that create/update building types, can post new results to the dashboard, etc.
+The `SUPER_USERS` have access to all routes in the app including ones that create/update building types, can post new results to the dashboard, etc.
 
-The DEV_EMAILS is a list of users that can hit `/api/setup/db` to seed the current db with some dummy data for use in development.
+Similarly, `SUPER_USERS` may send a POST request to `/api/setup/db` to seed the database with dummy data for development.
 
 ### Launch Server
 

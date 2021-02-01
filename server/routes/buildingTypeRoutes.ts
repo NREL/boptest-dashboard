@@ -4,10 +4,10 @@ import {createBuildingTypes} from '../controllers/buildingTypes';
 import {getBuildingTypes} from '../models/BuildingType';
 import { Account } from '../../common/interfaces';
 
+export const buildingTypeRouter = express.Router();
+
 const superUsers: string = process.env.SUPER_USERS!
 const suEmails: string[] = superUsers.split(',');
-
-export const buildingTypeRouter = express.Router();
 
 buildingTypeRouter.post('/', (req: express.Request, res: express.Response) => {
   getAccountByApiKey(req.body.apiKey)
