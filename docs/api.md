@@ -73,20 +73,20 @@ POST `api/buildingTypes`
 - `pdfURL` REQUIRED - String
 - `markdownURL` REQUIRED - String
 
-- Note: The 2 URLs above must be from a trusted source and be the raw version of the git link. See Example Payload below.
-
 ### Example Payload:
 
+#### Note: the API Key must be one associated with a SUPER_USER email as defined in your environment file.
+
 ```json
-{
-  "buildingTypes": [
-    {
-      "uid": "13245kasdjfn",
-      "name": "Posty Building 3.0",
-      // These 2 urls need to be from trusted sources and the raw version of the git link
-      "pdfURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/someFile.pdf",
-      "markdownURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/README.md"
-    }
-  ]
+{{
+    "buildingTypes": [
+        {
+            "uid": "two",
+            "name": "Other Large Building",
+            "pdfURL": "URL_TO_PULIC_PDF",
+            "markdownURL": "URL_TO_PUBLIC_MARKDOWN_FILE"
+        }
+    ],
+    "apiKey": "KEY_FROM_YOUR_DASHBOARD_HERE"
 }
 ```
