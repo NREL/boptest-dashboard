@@ -1,7 +1,7 @@
 import express from 'express';
 import {getAccountByApiKey} from '../models/Account';
 import {createBuildingTypes} from '../controllers/buildingTypes';
-import {getBuildingTypes} from '../models/BuildingType';
+import {getBuildingTypes, getBuildingTypeByUid, updateBuildingType} from '../models/BuildingType';
 import { Account } from '../../common/interfaces';
 
 export const buildingTypeRouter = express.Router();
@@ -29,13 +29,44 @@ buildingTypeRouter.post('/', (req: express.Request, res: express.Response) => {
   })
 });
 
+buildingTypeRouter.put('/', (req: express.Request, res: express.Response) => {
+  getAccountByApiKey(req.body.apiKey)
+  .then((accout: Account) => {
+    if (suEmails.includes(accout.email)) {
+      getBuildingTypeByUid(req.param('uid'))
+      .then(buildingType => {
+        updateBuildingType(buildingType, req.body.buildingTypes[0]);
+      })
+      .then(buildingType => res.json(buildingType))
+      .catch(err => {
+        res.status(500).json(err);
+      });
+    } else {
+      res.send(401);
+    }
+  })
+  .catch(err => {
+    res.json(err);
+  })
+});
+
 buildingTypeRouter.get('/', (req: express.Request, res: express.Response) => {
   getBuildingTypes()
     .then(buildingTypes => {
       res.json(buildingTypes);
     })
     .catch(err => {
-      console.log(err);
+      res.status(500).json(err);
+    });
+});
+
+
+buildingTypeRouter.get('/building', (req: express.Request, res: express.Response) => {
+  getBuildingTypeByUid(req.param('uid'))
+    .then(buildingType => {
+      res.json(buildingType);
+    })
+    .catch(err => {
       res.status(500).json(err);
     });
 });

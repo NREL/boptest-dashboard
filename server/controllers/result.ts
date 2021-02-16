@@ -1,5 +1,5 @@
 import {SignatureDetails} from './../../common/interfaces';
-import {getBuildingType} from './../models/BuildingType';
+import { getBuildingTypeByUid} from './../models/BuildingType';
 import {getRepository} from 'typeorm';
 import {getAccountByApiKey, getAccountByEmail} from '../models/Account';
 import {createResult, ResultEntity} from '../models/Result';
@@ -67,7 +67,7 @@ export function getAllResultsForUser(email: string): Promise<Result[]> {
 // need to account for account misses
 function createResultAndAssociatedModels(result: any) {
   const account = getAccountByApiKey(result.account.apiKey);
-  const buildingType = getBuildingType(result.buildingType.id);
+  const buildingType = getBuildingTypeByUid(result.buildingType.uid);
 
   return Promise.all([account, buildingType])
     .then(data => {
@@ -105,18 +105,19 @@ export function createResults(results: any) {
   );
 }
 
-export function removeResults(ids: number[]): Promise<void>[] {
-  const repo = getRepository<Result>(ResultEntity);
-  return ids.map((id: number) => {
-    return repo
-      .findOneOrFail(id)
-      .then(result => {
-        result.deleted = true;
-        repo.save(result);
-      })
-      .catch(() => console.log('unable to remove result', id));
-  });
-}
+/*Not implemented for the time being*/
+// export function removeResults(ids: number[]): Promise<void>[] {
+//   const repo = getRepository<Result>(ResultEntity);
+//   return ids.map((id: number) => {
+//     return repo
+//       .findOneOrFail(id)
+//       .then(result => {
+//         result.deleted = true;
+//         repo.save(result);
+//       })
+//       .catch(() => console.log('unable to remove result', id));
+//   });
+// }
 
 export function toggleShared(id: number, share:boolean, sessionId: number): Promise<any> {
   const repo = getRepository<Result>(ResultEntity);
@@ -127,8 +128,6 @@ export function toggleShared(id: number, share:boolean, sessionId: number): Prom
     }
   })
     .then((result: Result) => {
-      console.log(sessionId)
-      console.log(result)
       if (result.account.id === sessionId) {
         result.isShared = share;
         repo.save(result);

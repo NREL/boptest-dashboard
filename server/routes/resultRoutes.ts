@@ -6,7 +6,6 @@ import {
   getAllSharedResults,
   getSignatureDetailsForResult,
   createResults,
-  removeResults,
   toggleShared
 } from '../controllers/result';
 
