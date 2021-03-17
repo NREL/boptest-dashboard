@@ -1,14 +1,19 @@
 import {CognitoUser, CognitoUserSession} from 'amazon-cognito-identity-js';
-import {confirmRegistration, loginUser, signupUser} from './../cognito';
-import {getUser, createAccountFromCognitoUser} from './../controllers/account';
+import {confirmRegistration, loginUser, signupCognitoUser} from './../cognito';
+import {getUser, createAccountFromSignup} from './../controllers/account';
 import {ConfirmData, LoginData, SignupData} from '../../common/interfaces';
 
+const TESTING: boolean = process.env.CONTEXT! === 'testing';
+
 export function signup(signupData: SignupData): Promise<any> {
-  return signupUser(signupData).then((result: any) => {
-    var cognitoUser = result.user;
-    // create account from cognito User
-    return createAccountFromCognitoUser(cognitoUser, signupData);
-  });
+  if (TESTING) {
+    return createAccountFromSignup(signupData);
+  }
+  else {
+    return signupCognitoUser(signupData).then((result: any) => {
+      return createAccountFromSignup(signupData);
+    });
+  }
 }
 
 export function confirm(confirmData: ConfirmData): Promise<any> {
@@ -19,7 +24,12 @@ export function confirm(confirmData: ConfirmData): Promise<any> {
 }
 
 export function login(loginData: LoginData): Promise<any> {
-  return loginUser(loginData).then((result: CognitoUserSession) => {
-    return getUser(result.getIdToken().payload.email);
-  });
+  if (TESTING) {
+    return getUser(loginData.email);
+  }
+  else {
+    return loginUser(loginData).then((result: CognitoUserSession) => {
+      return getUser(result.getIdToken().payload.email);
+    });
+  }
 }

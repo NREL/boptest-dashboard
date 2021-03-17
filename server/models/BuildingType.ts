@@ -57,7 +57,7 @@ export function updateBuildingType(
 ): Promise<BuildingType> {
   const buildingTypeRepo = getRepository<BuildingType>(BuildingTypeEntity);
   return axios.get(newData.markdownURL).then(res => {
-    newData.markdown = res.data;
+    building.markdown = res.data;
     building.markdownURL = newData.markdownURL;
     building.name = newData.name;
     building.pdfURL = newData.pdfURL;

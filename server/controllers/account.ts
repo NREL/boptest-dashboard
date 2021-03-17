@@ -1,5 +1,4 @@
 import {SignupData} from './../../common/interfaces';
-import {CognitoUser} from 'amazon-cognito-identity-js';
 import {getRepository} from 'typeorm';
 import {Account} from '../../common/interfaces';
 import {AccountEntity, createAccount} from '../models/Account';
@@ -12,11 +11,12 @@ export function getAccount(id: number): Promise<Account> {
   return repo.findOneOrFail(id);
 }
 
-export function getAccounts(): Promise<Account[]> {
-  // request data
-  const accountsRepository = getRepository<Account>(AccountEntity);
-  return accountsRepository.find({relations: ['results']});
-}
+// NOT Used
+// export function getAccounts(): Promise<Account[]> {
+//   // request data
+//   const accountsRepository = getRepository<Account>(AccountEntity);
+//   return accountsRepository.find({relations: ['results']});
+// }
 
 export function createAccounts(accounts: any): Promise<Account[]> {
   return Promise.all(
@@ -34,8 +34,7 @@ export function getUser(email: string): Promise<Account> {
   });
 }
 
-export function createAccountFromCognitoUser(
-  user: CognitoUser,
+export function createAccountFromSignup(
   signupData: SignupData
 ) {
   const repo = getRepository<Account>(AccountEntity);
