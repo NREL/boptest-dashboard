@@ -65,7 +65,7 @@ describe('Main', () => {
         expect(res.status).toEqual(200);
         expect(res.data.email).toEqual('email1@email.com');
       })
-      .catch(err => {
+      .catch(() => {
         // We should never hit the un-happy path.
         expect(false).toEqual(true);
       });
@@ -104,9 +104,8 @@ describe('Main', () => {
       .then(res => {
         expect(res.status).toEqual(200);
       })
-      .catch(err => {
+      .catch(() => {
         // We should never hit the un-happy path.
-        console.log(err);
         expect(false).toEqual(true);
       });
   });
@@ -122,12 +121,31 @@ describe('Main', () => {
         return res.data.apiKey;
       })
       .then(key => session.post(buildingRoute, {buildingTypes: [mockBuilding2], apiKey: key}))
-      .then(res => {
+      .then(() => {
         // we should never hit the happy path
         expect(false).toEqual(true);
       })
       .catch(err => {
         expect(err.response.status).toEqual(401);
       });
+  });
+
+  test('Regular user can access buildings posted by SU', () => {
+    return session.post(authRoute + '/login', nonSuLogin)
+      .then(res => {
+        expect(res.status).toEqual(200);
+      })
+      .then(() => session.get(buildingRoute))
+      .then(res => {
+        expect(res.data.length).toEqual(1);
+        expect(res.data[0].uid).toEqual(mockBuilding1.uid);
+        expect(res.data[0].name).toEqual(mockBuilding1.name);
+        expect(res.data[0].markdownURL).toEqual(mockBuilding1.markdownURL);
+        expect(res.data[0].pdfURL).toEqual(mockBuilding1.pdfURL);
+      })
+      .catch(() => {
+        // we should never hit the un-happy path
+        expect(false).toEqual(true);
+      })
   });
 });
