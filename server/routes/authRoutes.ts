@@ -86,7 +86,7 @@ authRouter.get('/info', (req: express.Request, res: express.Response) => {
     };
     res.json(response);
   } else {
-    res.status(403).send('User is not logged in');
+    res.status(401).send('User is not logged in');
   }
 });
 
@@ -100,7 +100,7 @@ authRouter.get('/key', (req: express.Request, res: express.Response) => {
         res.status(501).send(err);
       });
   } else {
-    res.status(403).send('User is not logged in');
+    res.status(401).send('User is not logged in');
   }
 });
 

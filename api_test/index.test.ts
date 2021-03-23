@@ -2,9 +2,18 @@ const axios = require('axios').default;
 const axiosCookieJarSupport = require('axios-cookiejar-support').default;
 const tough = require('tough-cookie');
 
-import { LoginData, SignupData} from '../common/interfaces';
+import {
+  suLogin,
+  nonSuLogin,
+  suSignup,
+  mockBuilding1,
+  mockBuilding2,
+  nonSuSignup,
+  nnonexistentUserLogin
+} from './mockPayloads';
 
 const authRoute = `http://${process.env.SERVER_HOST}:8080/api/auth`;
+const buildingRoute = `http://${process.env.SERVER_HOST}:8080/api/buildingTypes`
 
 const session = axios.create({
   jar: new tough.CookieJar(),
@@ -14,34 +23,6 @@ const session = axios.create({
 axiosCookieJarSupport(session);
 session.defaults.jar = new tough.CookieJar();
 session.defaults.withCredentials = true;
-
-
-const suSignup: SignupData = {
-  username: 'user1',
-  email: 'email1@email.com',
-  password: 'pass'
-};
-
-const suLogin: LoginData = {
-  email: 'email1@email.com',
-  password: `doesn't matter.`
-};
-
-const nonSuSignup: SignupData = {
-  username: 'user2',
-  email: 'a@email.com',
-  password: 'pass'
-};
-
-const nonSuLogin: LoginData = {
-  email: 'a@email.com',
-  password: `doesn't matter.`
-};
-
-const nnonexistentUserLogin: LoginData = {
-  email: 'doesNot@exist.com',
-  password: `doesn't matter.`
-}
 
 describe('Main', () => {
   beforeAll((done) => {
@@ -105,7 +86,48 @@ describe('Main', () => {
         expect(false).toEqual(true);
       })
       .catch(err => {
-        expect(err.response.status).toEqual(403);
+        expect(err.response.status).toEqual(401);
+      });
+  });
+
+  test('SU can post a building with their API Key', () => {
+    return session.post(authRoute + '/login', suLogin)
+      .then(res => {
+        expect(res.status).toEqual(200);
+      })
+      .then(() => session.get(authRoute + '/key'))
+      .then(res => {
+        expect(res.status).toEqual(200);
+        return res.data.apiKey;
+      })
+      .then(key => session.post(buildingRoute, {buildingTypes: [mockBuilding1], apiKey: key}))
+      .then(res => {
+        expect(res.status).toEqual(200);
+      })
+      .catch(err => {
+        // We should never hit the un-happy path.
+        console.log(err);
+        expect(false).toEqual(true);
+      });
+  });
+
+  test('Regular user cannot post a building with their API Key', () => {
+    return session.post(authRoute + '/login', nonSuLogin)
+      .then(res => {
+        expect(res.status).toEqual(200);
+      })
+      .then(() => session.get(authRoute + '/key'))
+      .then(res => {
+        expect(res.status).toEqual(200);
+        return res.data.apiKey;
+      })
+      .then(key => session.post(buildingRoute, {buildingTypes: [mockBuilding2], apiKey: key}))
+      .then(res => {
+        // we should never hit the happy path
+        expect(false).toEqual(true);
+      })
+      .catch(err => {
+        expect(err.response.status).toEqual(401);
       });
   });
 });
