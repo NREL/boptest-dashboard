@@ -81,11 +81,31 @@ describe('Main', () => {
       })
       .then(() => session.get(authRoute + '/info'))
       .then(res => {
+        expect(res.status).toEqual(200);
         expect(res.data.email).toEqual('email1@email.com');
       })
       .catch(err => {
         // We should never hit the un-happy path.
         expect(false).toEqual(true);
+      });
+  });
+  
+  test('Logged out user cannot access their information', () => {
+    return session.post(authRoute + '/login', suLogin)
+      .then(res => {
+        expect(res.status).toEqual(200);
+      })
+      .then(() => session.post(authRoute + '/logout'))
+      .then(res => {
+        expect(res.status).toEqual(200);
+      })
+      .then(() => session.get(authRoute + '/info'))
+      .then(() => {
+        // We should never hit the happy path.
+        expect(false).toEqual(true);
+      })
+      .catch(err => {
+        expect(err.response.status).toEqual(403);
       });
   });
 });
