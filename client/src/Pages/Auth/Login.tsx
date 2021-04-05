@@ -4,22 +4,28 @@ import {Link, useHistory} from 'react-router-dom';
 import {Button, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import {useUser} from './../../Context/user-context';
 import {LoginData} from './../../../../common/interfaces';
 import {AppRoute} from '../../enums';
 
+const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      padding: '16px 0 0 16px',
-      width: '60%',
-      margin: 'auto',
+      padding: '5em',
+      width: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
     },
     paper: {
-      padding: '16px 56px 56px 40px',
-      width: '60%',
-      margin: 'auto',
+      padding: '1em',
+      width: '50%'
     },
     fields: {
       display: 'flex',
@@ -72,6 +78,9 @@ export const Login: React.FC = () => {
   // state values for all the text fields
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [snackMessageOpen, setSnackMessageOpen] = React.useState(false);
+  const [snackMessage, setSnackMessage] = React.useState('');
 
   const {setAuthedEmail, setAuthedName} = useUser();
 
@@ -82,7 +91,13 @@ export const Login: React.FC = () => {
     setPassword(e.target.value);
   };
 
+  const handleSnackMessageClose = (_, reason) => {
+    if (reason === 'clickaway') { return; }
+    setSnackMessageOpen(false);
+  };
+
   const signIn = () => {
+    setIsLoading(true);
     const loginData: LoginData = {
       email,
       password,
@@ -91,75 +106,84 @@ export const Login: React.FC = () => {
     axios
       .post(loginEndpoint, loginData)
       .then(res => {
-        // need to set the user as logged in via context
         setAuthedEmail(res.data.email);
         setAuthedName(res.data.name);
-
-        // redirect to the home page
         history.push('/');
       })
-      .catch(err => console.log('could not log the user in', err));
+      .catch(err => {
+        setIsLoading(false);
+        setSnackMessage(err.response.data.message);
+        setSnackMessageOpen(true);
+      });
   };
 
   return (
     <div className={classes.root}>
-      <Paper className={classes.paper}>
-        <ValidatorForm onSubmit={signIn} className={classes.fields}>
-          <Typography variant="h6" className={classes.field}>
-            SIGN IN
-          </Typography>
-          <div className={classes.field}>
-            <TextValidator
-              label="Email"
-              onChange={handleEmailChange}
-              id="email"
-              name="email"
-              variant="outlined"
-              value={email}
-              validators={['required', 'isEmail']}
-              errorMessages={[
-                'This field is required',
-                'This field needs to be an email address',
-              ]}
-              className={classes.validateField}
-            />
-          </div>
-          <div className={classes.field}>
-            <TextValidator
-              label="Password"
-              onChange={handlePasswordChange}
-              id="password"
-              name="password"
-              type="password"
-              variant="outlined"
-              value={password}
-              validators={['required']}
-              errorMessages={['This field is required']}
-              className={classes.validateField}
-            />
-          </div>
-          {/* buttons */}
-          <Button
-            variant="contained"
-            size="small"
-            className={classes.signInButton}
-            type="submit"
-          >
-            SIGN IN
-          </Button>
-          <div className={classes.actionItems}>
-            <Link
-              to={AppRoute.ForgotPassword}
-              className={classes.forgotPassword}
+      { isLoading 
+        ? <CircularProgress /> 
+        : <Paper className={classes.paper}>
+          <ValidatorForm onSubmit={signIn} className={classes.fields}>
+            <Typography variant="h6" className={classes.field}>
+              SIGN IN
+            </Typography>
+            <div className={classes.field}>
+              <TextValidator
+                label="Email"
+                onChange={handleEmailChange}
+                id="email"
+                name="email"
+                variant="outlined"
+                value={email}
+                validators={['required', 'isEmail']}
+                errorMessages={[
+                  'This field is required',
+                  'This field needs to be an email address',
+                ]}
+                className={classes.validateField}
+              />
+            </div>
+            <div className={classes.field}>
+              <TextValidator
+                label="Password"
+                onChange={handlePasswordChange}
+                id="password"
+                name="password"
+                type="password"
+                variant="outlined"
+                value={password}
+                validators={['required']}
+                errorMessages={['This field is required']}
+                className={classes.validateField}
+              />
+            </div>
+            {/* buttons */}
+            <Button
+              variant="contained"
+              size="small"
+              className={classes.signInButton}
+              type="submit"
             >
-              Forgot Password
-            </Link>
-            <Link to={'/register'} className={classes.registerLink}>
-              Create an Account
-            </Link>
-          </div>
-        </ValidatorForm>
-      </Paper>
+              SIGN IN
+            </Button>
+            <div className={classes.actionItems}>
+              <Link
+                to={AppRoute.ForgotPassword}
+                className={classes.forgotPassword}
+              >
+                Forgot Password
+              </Link>
+              <Link to={'/register'} className={classes.registerLink}>
+                Create an Account
+              </Link>
+            </div>
+          </ValidatorForm>
+        </Paper>
+      }
+      <Snackbar open={snackMessageOpen} autoHideDuration={6000} onClose={handleSnackMessageClose}>
+        <Alert onClose={handleSnackMessageClose} severity="error">
+          {snackMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

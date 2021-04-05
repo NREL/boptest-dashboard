@@ -1,4 +1,5 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import {Box, Button, Grid, Typography} from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import {ResultsQuickView} from './../Components/ResultsQuickView';
@@ -42,6 +43,13 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'rgb(0, 150, 136)',
       color: 'white',
     },
+    wideGridItem: {
+      borderRight: '1px solid lightgray'
+    },
+    link: {
+      color: 'white',
+      textDecoration: 'none',
+    },
   })
 );
 
@@ -53,7 +61,7 @@ export const Home: React.FC = () => {
       {/* this grid holds the entire page to split into 2 horizontal slices */}
       <Grid container spacing={4}>
         {/* this grid item holds the chunkier left side with a long image and text on bottom */}
-        <Grid item xs={9}>
+        <Grid className={classes.wideGridItem} item xs={9}>
           {/* make new grid here for inside the other grid */}
           <div className={classes.imageContainer}>
             <img
@@ -67,13 +75,15 @@ export const Home: React.FC = () => {
                 <Typography variant="h6">CONTROLS ALGORITHM</Typography>
               </Box>
               <Typography variant="body1">{controlsAlgorithm}</Typography>
-              <Button
-                className={classes.docsButton}
-                variant="contained"
-                size="large"
-              >
-                {docsButtonText}
-              </Button>
+              <Link to={'/documentation'} className={classes.link}>
+                <Button
+                  className={classes.docsButton}
+                  variant="contained"
+                  size="large"
+                >
+                  {docsButtonText}
+                </Button>
+              </Link>
             </Grid>
             <Grid item xs={4}>
               <Box fontWeight="fontWeightBold">

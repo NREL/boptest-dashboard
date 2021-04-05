@@ -1,7 +1,7 @@
 import {SignatureDetails} from './../../common/interfaces';
-import {getBuildingType} from './../models/BuildingType';
+import { getBuildingTypeByUid} from './../models/BuildingType';
 import {getRepository} from 'typeorm';
-import {getAccountByApiKey} from '../models/Account';
+import {getAccountByApiKey, getAccountByEmail} from '../models/Account';
 import {createResult, ResultEntity} from '../models/Result';
 import {Result, Signature} from '../../common/interfaces';
 
@@ -20,16 +20,54 @@ export function getAllSharedResults(): Promise<Result[]> {
   const resultsRepository = getRepository<Result>(ResultEntity);
   return resultsRepository.find({
     relations: ['account', 'buildingType'],
-    where: {
-      isShared: true,
-    },
-  });
+    where: (qb:any) => {
+      qb.where(`
+        ("results"."deleted" = false)
+        AND
+        ("results__account"."shareAllResults" is not false)
+        AND
+        (
+          ("results__account"."shareAllResults" is true)
+          OR
+          ("results"."isShared") = true
+        )
+      `)
+    }
+  })
+  .then(results => {
+    results.forEach(result => {
+      delete result.account.apiKey;
+      delete result.account.shareAllResults;
+      delete result.account.id
+      delete result.buildingType.markdown;
+      delete result.buildingType.markdownURL;
+      delete result.buildingType.pdfURL;
+    });
+    return results;
+  })
+}
+
+export function getAllResultsForUser(email: string): Promise<Result[]> {
+  const repo = getRepository<Result>(ResultEntity);
+
+  return getAccountByEmail(email)
+    .then(targetAccount => {
+      return repo.find({
+        relations: ['account', 'buildingType'],
+        where: {
+          deleted: false,
+          account: targetAccount,
+        },
+      }).then((data) => {
+        return data;
+      });
+    })
 }
 
 // need to account for account misses
 function createResultAndAssociatedModels(result: any) {
   const account = getAccountByApiKey(result.account.apiKey);
-  const buildingType = getBuildingType(result.buildingType.id);
+  const buildingType = getBuildingTypeByUid(result.buildingType.uid);
 
   return Promise.all([account, buildingType])
     .then(data => {
@@ -55,12 +93,8 @@ function createResultAndAssociatedModels(result: any) {
         account: data[0],
         buildingType: data[1],
       };
-
       return createResult(resultData);
-    })
-    .catch(err =>
-      console.log('Something went wrong in the mega creation method', err)
-    );
+    });
 }
 
 export function createResults(results: any) {
@@ -71,30 +105,36 @@ export function createResults(results: any) {
   );
 }
 
-export function removeResults(ids: number[]): Promise<void>[] {
-  const repo = getRepository<Result>(ResultEntity);
-  return ids.map((id: number) => {
-    return repo
-      .findOneOrFail(id)
-      .then(result => {
-        result.deleted = true;
-        repo.save(result);
-      })
-      .catch(() => console.log('unable to remove result', id));
-  });
-}
+/*Not implemented for the time being*/
+// export function removeResults(ids: number[]): Promise<void>[] {
+//   const repo = getRepository<Result>(ResultEntity);
+//   return ids.map((id: number) => {
+//     return repo
+//       .findOneOrFail(id)
+//       .then(result => {
+//         result.deleted = true;
+//         repo.save(result);
+//       })
+//       .catch(() => console.log('unable to remove result', id));
+//   });
+// }
 
-export function shareResults(ids: number[]): Promise<void>[] {
+export function toggleShared(id: number, share:boolean, sessionId: number): Promise<any> {
   const repo = getRepository<Result>(ResultEntity);
-  return ids.map((id: number) => {
-    return repo
-      .findOneOrFail(id)
-      .then(result => {
-        result.isShared = !result.isShared;
+  return repo.findOneOrFail({
+    relations: ['account'],
+    where: {
+      id,
+    }
+  })
+    .then((result: Result) => {
+      if (result.account.id === sessionId) {
+        result.isShared = share;
         repo.save(result);
-      })
-      .catch(() => console.log('unable to update shared value of result', id));
-  });
+      } else {
+        throw('Not authorized')
+      }
+    });
 }
 
 export function getSignatureDetailsForResult(
@@ -179,7 +219,7 @@ function getKPIRanges(results: Result[], result: Result): SignatureDetails {
     }
 
     if (res.iaq > iaqMax) {
-      iaqMin = res.iaq;
+      iaqMax = res.iaq;
     }
 
     if (res.timeRatio < timeMin) {

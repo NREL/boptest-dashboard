@@ -3,11 +3,13 @@ services:
   server_test:
     build: ./server
     environment:
-      - COGNITO_USER_POOL_ID
-      - COGNITO_APP_CLIENT_ID
-      - SESSION_NAME
-      - SESSION_SECRET
+      - COGNITO_USER_POOL_ID=asdf
+      - COGNITO_APP_CLIENT_ID=asdf
+      - SESSION_NAME=asdf
+      - SESSION_SECRET=asdf
       - DATABASE_URL=postgres://admin:pass@postgres_test:5432/boptestdb
+      - SUPER_USERS=email1@email.com,email2@email.com,email3@email.com
+      - CONTEXT=testing
     ports:
       - "8080:8080"
     depends_on:
@@ -42,4 +44,5 @@ services:
     volumes:
       - ./api_test:/usr/src/app/:z
       - /usr/src/app/node_modules #ignore node_modules (they are installed in the container)
+      - ./common:/usr/src/common:z
     command: "bash integration_test.sh"

@@ -74,6 +74,8 @@ export interface Account {
   email: string;
   apiKey: string;
   results: Result[];
+  shareAllResults: boolean | null;
+
 }
 
 export type Signature = Pick<

@@ -9,7 +9,6 @@ import {buildingTypeRouter} from './routes/buildingTypeRoutes';
 import {appRouter} from './routes/appRoutes';
 import {authRouter} from './routes/authRoutes';
 import {resultRouter} from './routes/resultRoutes';
-import {setupRouter} from './routes/setupRoutes';
 import {connectToDb} from './db';
 
 const app: express.Application = express();
@@ -18,19 +17,18 @@ app.use(bodyParser.json());
 
 const SESSION_NAME = process.env.SESSION_NAME!;
 const SESSION_SECRET = process.env.SESSION_SECRET!;
-
-const ONE_HOUR = 1000 * 60 * 60;
+const IN_PROD: boolean = process.env.CONTEXT! === 'production';
 
 app.use(
   session({
     name: SESSION_NAME,
     secret: SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
     cookie: {
-      maxAge: ONE_HOUR,
+      maxAge: 8*60*60*1000, // 8 Hours
       sameSite: true,
-      secure: app.get('env') === 'production',
+      secure: IN_PROD,
     },
   })
 );
@@ -41,7 +39,6 @@ app.use('/assets', express.static(path.join(__dirname, '/usr/client/assets')));
 
 // define routes
 app.use('/api/auth', authRouter);
-app.use('/api/setup', setupRouter);
 app.use('/api/accounts', accountRouter);
 app.use('/api/buildingTypes', buildingTypeRouter);
 app.use('/api/results', resultRouter);

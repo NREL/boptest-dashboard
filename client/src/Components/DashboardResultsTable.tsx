@@ -1,4 +1,5 @@
 import React, {useEffect} from 'react';
+import axios from 'axios';
 import clsx from 'clsx';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -16,91 +17,9 @@ import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
-import DeleteIcon from '@material-ui/icons/Delete';
+import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import FilterListIcon from '@material-ui/icons/FilterList';
-
-interface Data {
-  resultUid: string;
-  buildingType: string;
-  dateRun: Date;
-  totalEnergy: number;
-  thermalDiscomfort: number;
-  aqDiscomfort: number; //indoor air quality discomfort
-  energy: number; //total energy consumption
-  cost: number; //total operations cost
-  emissions: number;
-  compTimeRatio: number;
-  isShared: boolean;
-}
-
-const createDataFromResult = (result): Data => {
-  return {
-    resultUid: result.uid,
-    buildingType: result.buildingType.name,
-    dateRun: result.dateRun,
-    totalEnergy: result.energyUse,
-    thermalDiscomfort: result.thermalDiscomfort,
-    aqDiscomfort: result.iaq,
-    energy: result.energyUse,
-    cost: result.cost,
-    emissions: result.emissions,
-    compTimeRatio: result.timeRatio,
-    isShared: result.isShared,
-  };
-};
-
-const createRows = (results): Data[] => {
-  let rows: Data[] = [];
-  if (!results || !Array.isArray(results) || results.length == 0) {
-    return rows;
-  }
-  results.forEach(result => {
-    rows.push(createDataFromResult(result));
-  });
-
-  return rows;
-};
-
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-type Order = 'asc' | 'desc';
-
-function getComparator<Key extends keyof any>(
-  order: Order,
-  orderBy: Key
-): (
-  a: {[key in Key]: number | string},
-  b: {[key in Key]: number | string}
-) => number {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort<T>(array: T[], comparator: (a: T, b: T) => number) {
-  const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map(el => el[0]);
-}
-
-interface HeadCell {
-  disablePadding: boolean;
-  id: keyof Data;
-  label: string;
-  numeric: boolean;
-}
+import { Data, createRows, Order, stableSort, HeadCell, getComparator} from '../Lib/TableHelpers';
 
 const headCells: HeadCell[] = [
   {
@@ -167,6 +86,10 @@ interface EnhancedTableProps {
   rowCount: number;
 }
 
+const toggleShared = (id: number, share: boolean) => {
+  return axios.patch('/api/results/share', {id, share})
+}
+
 function EnhancedTableHead(props: EnhancedTableProps) {
   const {
     classes,
@@ -188,7 +111,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
       <TableRow>
         <TableCell padding="checkbox">
           <Checkbox
-            indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
             inputProps={{'aria-label': 'select all results'}}
@@ -201,7 +123,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
         {headCells.map(headCell => (
           <TableCell
             key={headCell.id}
-            //align={headCell.numeric ? 'right' : 'left'}
             align={'center'}
             padding={headCell.disablePadding ? 'none' : 'default'}
             sortDirection={orderBy === headCell.id ? order : false}
@@ -234,7 +155,7 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
     },
     title: {
       flex: '1 1 100%',
-    },
+    }
   })
 );
 
@@ -268,19 +189,6 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
           {totalResults} Total Results
         </Typography>
       )}
-      {numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <IconButton aria-label="delete">
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <Tooltip title="Filter list">
-          <IconButton aria-label="filter list">
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
-      )}
     </Toolbar>
   );
 };
@@ -296,10 +204,14 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     button: {
       justifyContent: 'center',
-      padding: '0 16px 0 16px',
-      margin: '0 8px 0 8px',
       backgroundColor: 'rgb(0, 150, 136)',
       color: 'white',
+    },
+    downloadButtonContainer: {
+      width: '90%',
+      display: 'flex',
+      flexDirection: 'row-reverse',
+      margin: '0 auto'
     },
     headerCell: {
       fontWeight: 'bold',
@@ -350,7 +262,6 @@ export default function DashboardResultsTable(props) {
 
   const [checked, setChecked] = React.useState<boolean>(false);
 
-  // set the rows from the results that we get
   useEffect(() => {
     setRows(createRows(props.results));
   }, [props]);
@@ -371,7 +282,7 @@ export default function DashboardResultsTable(props) {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelecteds = rows.map(r => r.resultUid);
+      const newSelecteds = rows.map(r => r.id);
       setSelected(newSelecteds);
       return;
     }
@@ -398,7 +309,6 @@ export default function DashboardResultsTable(props) {
         selected.slice(selectedIndex + 1)
       );
     }
-
     setSelected(newSelected);
   };
 
@@ -412,13 +322,44 @@ export default function DashboardResultsTable(props) {
     event: React.MouseEvent<unknown>,
     result: Data
   ) => {
-    // need to update the result that is shared. make a call to the API, and update the UI
     event.stopPropagation();
-
-    var actualResult = rows[rows.indexOf(result)];
-    actualResult.isShared = !actualResult.isShared;
-    setChecked(true);
+    toggleShared(result.id, !result.isShared)
+      .then(() => props.updateResults())
   };
+
+  const downloadResultsToCSV = () => {
+    const rowsToDl = rows.filter(row => selected.indexOf(row.id) !== -1);
+
+    const getFlatKeyValPairFromObj = obj => {
+      const keys = [];
+      const values = [];
+      const traverse = node => {
+        for (const [key, val] of Object.entries(node)) {
+          if (typeof val === 'object') {
+            traverse(val);
+          } else {
+            keys.push(key);
+            values.push(val);
+          }
+        }
+      }
+      traverse(obj);
+      return [keys, values];
+    }
+
+    const headings = [getFlatKeyValPairFromObj(rowsToDl[0])[0]];
+    const values = rowsToDl.map(row => getFlatKeyValPairFromObj(row)[1])
+    const allData = [...headings, ...values];
+  
+    let csvContent = "data:text/csv;charset=utf-8," + allData.map(e => e.join(",")).join("\n");
+    let encodedUri = encodeURI(csvContent);
+    let link = document.createElement("a");
+    
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "data.csv");
+    document.body.appendChild(link);
+    link.click();
+  }
 
   return (
     <div className={classes.root}>
@@ -427,21 +368,22 @@ export default function DashboardResultsTable(props) {
           totalResults={rows.length}
           numSelected={selected.length}
         />
-        <div>
-          <Button className={classes.button} variant="contained" size="small">
-            Remove Test Results
-          </Button>
-          <Button className={classes.button} variant="contained" size="small">
-            Download Test Results
+        <div className={classes.downloadButtonContainer}>
+          <Button 
+            disabled={selected.length === 0}
+            className={classes.button}
+            variant="contained"
+            size="medium"
+            onClick={downloadResultsToCSV}
+          >
+            Download Selected (CSV)
           </Button>
         </div>
         <TableContainer>
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
-            //size={dense ? 'small' : 'medium'}
             size={'medium'}
-            // aria-label="enhanced table"
           >
             <EnhancedTableHead
               classes={classes}
@@ -456,7 +398,7 @@ export default function DashboardResultsTable(props) {
               {stableSort(rows, getComparator(order, orderBy))
                 //.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
-                  const isItemSelected = isSelected(row.resultUid);
+                  const isItemSelected = isSelected(row.id);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   var dateString = new Date(row.dateRun).toLocaleString();
@@ -468,7 +410,7 @@ export default function DashboardResultsTable(props) {
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
-                      key={row.resultUid}
+                      key={row.id}
                       selected={isItemSelected}
                       classes={{selected: classes.selected}}
                       className={classes.tableRow}
@@ -482,7 +424,7 @@ export default function DashboardResultsTable(props) {
                             color: '#078b75',
                           }}
                           onClick={event =>
-                            handleCheckboxClick(event, row.resultUid)
+                            handleCheckboxClick(event, row.id)
                           }
                         />
                       </TableCell>

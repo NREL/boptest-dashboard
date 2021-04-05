@@ -1,27 +1,8 @@
 # BOPTest Dashboard API Documentation:
 
-## Add Results:
+## Add Result:
 
 POST: `api/results`
-
-### Available query parameters:
-
-- `uid` REQUIRED - String
-- `isShared` OPTIONAL - Boolean
-- `dateRun` REQUIRED - String
-- `account` REQUIRED - Object `{"apiKey": "exampleKey123"}`
-- `thermalDiscomfort` REQUIRED - Number
-- `energyUse` REQUIRED - Number
-- `cost` REQUIRED - Number
-- `emissions` REQUIRED - Number
-- `iaq` REQUIRED - Number
-- `timeRatio` REQUIRED - Number
-- `testTimePeriod` REQUIRED - String (Will have an enum for this eventually)
-- `controlStep` REQUIRED - String
-- `priceScenario` REQUIRED - String
-- `weatherForecastUncertainty` REQUIRED - String
-- `buildingType` REQUIRED - Object `{"id": 1}`
-- `controllerProperties` REQUIRED - Object any valid JSON key value pairs here
 
 ### Example Payload:
 
@@ -33,7 +14,7 @@ POST: `api/results`
       "isShared": true,
       "dateRun": "2020-08-04T23:00:00.000Z",
       "account": {
-        "apiKey": "apiKey"
+        "apiKey": "API_KEY_FROM_WEB_APP"
       },
       "thermalDiscomfort": 6,
       "energyUse": 5,
@@ -60,33 +41,45 @@ POST: `api/results`
 }
 ```
 
-## Add Building Types
+## Add Building
 
 POST `api/buildingTypes`
 
 - This endpoint accepts an array of building types. So it can be used to create a single building type or a batch of them depending on how many objects are in the array.
 
-### Available query parameters:
-
-- `uid` REQUIRED - String
-- `name` REQUIRED - String
-- `pdfURL` REQUIRED - String
-- `markdownURL` REQUIRED - String
-
-- Note: The 2 URLs above must be from a trusted source and be the raw version of the git link. See Example Payload below.
-
 ### Example Payload:
+
+#### Note: the API Key must be one associated with a SUPER_USER email as defined in your environment file.
+
+```json
+{{
+    "buildingTypes": [
+        {
+            "uid": "two",
+            "name": "Other Large Building",
+            "pdfURL": "URL_TO_PULIC_PDF",
+            "markdownURL": "URL_TO_PUBLIC_MARKDOWN_FILE"
+        }
+    ],
+    "apiKey": "SU_API_KEY"
+}
+```
+
+## Update Building
+
+PATCH `/api/buildingTypes?uid={your_build_uid}`
+
+- Though like the `POST` request, the building is wrapped in an array of `buildingTypes`, you may only PATCH one building at a time. THE `uid` is specified as a query parameter.
 
 ```json
 {
-  "buildingTypes": [
-    {
-      "uid": "13245kasdjfn",
-      "name": "Posty Building 3.0",
-      // These 2 urls need to be from trusted sources and the raw version of the git link
-      "pdfURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/someFile.pdf",
-      "markdownURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/README.md"
-    }
-  ]
+    "buildingTypes": [
+        {
+            "name": "Building awesome",
+            "pdfURL": "https://github.com/p-gonzo/test-building-types/raw/main/building_type_test_files/List%20of%20building%20types%20-%20Wikipedia.pdf",
+            "markdownURL": "https://raw.githubusercontent.com/p-gonzo/test-building-types/main/building_type_test_files/bigBuilding.md"
+        }
+    ],
+    "apiKey": "SU API KEY"
 }
 ```

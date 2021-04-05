@@ -6,6 +6,12 @@ import Paper from '@material-ui/core/Paper';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import {SignupData} from './../../../../common/interfaces';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
+
+const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;
+
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -67,6 +73,10 @@ export const Signup: React.FC = props => {
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
 
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [snackMessageOpen, setSnackMessageOpen] = React.useState(false);
+  const [snackMessage, setSnackMessage] = React.useState('');
+
   const handleUsernameChange = e => {
     setUsername(e.target.value);
   };
@@ -80,13 +90,14 @@ export const Signup: React.FC = props => {
     setConfirmPassword(e.target.value);
   };
 
-  // need to do some error handling here and also send request to backend
+  const handleSnackMessageClose = (_, reason) => {
+    if (reason === 'clickaway') { return; }
+    setSnackMessageOpen(false);
+  };
+
   const registerAccount = () => {
-    if (password !== confirmPassword) {
-      // TODO front end errors for issues in the UI
-      console.log('show an error message here passwords do not match');
-      return;
-    }
+
+    setIsLoading(true);
 
     const signupData: SignupData = {
       username,
@@ -96,11 +107,12 @@ export const Signup: React.FC = props => {
 
     axios
       .post(registerEndpoint, signupData)
-      .then(() => {
-        // redirect to the Confirm page
-        history.push(`/confirm/${email}`);
-      })
-      .catch(err => console.log('could not signup the user', err));
+      .then(() => history.push(`/confirm/${email}`))
+      .catch(err => {
+        setIsLoading(false);
+        setSnackMessage(err.response.data.message);
+        setSnackMessageOpen(true);
+      });
   };
 
   useEffect(() => {
@@ -115,87 +127,95 @@ export const Signup: React.FC = props => {
 
   return (
     <div className={classes.root}>
-      <Paper className={classes.paper}>
-        <ValidatorForm onSubmit={registerAccount} className={classes.fields}>
-          <Typography variant="h6" className={classes.field}>
-            REGISTER
-          </Typography>
-          <div className={classes.field}>
-            <TextValidator
-              label="User Name"
-              onChange={handleUsernameChange}
-              id="username"
-              name="username"
-              variant="outlined"
-              value={username}
-              validators={['required']}
-              errorMessages={['This field is required']}
-              className={classes.validateField}
-            />
-          </div>
-          <div className={classes.field}>
-            <TextValidator
-              label="Email"
-              onChange={handleEmailChange}
-              id="email"
-              name="email"
-              variant="outlined"
-              value={email}
-              validators={['required', 'isEmail']}
-              errorMessages={[
-                'This field is required',
-                'This field needs to be an email address',
-              ]}
-              className={classes.validateField}
-            />
-          </div>
-          <div className={classes.field}>
-            <TextValidator
-              label="Password"
-              onChange={handlePasswordChange}
-              id="password"
-              name="password"
-              type="password"
-              variant="outlined"
-              value={password}
-              validators={['required']}
-              errorMessages={['This field is required']}
-              className={classes.validateField}
-            />
-          </div>
-          <div className={classes.field}>
-            <TextValidator
-              label="Confirm Password"
-              onChange={handleConfirmPasswordChange}
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              variant="outlined"
-              value={confirmPassword}
-              validators={['isPasswordMatch', 'required']}
-              errorMessages={[
-                'Passwords do not match',
-                'This field is required',
-              ]}
-              className={classes.validateField}
-            />
-          </div>
-          {/* buttons */}
-          <div className={classes.actionItems}>
-            <Link to={'/'} className={classes.cancelLink}>
-              Cancel
-            </Link>
-            <Button
-              variant="contained"
-              size="small"
-              type="submit"
-              className={classes.registerButton}
-            >
-              Register
-            </Button>
-          </div>
-        </ValidatorForm>
-      </Paper>
+      { isLoading 
+      ? <CircularProgress /> 
+      : <Paper className={classes.paper}>
+          <ValidatorForm onSubmit={registerAccount} className={classes.fields}>
+            <Typography variant="h6" className={classes.field}>
+              REGISTER
+            </Typography>
+            <div className={classes.field}>
+              <TextValidator
+                label="User Name"
+                onChange={handleUsernameChange}
+                id="username"
+                name="username"
+                variant="outlined"
+                value={username}
+                validators={['required']}
+                errorMessages={['This field is required']}
+                className={classes.validateField}
+              />
+            </div>
+            <div className={classes.field}>
+              <TextValidator
+                label="Email"
+                onChange={handleEmailChange}
+                id="email"
+                name="email"
+                variant="outlined"
+                value={email}
+                validators={['required', 'isEmail']}
+                errorMessages={[
+                  'This field is required',
+                  'This field needs to be an email address',
+                ]}
+                className={classes.validateField}
+              />
+            </div>
+            <div className={classes.field}>
+              <TextValidator
+                label="Password"
+                onChange={handlePasswordChange}
+                id="password"
+                name="password"
+                type="password"
+                variant="outlined"
+                value={password}
+                validators={['required']}
+                errorMessages={['This field is required']}
+                className={classes.validateField}
+              />
+            </div>
+            <div className={classes.field}>
+              <TextValidator
+                label="Confirm Password"
+                onChange={handleConfirmPasswordChange}
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                variant="outlined"
+                value={confirmPassword}
+                validators={['isPasswordMatch', 'required']}
+                errorMessages={[
+                  'Passwords do not match',
+                  'This field is required',
+                ]}
+                className={classes.validateField}
+              />
+            </div>
+            {/* buttons */}
+            <div className={classes.actionItems}>
+              <Link to={'/'} className={classes.cancelLink}>
+                Cancel
+              </Link>
+              <Button
+                variant="contained"
+                size="small"
+                type="submit"
+                className={classes.registerButton}
+              >
+                Register
+              </Button>
+            </div>
+          </ValidatorForm>
+        </Paper>
+      }
+      <Snackbar open={snackMessageOpen} autoHideDuration={6000} onClose={handleSnackMessageClose}>
+        <Alert onClose={handleSnackMessageClose} severity="error">
+          {snackMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

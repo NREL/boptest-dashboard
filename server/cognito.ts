@@ -25,7 +25,7 @@ const getUserPool = (): CognitoUserPool => {
   return new CognitoUserPool(poolData);
 };
 
-export function signupUser(signupData: SignupData) {
+export function signupCognitoUser(signupData: SignupData) {
   return new Promise((promiseRes, promiseRej) => {
     var userPool = getUserPool();
 

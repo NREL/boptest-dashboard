@@ -15,5 +15,9 @@
     "jest": "^26.4.0",
     "ts-jest": "^26.2.0",
     "typescript": "^3.9.7"
+  },
+  "devDependencies": {
+    "axios-cookiejar-support": "^1.0.1",
+    "tough-cookie": "^4.0.0"
   }
 }

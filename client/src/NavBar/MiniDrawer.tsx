@@ -59,7 +59,6 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'flex-end',
-      padding: theme.spacing(0, 1),
       // necessary for content to be below app bar
       ...theme.mixins.toolbar,
     },
@@ -67,13 +66,16 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '100%',
       display: 'flex',
       justifyContent: 'space-between',
+      alignItems: 'center'
+    },
+    titlebarTitle: {
+      textAlign:'center'
     },
     boptestIcon: {
       width: '7%',
     },
     content: {
       flexGrow: 1,
-      padding: theme.spacing(1),
       width: '100%',
     },
   })
@@ -135,7 +137,7 @@ export const MiniDrawer: React.FC = () => {
               src="./assets/boptest-logo.svg"
               className={classes.boptestIcon}
             />
-            <Typography variant="h6">{title}</Typography>
+            <Typography variant="h6" className={classes.titlebarTitle}>{title}</Typography>
             <AuthInfo />
           </div>
         </Toolbar>

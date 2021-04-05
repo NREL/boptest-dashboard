@@ -81,7 +81,7 @@ export const ForgotPassword: React.FC = () => {
           'could not start the forgot password process, please try again',
           err
         )
-      );
+      ); // TODO
   };
 
   const title = 'FORGOT PASSWORD';

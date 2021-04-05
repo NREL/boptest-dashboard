@@ -2,11 +2,7 @@ import {EntitySchema, getRepository} from 'typeorm';
 import axios from 'axios';
 
 import {BuildingType} from '../../common/interfaces';
-
-const TRUSTED_SOURCES = [
-  'https://github.com/NREL/boptest-dashboard',
-  'https://raw.githubusercontent.com/NREL/project1-boptest/master',
-];
+import { confirmPasswordChange } from 'cognito';
 
 export type BuildingTypeData = Omit<BuildingType, 'results'>;
 
@@ -49,41 +45,32 @@ export const BuildingTypeEntity = new EntitySchema<BuildingType>({
 export function createBuildingType(
   data: BuildingTypeData
 ): Promise<BuildingType> {
-  // need to check both URLs to make sure they're from a trusted source
-  if (!fromTrustedSource(data)) {
-    throw new Error('The URLs are not from a trusted source.');
-  }
   const buildingTypeRepo = getRepository<BuildingType>(BuildingTypeEntity);
-
-  // need to get the markdown from the markdownURL, then save the new buildingType
   return axios.get(data.markdownURL).then(res => {
     data.markdown = res.data;
     return buildingTypeRepo.save(data);
   });
 }
 
+export function updateBuildingType(
+  building: BuildingType, newData: BuildingTypeData, 
+): Promise<BuildingType> {
+  const buildingTypeRepo = getRepository<BuildingType>(BuildingTypeEntity);
+  return axios.get(newData.markdownURL).then(res => {
+    building.markdown = res.data;
+    building.markdownURL = newData.markdownURL;
+    building.name = newData.name;
+    building.pdfURL = newData.pdfURL;
+    return buildingTypeRepo.save(building);
+  });
+}
+
 export function getBuildingTypes(): Promise<BuildingType[]> {
   const repo = getRepository<BuildingType>(BuildingTypeEntity);
-
   return repo.find();
 }
 
-// this method tells us if the URLs given are from trusted sources
-function fromTrustedSource(data: BuildingTypeData): Boolean {
-  if (
-    !data.markdownURL.startsWith(TRUSTED_SOURCES[0]) &&
-    !data.markdownURL.startsWith(TRUSTED_SOURCES[1]) &&
-    !data.pdfURL.startsWith(TRUSTED_SOURCES[0]) &&
-    !data.pdfURL.startsWith(TRUSTED_SOURCES[1])
-  ) {
-    return false;
-  }
-
-  return true;
-}
-
-export function getBuildingType(id: number): Promise<BuildingType> {
+export function getBuildingTypeByUid(uid: string): Promise<BuildingType> {
   const buildingTypeRepo = getRepository<BuildingType>(BuildingTypeEntity);
-
-  return buildingTypeRepo.findOneOrFail(id);
+  return buildingTypeRepo.findOneOrFail({ uid: uid });
 }

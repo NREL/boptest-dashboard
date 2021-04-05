@@ -75,8 +75,6 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
     // get the signature details for the result
     axios.get(getSignatureEndpoint(props.result.uid)).then(response => {
       setDetails(response.data);
-      console.log('response details', details);
-      console.log('response data', response.data);
     });
 
     // get the entire object of controller properties ready to go
@@ -184,7 +182,7 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
               </TableCell>
               <TableCell>
                 <Typography variant="body1">
-                  chris.berger@devetry.comkjdflajsdflahdflajshdfjahsdbfh
+                  {props.result.accountEmail}
                 </Typography>
               </TableCell>
             </TableRow>
