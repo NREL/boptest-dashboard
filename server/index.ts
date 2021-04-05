@@ -9,7 +9,6 @@ import {buildingTypeRouter} from './routes/buildingTypeRoutes';
 import {appRouter} from './routes/appRoutes';
 import {authRouter} from './routes/authRoutes';
 import {resultRouter} from './routes/resultRoutes';
-import {setupRouter} from './routes/setupRoutes';
 import {connectToDb} from './db';
 
 const app: express.Application = express();
@@ -40,7 +39,6 @@ app.use('/assets', express.static(path.join(__dirname, '/usr/client/assets')));
 
 // define routes
 app.use('/api/auth', authRouter);
-app.use('/api/setup', setupRouter);
 app.use('/api/accounts', accountRouter);
 app.use('/api/buildingTypes', buildingTypeRouter);
 app.use('/api/results', resultRouter);
