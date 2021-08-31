@@ -48,6 +48,8 @@ export const KPIBarChart: React.FC<BarChartProps> = props => {
       rangeColors={backgroundColor}
       markerColors={markerColor}
       tickValues={5}
+      maxValue={props.max}
+      minValue={props.min}
     />
   );
 };
