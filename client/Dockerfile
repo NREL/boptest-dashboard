@@ -5,5 +5,3 @@ WORKDIR /usr/client
 COPY . .
 
 RUN npm install
-
-CMD ["npm", "run", "watch"]
