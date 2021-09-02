@@ -3,6 +3,8 @@ import React, {useEffect} from 'react';
 import {Box, Button, TextField, Typography} from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 
+const envType = process.env.NODE_ENV;
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -34,6 +36,14 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: '0 16px 0 16px',
       width: '50%',
     },
+    syncTestDataButton: {
+      justifyContent: 'center',
+      padding: '0 16px 0 16px',
+      marginLeft: '10px',
+      width: '25%',
+      backgroundColor: 'rgb(0, 150, 136)',
+      color: 'white',
+    }
   })
 );
 
@@ -46,15 +56,25 @@ const copyApiKeyToClipboard = () => {
   document.execCommand("copy");
 }
 
+const syncTestData = (apiKey) => {
+  axios.post('/api/setup/db', {apiKey: apiKey})
+    .then((res) => console.log('Status:', res.status));
+}
+
 export const ApiKey: React.FC = () => {
   const classes = useStyles();
 
   const [apiKey, setApiKey] = React.useState([]);
+  const [showSyncTestData, setShowSyncTestData] = React.useState(false);
 
   useEffect(() => {
     axios.get('/api/auth/key').then(res => {
       setApiKey(res.data.apiKey);
     });
+
+    if(envType === 'development') {
+      setShowSyncTestData(true);
+    };
   }, []);
 
   return (
@@ -77,13 +97,23 @@ export const ApiKey: React.FC = () => {
           inputProps={{maxLength: 128}}
         />
         <Button
-          onClick={() => copyApiKeyToClipboard() }
+          onClick={() => copyApiKeyToClipboard()}
           className={classes.apiKeyButton}
           variant="contained"
           size="small"
         >
           Copy to Clipboard
         </Button>
+        {showSyncTestData && (
+          <Button
+            onClick={() => syncTestData(apiKey)}
+            className={classes.syncTestDataButton}
+            variant="contained"
+            size="small"
+          >
+            Sync Test Data
+          </Button>
+        )}
       </div>
     </div>
   );

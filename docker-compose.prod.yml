@@ -1,0 +1,6 @@
+version: "3"
+services:
+  server:
+    command: "npm run start:prod"
+  client:
+    command: "npm run watch"

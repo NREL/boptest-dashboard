@@ -7,6 +7,7 @@ import session from 'express-session';
 import {accountRouter} from './routes/accountRoutes';
 import {buildingTypeRouter} from './routes/buildingTypeRoutes';
 import {appRouter} from './routes/appRoutes';
+import {setupRouter} from './routes/setupRoutes';
 import {authRouter} from './routes/authRoutes';
 import {resultRouter} from './routes/resultRoutes';
 import {connectToDb} from './db';
@@ -39,6 +40,7 @@ app.use('/assets', express.static(path.join(__dirname, '/usr/client/assets')));
 
 // define routes
 app.use('/api/auth', authRouter);
+app.use('/api/setup', setupRouter);
 app.use('/api/accounts', accountRouter);
 app.use('/api/buildingTypes', buildingTypeRouter);
 app.use('/api/results', resultRouter);
@@ -46,6 +48,7 @@ app.use('/', appRouter);
 
 const {PORT = 8080} = process.env;
 
+// question: need to find out if this needs to run in Prod. ~Amit
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log('server started at http://localhost:' + PORT);

@@ -19,6 +19,7 @@ services:
       - /usr/src/app/node_modules #ignore node_modules (they are installed in the container)
       - ./client/build:/usr/client/build:z
       - ./common:/usr/src/common:z
+    command: "npm run start:dev"
   postgres_test:
     restart: always
     image: "postgres"
