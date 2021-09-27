@@ -97,3 +97,81 @@ export interface HeadCell {
   label: string;
   numeric: boolean;
 }
+
+export const getCostRange = (rows): Data[] => {
+  let costRange = rows.reduce((acc, curr) => {
+    return {
+      min: acc.min < curr.cost ? acc.min : curr.cost,
+      max: acc.max > curr.cost ? acc.max : curr.cost,
+    }
+  }, {});
+}
+
+export const getFilterRanges = (rows): Data[] => {
+  return rows.reduce((acc, curr) => {
+    return {
+      costRange: {
+        min: acc.costRange.min < curr.cost ? acc.costRange.min : curr.cost,
+        max: Math.ceil((acc.costRange.max > curr.cost ? acc.costRange.max : curr.cost)/50)*50,
+      },
+      thermalDiscomfortRange: {
+        min: acc.thermalDiscomfortRange.min < curr.thermalDiscomfort ? acc.thermalDiscomfortRange.min : curr.thermalDiscomfort,
+        max: Math.ceil((acc.thermalDiscomfortRange.max > curr.thermalDiscomfort ? acc.thermalDiscomfortRange.max : curr.thermalDiscomfort)/50)*50,
+      },
+      aqDiscomfortRange: {
+        min: acc.aqDiscomfortRange.min < curr.aqDiscomfort ? acc.aqDiscomfortRange.min : curr.aqDiscomfort,
+        max: Math.ceil((acc.aqDiscomfortRange.max > curr.aqDiscomfort ? acc.aqDiscomfortRange.max : curr.aqDiscomfort)/50)*50,
+      },
+      energyRange: {
+        min: acc.energyRange.min < curr.energy ? acc.energyRange.min : curr.energy,
+        max: Math.ceil((acc.energyRange.max > curr.energy ? acc.energyRange.max : curr.energy)/50)*50,
+      },
+    }
+  }, { costRange: {}, thermalDiscomfortRange: {}, aqDiscomfortRange: {}, energyRange: {} });
+}
+
+export const resetFilters = (filterRanges, buildingTypes): Data[] => {
+  let buildingTypeFilter = {};
+  buildingTypes.forEach(building => { buildingTypeFilter[building.name] = false });
+
+  return {
+    buildingType: buildingTypeFilter,
+    cost: {
+      min: 0,
+      max: filterRanges && filterRanges.costRange ? filterRanges.costRange.max : 0,
+    },
+    thermalDiscomfort: {
+      min: 0,
+      max: filterRanges && filterRanges.thermalDiscomfortRange ? filterRanges.thermalDiscomfortRange.max : 0,
+    },
+    aqDiscomfort: {
+      min: 0,
+      max: filterRanges && filterRanges.aqDiscomfortRange ? filterRanges.aqDiscomfortRange.max : 0,
+    },
+    energy: {
+      min: 0,
+      max: filterRanges && filterRanges.energyRange ? filterRanges.energyRange.max : 0,
+    },
+  };
+}
+
+export const filterRows = (rows, filters): Data[] => {
+  let filteredRows: Data[] = [];
+  let buildingFilters = filters.buildingType && Object.keys(filters.buildingType).filter((k) => filters.buildingType[k]);
+  if (rows.length <= 0 || buildingFilters.length <= 0) {
+    return rows;
+  }
+  rows.forEach(row => {
+    if (!buildingFilters.includes(row.buildingTypeName)) return;
+    if (
+      row.cost < filters.cost.min || row.cost > filters.cost.max ||
+      row.energy < filters.energy.min || row.energy > filters.energy.max ||
+      row.thermalDiscomfort < filters.thermalDiscomfort.min || row.thermalDiscomfort > filters.thermalDiscomfort.max ||
+      row.aqDiscomfort < filters.aqDiscomfort.min || row.aqDiscomfort > filters.aqDiscomfort.max
+    ) {
+      return;
+    }
+    filteredRows.push(row);
+  });
+  return filteredRows;
+}

@@ -59,6 +59,7 @@ export async function seedTestData(apiKey: string) {
       name: 'BIG building',
       markdownURL: readmeUrl,
       pdfURL: readmeUrl,
+      scenarios: "{'scenarioList': ['scenarioOne', 'scenarioTwo', 'scenarioThree']}",
     },
     {
       id: '2',
@@ -66,6 +67,7 @@ export async function seedTestData(apiKey: string) {
       name: 'small building',
       markdownURL: readmeUrl,
       pdfURL: readmeUrl,
+      scenarios: "{'scenarioList': ['scenarioFour', 'scenarioFive', 'scenarioSix']}",
     },
   ];
 
@@ -96,6 +98,7 @@ export async function seedTestData(apiKey: string) {
         predictionHorizon: 700,
       },
       buildingType: buildingTypes[0],
+      // scenarios: "{'scenarioList': ['scenarioTwo', 'scenarioThree']}",
     },
     {
       dateRun: '2020-08-04T23:00:00.000Z',
@@ -122,6 +125,7 @@ export async function seedTestData(apiKey: string) {
         predictionHorizon: 8000,
       },
       buildingType: buildingTypes[1],
+      // scenarios: "{'scenarioList': ['scenarioFive']}",
     },
     {
       dateRun: '2020-08-04T23:00:00.000Z',
@@ -148,6 +152,7 @@ export async function seedTestData(apiKey: string) {
         predictionHorizon: 8500,
       },
       buildingType: buildingTypes[1],
+      // scenarios: "{'scenarioList': ['scenarioFour', 'scenarioSix']}",
     },
     {
       dateRun: '2020-08-04T23:00:00.000Z',
@@ -174,6 +179,7 @@ export async function seedTestData(apiKey: string) {
         predictionHorizon: 8525,
       },
       buildingType: buildingTypes[1],
+      // scenarios: "{'scenarioList': ['scenarioFour']}",
     },
   ];
 

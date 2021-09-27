@@ -66,6 +66,7 @@ export interface BuildingType {
   markdownURL: string;
   pdfURL: string;
   results: Result[];
+  scenarios: JSON;
 }
 
 export interface Account {
@@ -107,6 +108,7 @@ export interface Result {
   controlStep: string;
   priceScenario: string;
   weatherForecastUncertainty: string;
+  // scenarios: JSON;
 
   account: Account;
   buildingType: BuildingType;

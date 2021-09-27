@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import clsx from 'clsx';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles, Theme, withStyles} from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -11,7 +12,9 @@ import TableSortLabel from '@material-ui/core/TableSortLabel';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
-import { Data, createRows, Order, stableSort, HeadCell, getComparator} from '../Lib/TableHelpers';
+import { Data, createRows, Order, stableSort, HeadCell, getComparator, getFilterRanges, resetFilters, filterRows} from '../Lib/TableHelpers';
+
+import {FilterMenu} from './FilterMenu';
 
 const headCells: HeadCell[] = [
   {
@@ -67,11 +70,10 @@ interface EnhancedTableProps {
   ) => void;
   order: Order;
   orderBy: string;
-  rowCount: number;
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
-  const {classes, order, orderBy, rowCount, onRequestSort} = props;
+  const {classes, order, orderBy, onRequestSort} = props;
   const createSortHandler = (property: keyof Data) => (
     event: React.MouseEvent<unknown>
   ) => {
@@ -112,11 +114,12 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 const useToolbarStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
+      justifyContent: 'space-between',
       paddingLeft: theme.spacing(2),
-      paddingRight: theme.spacing(1),
+      paddingRight: theme.spacing(2),
     },
     title: {
-      flex: '1 1 100%',
+      // flex: '1 1 100%',
     },
   })
 );
@@ -127,10 +130,22 @@ interface EnhancedTableToolbarProps {
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   const classes = useToolbarStyles();
-  const {totalResults} = props;
+  const {displayFilters, filterRanges, filterValues, totalResults, updateFilters} = props;
+  // const {totalResults, updateFilters} = props;
+
+
+  const onRequestUpdateFilters = (requestedFilters) => {
+    updateFilters(requestedFilters);
+  };
 
   return (
     <Toolbar className={clsx(classes.root)}>
+      <FilterMenu
+        displayFilters={displayFilters}
+        filterRanges={filterRanges}
+        filterValues={filterValues}
+        onRequestFilters={onRequestUpdateFilters}
+      />
       <Typography
         className={classes.title}
         variant="h6"
@@ -181,11 +196,42 @@ export default function ResultsTable(props) {
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Data>('dateRun');
   const [rows, setRows] = React.useState<Data[]>([]);
+  const [filteredRows, setFilteredRows] = React.useState<Data[]>([]);
+  const [filterRanges, setFilterRanges] = React.useState({});
+  const [displayFilters, setDisplayFilters] = React.useState(false);
+  const [filters, setFilters] = React.useState({});
 
   // set the rows from the results that we get
   useEffect(() => {
-    setRows(createRows(props.results));
+    console.log('results:', props.results);
+    console.log('buildingTypes:', props.buildingTypes);
+    let allRows: Data[] = createRows(props.results);
+    setRows(allRows);
+    setFilteredRows(allRows);
   }, [props]);
+
+  useEffect(() => {
+    setFilterRanges(getFilterRanges(rows));
+  }, [rows]);
+
+  useEffect(() => {
+    setFilters(resetFilters(filterRanges, props.buildingTypes));
+  }, [filterRanges]);
+
+  useEffect(() => {
+    console.log("FILTERS:", filters);
+    setFilteredRows(filterRows(rows, filters));
+  }, [filters]);
+
+  const handleUpdateFilters = (requestedFilters) => {
+    if (Object.keys(requestedFilters.buildingType).every((k) => !requestedFilters.buildingType[k])) {
+      setDisplayFilters(false);
+      setFilters(resetFilters(filterRanges, props.buildingTypes));
+    } else {
+      setDisplayFilters(true);
+      setFilters(requestedFilters);
+    }
+  }
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -206,7 +252,13 @@ export default function ResultsTable(props) {
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar totalResults={rows.length} />
+        <EnhancedTableToolbar
+          totalResults={filteredRows.length}
+          filterRanges={filterRanges}
+          displayFilters={displayFilters}
+          filterValues={filters}
+          updateFilters={handleUpdateFilters}
+        />
         <TableContainer>
           <Table
             className={classes.table}
@@ -220,10 +272,9 @@ export default function ResultsTable(props) {
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
             />
             <TableBody>
-              {stableSort(rows, getComparator(order, orderBy))
+              {stableSort(filteredRows, getComparator(order, orderBy))
                 //.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const labelId = `enhanced-table-checkbox-${index}`;
