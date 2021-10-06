@@ -12,17 +12,17 @@ POST: `api/results`
     {
       "uid": "6317d174c593f59c6ed7fc68f500b4fe",
       "dateRun": "2020-08-04T23:00:00.000Z",
-      "boptestVersion": "",
+      "boptestVersion": "0.1.0",
       "isShared": true,
       "controlStep": "360.0",
       "account": {
         "apiKey": "apiKey"
       },
-      "tags": { "_comment": "Unconstrained user defined tags",
+      "tags": [
         "string1",
         "string2",
         "string3"
-      },
+      ],
       "kpis": {
         "cost_tot": 0.7025804273828494,
         "emis_tot": 0.4612590709883337,
@@ -35,12 +35,12 @@ POST: `api/results`
         "horizon": 21600.0,
         "interval": 3600.0
       },
-      "scenario" : { "_comment": "Refer to the scenarios column here, https://github.com/ibpsa/project1-boptest/blob/master/testcases/README.md, however the valid enums will be posted to the add testcase api.",
-        "electricityPrice": "constant", "_comment": "Current enums are, constant, dynamic, highly_dynamic, but can vary by testcase.",
-        "timePeriod": "peak_heat_day", "_comment": ""
+      "scenario": {
+        "electricityPrice": "constant",
+        "timePeriod": "peak_heat_day"
       },
-      "testcase": { "_comment": "This was previously buildingType. All of the current cases are documented here https://github.com/ibpsa/project1-boptest/tree/master/testcases",
-        "id": "bestest_air", "_comment": "A unique, but not globally unique id. Current options are bestest_air, bestest_hydronic, bestest_hydronic_heat_pump, multizone_residential_hydronic"
+      "testcase": {
+        "id": "bestest_air"
       }
     }
   ]
@@ -52,6 +52,7 @@ POST: `api/results`
 POST `api/testcases`
 
 - This endpoint accepts an array of testcase types. So it can be used to create a single testcase type or a batch of them depending on how many objects are in the array.
+- A list of the currently valid testcases, and corresponding scenario values is available here https://github.com/ibpsa/project1-boptest/blob/master/testcases/README.md
 
 ### Example Payload:
 
@@ -60,16 +61,15 @@ POST `api/testcases`
 ```json
 {
   "testcases": [
-    "_comment": "Testscases and corresponding scenarios are documented here https://github.com/ibpsa/project1-boptest/blob/master/testcases/README.md",
     {
-      "id": "bestest_air", "_comment": "Unique, but not globally unique",
-      "name": "BESTEST Air", "_comment": "A human readable name. Uniqueness is not guaranteed, but strongly encouraged",
-      "scenarios" : { "_comment": "Scenarios for each testcase, https://github.com/ibpsa/project1-boptest/blob/master/testcases/README.md",
+      "id": "bestest_air",
+      "name": "BESTEST Air",
+      "scenarios" : {
         "validElectricityPrices": ["constant", "dynamic", "highly_dynamic"],
         "validTimePeriods": ["peak_heat_day", "typical_heat_day", "peak_cool_day", "typical_cool_day", "mix_day"]
       },
-      "pdfURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/someFile.pdf", "_comment": "Detailed pdf doc to be linked on doc page",
-      "markdownURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/README.md", "_comment": "Summary to be displayed on doc page"
+      "pdfURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/someFile.pdf",
+      "markdownURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/README.md"
     }
   ],
   "apiKey": "SU_API_KEY"
@@ -83,17 +83,19 @@ PATCH `/api/testcases?uid={your_testcase_uid}`
 - Though like the `POST` request, the testcase is wrapped in an array of `testcases`, you may only PATCH one testcase at a time. THE `uid` is specified as a query parameter.
 
 ```json
+{
   "testcases": [
     {
       "id": "bestest_air",
       "name": "BESTEST Air",
-      "scenarios" :
+      "scenarios": {
         "validElectricityPrices": ["constant", "dynamic", "highly_dynamic"],
         "validTimePeriods": ["peak_heat_day", "typical_heat_day", "peak_cool_day", "typical_cool_day", "mix_day"]
       },
       "pdfURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/someFile.pdf",
-      "markdownURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/README.md",
+      "markdownURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/README.md"
     }
   ],
   "apiKey": "SU_API_KEY"
+}
 ```
