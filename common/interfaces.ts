@@ -160,7 +160,5 @@ export interface FilterValues {
 }
 
 export interface ScenarioOptions {
-  [key: string]: {
-    [index: number]: string;
-  };
+  [index: number]: string;
 }

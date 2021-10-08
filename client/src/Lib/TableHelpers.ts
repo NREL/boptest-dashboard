@@ -139,11 +139,8 @@ export const getFilterRanges = (rows): Data[] => {
 }
 
 export const resetFilters = (filterRanges, buildingTypes): Data[] => {
-  let buildingTypeFilter = {};
-  buildingTypes.forEach(building => { buildingTypeFilter[building.name] = false });
-
   return {
-    buildingType: buildingTypeFilter,
+    buildingType: '',
     scenario: {
       timePeriod: '',
       electricityPriceProfile: '',
@@ -170,12 +167,12 @@ export const resetFilters = (filterRanges, buildingTypes): Data[] => {
 
 export const filterRows = (rows, filters): Data[] => {
   let filteredRows: Data[] = [];
-  let buildingFilters = filters.buildingType && Object.keys(filters.buildingType).filter((k) => filters.buildingType[k]);
-  if (rows.length <= 0 || buildingFilters.length <= 0) {
+  let buildingFilter = filters.buildingType;
+  if (rows.length <= 0 || buildingFilter === '') {
     return rows;
   }
   rows.forEach(row => {
-    if (!buildingFilters.includes(row.buildingTypeName)) return;
+    if (row.buildingTypeName !== buildingFilter) return;
     if (
       row.cost < filters.cost.min || row.cost > filters.cost.max ||
       row.energy < filters.energy.min || row.energy > filters.energy.max ||

@@ -17,10 +17,29 @@ import {FilterRanges, FilterValues, ScenarioOptions} from '../../../common/inter
 
 const useMenuStyles = makeStyles((theme: Theme) =>
   createStyles({
+    menuContainer: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      height: '50px',
+      width: '100%',
+    },
+    selectContainer: {
+      display: 'flex',
+      justifyContent: 'space-evenly',
+    },
     buttonContainer: {
       display: 'flex',
       justifyContent: 'space-evenly',
     },
+    select: {
+      marginTop: theme.spacing(2),
+      marginRight: theme.spacing(2),
+      width: '275px',
+      textTransform: "capitalize"
+    },
+    selectIcon: {
+      fill: '#078b75',
+    }
   })
 );
 
@@ -28,9 +47,35 @@ const ColorButton = withStyles((theme) => ({
   root: {
     color: '#078b75',
     borderColor: '#078b75',
-    marginRight: theme.spacing(2),
+    marginTop: theme.spacing(2),
+    marginLeft: theme.spacing(2),
   }
 }))(Button);
+
+const ColorTextField = withStyles({
+  root: {
+    '& label': {
+      color: '#078b75',
+    },
+    '& label.Mui-focused': {
+      color: '#078b75',
+    },
+    '& .MuiInput-underline:after': {
+      borderBottomColor: '#078b75',
+    },
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: '#078b75',
+      },
+      '&:hover fieldset': {
+        borderColor: '#078b75',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#078b75',
+      },
+    },
+  }
+})(TextField);
 
 const usePopperStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -39,49 +84,32 @@ const usePopperStyles = makeStyles((theme: Theme) =>
       // height: '400px',
     },
     container: {
-      padding: `${theme.spacing(2)}px ${theme.spacing(1)}px`,
-    },
-    fieldset: {
-      border: 'none',
+      display: 'flex',
+      justifyContent: 'center',
+      flexDirection: 'column',
+      paddingTop: theme.spacing(2),
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
+      minWidth: '225px',
     },
     label: {
+      alignSelf: 'center',
       fontWeight: 'bold',
       paddingBottom: theme.spacing(2),
     },
     rangeContainer: {
       display: 'flex',
       justifyContent: 'space-between',
+      alignSelf: 'center',
+      width: '100%',
       paddingBottom: theme.spacing(2),
-    },
-    checkboxContainer: {
-      display: 'flex',
-      flexDirection: 'column',
-      minWidth: '250px',
-    },
-    selectContainer: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      paddingBottom: theme.spacing(2),
-    },
-    inputContainer: {
-      display: 'flex',
-      flexDirection: 'column',
     },
     textInput: {
-      width: '100%',
     },
-    formControl: {
-      margin: theme.spacing(1),
-      minWidth: '120px',
-    },
-    selectInput: {
-      minWidth: '260px',
-    }
   })
 );
 
 interface FilterMenuProps {
-  displayFilters: boolean;
   filterRanges: FilterRanges;
   filterValues: FilterValues;
   onRequestFilters: (
@@ -93,11 +121,9 @@ interface FilterMenuProps {
 export const FilterMenu: React.FC<FilterMenuProps> = props => {
   const menuClasses = useMenuStyles();
   const popperClasses = usePopperStyles();
-  const {displayFilters, filterRanges, filterValues, onRequestFilters, scenarioOptions} = props;
+  const {filterRanges, filterValues, onRequestFilters, scenarioOptions} = props;
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
-  // const [displayFilters, setDisplayFilters] = React.useState(false);
   const [open, setOpen] = React.useState({
-    filter: false,
     cost: false,
     discomfort: false,
     energy: false,
@@ -105,11 +131,11 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
   });
 
   const filters = Object.keys(open);
-  const buildingTypes = scenarioOptions && Object.keys(scenarioOptions);
+  const scenarioKeys = scenarioOptions ? Object.keys(scenarioOptions) : [];
+
+  // EVENTS
 
   const handleOpenPopper = (filter) => (event: React.MouseEvent<HTMLButtonElement>) => {
-    console.log('BuildingTypes:', buildingTypes);
-    console.log('scenarioOptions:', scenarioOptions);
     setAnchorEl(event.currentTarget);
     setOpen({ ...open, [filter]: true });
   };
@@ -142,124 +168,21 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
     onRequestFilters(newFilter);
   }
 
-  const onSelectFilterChange = (event) => {
-    const scenarioType = event.target.name.split('-')[1];
-    console.log('scenarioType', scenarioType);
+  const onScenarioFilterChange = (event) => {
     const newFilter = {
       ...filterValues,
       scenario: {
         ...filterValues.scenario,
-        [scenarioType]: event.target.value,
+        [event.target.name]: event.target.value,
       },
     }
     onRequestFilters(newFilter);
   };
 
-  const isBuildingTypeDisabled = (building) => {
-    return filterValues && !filterValues.buildingType[building] && !Object.keys(filterValues.buildingType).every((k) => !filterValues.buildingType[k]);
-  }
+  // RENDERS
 
-  const popperContents = (filter) => {
+  const renderPopperContents = (filter) => {
     switch(filter) {
-      case 'filter':
-        return(
-          <form className={clsx(popperClasses.container)}>
-            <fieldset className={clsx(popperClasses.fieldset)}>
-              <legend className={clsx(popperClasses.label)}>
-                Building Type
-              </legend>
-              {buildingTypes && buildingTypes.map((building) => (
-                <div key={building} className={clsx(popperClasses.checkboxContainer)}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        id={`buildingType-${building}`}
-                        checked={filterValues && filterValues.buildingType[building]}
-                        onChange={onFilterChange}
-                        name={building}
-                        color="primary"
-                        disabled={isBuildingTypeDisabled(building)}
-                      />
-                    }
-                    label={building}
-                  />
-                  {filterValues.buildingType[building] && (
-                    <React.Fragment key={`${building}-scenario`}>
-                      <legend className={clsx(popperClasses.label)}>
-                        Scenario
-                      </legend>
-                      <div className={clsx(popperClasses.selectContainer)}>
-                        <FormControl variant="outlined" className={clsx(popperClasses.formControl)}>
-                          <InputLabel id={`${building}-timePeriod`}>Time Period</InputLabel>
-                          <Select
-                            className={clsx(popperClasses.selectInput)}
-                            labelId={`${building}-timePeriod-label`}
-                            id={`${building}-timePeriod-select`}
-                            value={filterValues && filterValues.scenario && filterValues.scenario.timePeriod}
-                            onChange={onSelectFilterChange}
-                            name={`${building}-timePeriod`}
-                            MenuProps={{
-                              disablePortal: true,
-                            }}
-                          >
-                            <MenuItem key={`${building}-none-option`} value="">none</MenuItem>
-                            {scenarioOptions[building].timePeriod.map(option => {
-                              return (
-                                <MenuItem key={`${building}-${option}-option`} value={option}>{option}</MenuItem>
-                              );
-                            })}
-                          </Select>
-                        </FormControl>
-                        <FormControl variant="outlined" className={clsx(popperClasses.formControl)}>
-                          <InputLabel id={`${building}-electricityPriceProfile`}>Electricity Price Profile</InputLabel>
-                          <Select
-                            className={clsx(popperClasses.selectInput)}
-                            labelId={`${building}-electricityPriceProfile-label`}
-                            id={`${building}-electricityPriceProfile-select`}
-                            value={filterValues && filterValues.scenario && filterValues.scenario.electricityPriceProfile}
-                            onChange={onSelectFilterChange}
-                            name={`${building}-electricityPriceProfile`}
-                            MenuProps={{
-                              disablePortal: true,
-                            }}
-                          >
-                            <MenuItem key={`${building}-none-option`} value="">none</MenuItem>
-                            {scenarioOptions[building].electricityPriceProfile.map(option => {
-                              return (
-                                <MenuItem key={`${building}-${option}-option`} value={option}>{option}</MenuItem>
-                              );
-                            })}
-                          </Select>
-                        </FormControl>
-                        <FormControl variant="outlined" className={clsx(popperClasses.formControl)}>
-                          <InputLabel id={`${building}-weatherForecastUncertainty`}>Weather Forecast Uncertainty</InputLabel>
-                          <Select
-                            className={clsx(popperClasses.selectInput)}
-                            labelId={`${building}-weatherForecastUncertainty-label`}
-                            id={`${building}-weatherForecastUncertainty-select`}
-                            value={filterValues && filterValues.scenario && filterValues.scenario.weatherForecastUncertainty}
-                            onChange={onSelectFilterChange}
-                            name={`${building}-weatherForecastUncertainty`}
-                            MenuProps={{
-                              disablePortal: true,
-                            }}
-                          >
-                            <MenuItem key={`${building}-none-option`} value="">none</MenuItem>
-                            {scenarioOptions[building].weatherForecastUncertainty.map(option => {
-                              return (
-                                <MenuItem key={`${building}-${option}-option`} value={option}>{option}</MenuItem>
-                              );
-                            })}
-                          </Select>
-                        </FormControl>
-                      </div>
-                    </React.Fragment>
-                  )}
-                </div>
-              ))}
-            </fieldset>
-          </form>
-        )
       case 'cost':
         const costInputProps = {
           min: 0,
@@ -267,47 +190,41 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
         };
 
         return(
-          <form className={clsx(popperClasses.container)}>
-            <fieldset className={clsx(popperClasses.fieldset)}>
-              <legend className={clsx(popperClasses.label)}>
-                Operation Cost Range
-              </legend>
-              <div className={clsx(popperClasses.rangeContainer)}>
-                <div className={clsx(popperClasses.inputContainer)}>
-                  <TextField
-                    className={clsx(popperClasses.textInput)}
-                    id="cost-min"
-                    label="Min"
-                    type="number"
-                    variant="outlined"
-                    defaultValue={filterValues && filterValues.cost && filterValues.cost.min}
-                    inputProps={costInputProps}
-                    onChange={onFilterChange}
-                  />
-                </div>
-                <div>
-                  <TextField
-                    className={clsx(popperClasses.textInput)}
-                    id="cost-max"
-                    label="Max"
-                    type="number"
-                    variant="outlined"
-                    defaultValue={filterValues && filterValues.cost && filterValues.cost.max}
-                    inputProps={costInputProps}
-                    onChange={onFilterChange}
-                  />
-                </div>
-              </div>
-              <Slider
+          <div className={clsx(popperClasses.container)}>
+            <legend className={clsx(popperClasses.label)}>
+              Operation Cost Range
+            </legend>
+            <div className={clsx(popperClasses.rangeContainer)}>
+              <ColorTextField
+                className={clsx(popperClasses.textInput)}
+                id="cost-min"
+                label="Min"
+                type="number"
+                variant="outlined"
+                defaultValue={filterValues && filterValues.cost && filterValues.cost.min}
+                inputProps={costInputProps}
+                onChange={onFilterChange}
+              />
+              <ColorTextField
+                className={clsx(popperClasses.textInput)}
+                id="cost-max"
+                label="Max"
+                type="number"
+                variant="outlined"
+                defaultValue={filterValues && filterValues.cost && filterValues.cost.max}
+                inputProps={costInputProps}
+                onChange={onFilterChange}
+              />
+            </div>
+            {/*<Slider
                 id="cost"
                 value={[filterValues && filterValues.cost && filterValues.cost.min, filterValues && filterValues.cost && filterValues.cost.max]}
                 onChange={onSliderFilterChange}
                 valueLabelDisplay="auto"
                 aria-labelledby="range-slider"
                 // getAriaValueText={valuetext}
-              />
-            </fieldset>
-          </form>
+              />*/}
+          </div>
         )
       case 'discomfort':
         const thermalDiscomfortInputProps = {
@@ -321,70 +238,58 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
         };
 
         return(
-          <form className={clsx(popperClasses.container)}>
-            <fieldset className={clsx(popperClasses.fieldset)}>
-              <legend className={clsx(popperClasses.label)}>
-                Thermal Discomfort Range
-              </legend>
-              <div className={clsx(popperClasses.rangeContainer)}>
-                <div className={clsx(popperClasses.inputContainer)}>
-                  <TextField
-                    className={clsx(popperClasses.textInput)}
-                    id="thermalDiscomfort-min"
-                    label="Min"
-                    type="number"
-                    variant="outlined"
-                    defaultValue={filterValues && filterValues.thermalDiscomfort && filterValues.thermalDiscomfort.min}
-                    inputProps={thermalDiscomfortInputProps}
-                    onChange={onFilterChange}
-                  />
-                </div>
-                <div>
-                  <TextField
-                    className={clsx(popperClasses.textInput)}
-                    id="thermalDiscomfort-max"
-                    label="Max"
-                    type="number"
-                    variant="outlined"
-                    defaultValue={filterValues && filterValues.thermalDiscomfort && filterValues.thermalDiscomfort.max}
-                    inputProps={thermalDiscomfortInputProps}
-                    onChange={onFilterChange}
-                  />
-                </div>
-              </div>
-            </fieldset>
-            <fieldset className={clsx(popperClasses.fieldset)}>
-              <legend className={clsx(popperClasses.label)}>
-                Air Quality Discomfort Range
-              </legend>
-              <div className={clsx(popperClasses.rangeContainer)}>
-                <div className={clsx(popperClasses.inputContainer)}>
-                  <TextField
-                    className={clsx(popperClasses.textInput)}
-                    id="aqDiscomfort-min"
-                    label="Min"
-                    type="number"
-                    variant="outlined"
-                    defaultValue={filterValues && filterValues.aqDiscomfort && filterValues.aqDiscomfort.min}
-                    inputProps={aqDiscomfortInputProps}
-                    onChange={onFilterChange}
-                  />
-                </div>
-                <div>
-                  <TextField
-                    className={clsx(popperClasses.textInput)}
-                    id="aqDiscomfort-max"
-                    label="Max"
-                    type="number"
-                    variant="outlined"
-                    defaultValue={filterValues && filterValues.aqDiscomfort && filterValues.aqDiscomfort.max}
-                    inputProps={aqDiscomfortInputProps}
-                    onChange={onFilterChange}
-                  />
-                </div>
-              </div>
-            </fieldset>
-          </form>
+          <div className={clsx(popperClasses.container)}>
+            <legend className={clsx(popperClasses.label)}>
+              Thermal Discomfort Range
+            </legend>
+            <div className={clsx(popperClasses.rangeContainer)}>
+              <ColorTextField
+                className={clsx(popperClasses.textInput)}
+                id="thermalDiscomfort-min"
+                label="Min"
+                type="number"
+                variant="outlined"
+                defaultValue={filterValues && filterValues.thermalDiscomfort && filterValues.thermalDiscomfort.min}
+                inputProps={thermalDiscomfortInputProps}
+                onChange={onFilterChange}
+              />
+              <ColorTextField
+                className={clsx(popperClasses.textInput)}
+                id="thermalDiscomfort-max"
+                label="Max"
+                type="number"
+                variant="outlined"
+                defaultValue={filterValues && filterValues.thermalDiscomfort && filterValues.thermalDiscomfort.max}
+                inputProps={thermalDiscomfortInputProps}
+                onChange={onFilterChange}
+              />
+            </div>
+            <legend className={clsx(popperClasses.label)}>
+              Air Quality Discomfort Range
+            </legend>
+            <div className={clsx(popperClasses.rangeContainer)}>
+              <ColorTextField
+                className={clsx(popperClasses.textInput)}
+                id="aqDiscomfort-min"
+                label="Min"
+                type="number"
+                variant="outlined"
+                defaultValue={filterValues && filterValues.aqDiscomfort && filterValues.aqDiscomfort.min}
+                inputProps={aqDiscomfortInputProps}
+                onChange={onFilterChange}
+              />
+              <ColorTextField
+                className={clsx(popperClasses.textInput)}
+                id="aqDiscomfort-max"
+                label="Max"
+                type="number"
+                variant="outlined"
+                defaultValue={filterValues && filterValues.aqDiscomfort && filterValues.aqDiscomfort.max}
+                inputProps={aqDiscomfortInputProps}
+                onChange={onFilterChange}
+              />
+            </div>
+          </div>
         )
       case 'energy':
         const energyInputProps = {
@@ -393,73 +298,116 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
         };
 
         return(
-          <form className={clsx(popperClasses.container)}>
-            <fieldset className={clsx(popperClasses.fieldset)}>
-              <legend className={clsx(popperClasses.label)}>
-                Energy Usage Range
-              </legend>
-              <div className={clsx(popperClasses.rangeContainer)}>
-                <div className={clsx(popperClasses.inputContainer)}>
-                  <TextField
-                    className={clsx(popperClasses.textInput)}
-                    id="energy-min"
-                    label="Min"
-                    type="number"
-                    variant="outlined"
-                    defaultValue={filterValues && filterValues.energy && filterValues.energy.min}
-                    inputProps={energyInputProps}
-                    onChange={onFilterChange}
-                  />
-                </div>
-                <div>
-                  <TextField
-                    className={clsx(popperClasses.textInput)}
-                    id="energy-max"
-                    label="Max"
-                    type="number"
-                    variant="outlined"
-                    defaultValue={filterValues && filterValues.energy && filterValues.energy.max}
-                    inputProps={energyInputProps}
-                    onChange={onFilterChange}
-                  />
-                </div>
-              </div>
-            </fieldset>
-          </form>
+          <div className={clsx(popperClasses.container)}>
+            <legend className={clsx(popperClasses.label)}>
+              Energy Usage Range
+            </legend>
+            <div className={clsx(popperClasses.rangeContainer)}>
+              <ColorTextField
+                className={clsx(popperClasses.textInput)}
+                id="energy-min"
+                label="Min"
+                type="number"
+                variant="outlined"
+                defaultValue={filterValues && filterValues.energy && filterValues.energy.min}
+                inputProps={energyInputProps}
+                onChange={onFilterChange}
+              />
+              <ColorTextField
+                className={clsx(popperClasses.textInput)}
+                id="energy-max"
+                label="Max"
+                type="number"
+                variant="outlined"
+                defaultValue={filterValues && filterValues.energy && filterValues.energy.max}
+                inputProps={energyInputProps}
+                onChange={onFilterChange}
+              />
+            </div>
+          </div>
         )
       default:
         return(
-          <form className={clsx(popperClasses.container)}>
-            <fieldset className={clsx(popperClasses.fieldset)}>
-              <legend className={clsx(popperClasses.label)}>
-                More
-              </legend>
-            </fieldset>
-          </form>
+          <div className={clsx(popperClasses.container)}>
+            <legend className={clsx(popperClasses.label)}>
+              More
+            </legend>
+          </div>
         )
     }
   };
 
+  const renderFilterButtons = () => {
+    return (
+      <div className={clsx(menuClasses.buttonContainer)}>
+        {filters.map((filter) => {
+          return (
+            <React.Fragment key={filter}>
+              <ColorButton variant="outlined" onClick={handleOpenPopper(filter)}>{filter}</ColorButton>
+              <Popper
+                open={open[filter]}
+                anchorEl={anchorEl}
+                placement={'bottom'}
+              >
+                <ClickAwayListener onClickAway={handleClosePopper(filter)}>
+                  <Paper className={clsx(popperClasses.root)} elevation={3}>
+                    {renderPopperContents(filter)}
+                  </Paper>
+                </ClickAwayListener>
+              </Popper>
+            </React.Fragment>
+          )
+        })}
+      </div>
+    )
+  }
+
+  const renderScenarioFilters = () => {
+    const selectProps = {
+      classes: { icon: menuClasses.selectIcon },
+      MenuProps: {
+        anchorOrigin: {
+          vertical: 'bottom',
+          horizontal: 'left'
+        },
+        getContentAnchorEl: null
+      }
+    };
+
+    return (
+      <div className={clsx(menuClasses.selectContainer)}>
+        {scenarioKeys.map((key) => {
+          return (
+            <React.Fragment key={key}>
+              <ColorTextField
+                className={clsx(menuClasses.select)}
+                label={key.split(/(?=[A-Z])/).join(' ')}
+                name={key}
+                onChange={onScenarioFilterChange}
+                select
+                value={filterValues && filterValues.scenario && filterValues.scenario[key] ? filterValues.scenario[key] : ""}
+                variant="outlined"
+                SelectProps={selectProps}
+                size="small"
+              >
+                <MenuItem key="buildingType-none-option" value="">none</MenuItem>
+                {scenarioOptions[key].map(option => {
+                  return (
+                    <MenuItem key={`${option}-option`} size="small" value={option}>{option}</MenuItem>
+                  );
+                })}
+              </ColorTextField>
+            </React.Fragment>
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
-    <div className={clsx(menuClasses.buttonContainer)}>
-      {filters.map((filter) => {
-        return displayFilters || filter === 'filter' ? (
-          <React.Fragment key={filter}>
-            <ColorButton variant="outlined" onClick={handleOpenPopper(filter)}>{filter}</ColorButton>
-            <Popper
-              open={open[filter]}
-              anchorEl={anchorEl}
-              placement={'bottom-start'}
-            >
-              <ClickAwayListener onClickAway={handleClosePopper(filter)}>
-                <Paper className={clsx(popperClasses.root)} elevation={3}>
-                  {popperContents(filter)}
-                </Paper>
-              </ClickAwayListener>
-            </Popper>
-          </React.Fragment>
-        ) : null}
-      )}
+    <div className={clsx(menuClasses.menuContainer)}>
+      {renderScenarioFilters()}
+      {renderFilterButtons()}
     </div>
   );
 }
