@@ -13,6 +13,7 @@ import Popper from '@material-ui/core/Popper';
 import Select from '@material-ui/core/Select';
 import Slider from '@material-ui/core/Slider';
 import TextField from '@material-ui/core/TextField';
+import {FilterRanges, FilterValues, ScenarioOptions} from '../../../common/interfaces';
 
 const useMenuStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -55,7 +56,7 @@ const usePopperStyles = makeStyles((theme: Theme) =>
     checkboxContainer: {
       display: 'flex',
       flexDirection: 'column',
-      width: '450px',
+      minWidth: '250px',
     },
     selectContainer: {
       display: 'flex',
@@ -69,16 +70,30 @@ const usePopperStyles = makeStyles((theme: Theme) =>
     textInput: {
       width: '100%',
     },
+    formControl: {
+      margin: theme.spacing(1),
+      minWidth: '120px',
+    },
     selectInput: {
-      width: '125px'
+      minWidth: '260px',
     }
   })
 );
 
+interface FilterMenuProps {
+  displayFilters: boolean;
+  filterRanges: FilterRanges;
+  filterValues: FilterValues;
+  onRequestFilters: (
+    requestedFilters: FilterValues
+  ) => void;
+  scenarioOptions: ScenarioOptions;
+}
+
 export const FilterMenu: React.FC<FilterMenuProps> = props => {
   const menuClasses = useMenuStyles();
   const popperClasses = usePopperStyles();
-  const {displayFilters, filterRanges, filterValues, onRequestFilters} = props;
+  const {displayFilters, filterRanges, filterValues, onRequestFilters, scenarioOptions} = props;
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
   // const [displayFilters, setDisplayFilters] = React.useState(false);
   const [open, setOpen] = React.useState({
@@ -88,17 +103,13 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
     energy: false,
     more: false
   });
-  // Scenario Concept
-  // const [scenarios, setScenarios] = React.useState({
-  //   one: "",
-  //   two: "",
-  //   three: "",
-  // });
 
   const filters = Object.keys(open);
-  const buildingTypes = filterValues && filterValues.buildingType && Object.keys(filterValues.buildingType);
+  const buildingTypes = scenarioOptions && Object.keys(scenarioOptions);
 
   const handleOpenPopper = (filter) => (event: React.MouseEvent<HTMLButtonElement>) => {
+    console.log('BuildingTypes:', buildingTypes);
+    console.log('scenarioOptions:', scenarioOptions);
     setAnchorEl(event.currentTarget);
     setOpen({ ...open, [filter]: true });
   };
@@ -131,20 +142,22 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
     onRequestFilters(newFilter);
   }
 
-  // Scenario Concept
-  // const handleChange = (event) => {
-  //   const scenarioType = event.target.id;
+  const onSelectFilterChange = (event) => {
+    const scenarioType = event.target.name.split('-')[1];
+    console.log('scenarioType', scenarioType);
+    const newFilter = {
+      ...filterValues,
+      scenario: {
+        ...filterValues.scenario,
+        [scenarioType]: event.target.value,
+      },
+    }
+    onRequestFilters(newFilter);
+  };
 
-  //   if (scenarioType === 'scenario-1-select') {
-  //     setScenarios({ ...scenarios, one: event.target.value});
-  //   } else if (scenarioType === 'scenario-2-select') {
-  //     setScenarios({ ...scenarios, two: event.target.value});
-  //   } else if (scenarioType === 'scenario-3-select') {
-  //     setScenarios({ ...scenarios, three: event.target.value});
-  //   } else {
-  //     console.log('something went wrong');
-  //   }
-  // };
+  const isBuildingTypeDisabled = (building) => {
+    return filterValues && !filterValues.buildingType[building] && !Object.keys(filterValues.buildingType).every((k) => !filterValues.buildingType[k]);
+  }
 
   const popperContents = (filter) => {
     switch(filter) {
@@ -156,7 +169,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                 Building Type
               </legend>
               {buildingTypes && buildingTypes.map((building) => (
-                <div className={clsx(popperClasses.checkboxContainer)}>
+                <div key={building} className={clsx(popperClasses.checkboxContainer)}>
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -165,70 +178,83 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                         onChange={onFilterChange}
                         name={building}
                         color="primary"
+                        disabled={isBuildingTypeDisabled(building)}
                       />
                     }
                     label={building}
                   />
-                  {/*<div className={clsx(popperClasses.selectContainer)}>
-                    {filterValues.buildingType[building] && (
-                      <React.Fragment key={building}>
-                        <FormControl variant="outlined">
-                          <InputLabel id="scenario-1">Scenario 1</InputLabel>
+                  {filterValues.buildingType[building] && (
+                    <React.Fragment key={`${building}-scenario`}>
+                      <legend className={clsx(popperClasses.label)}>
+                        Scenario
+                      </legend>
+                      <div className={clsx(popperClasses.selectContainer)}>
+                        <FormControl variant="outlined" className={clsx(popperClasses.formControl)}>
+                          <InputLabel id={`${building}-timePeriod`}>Time Period</InputLabel>
                           <Select
                             className={clsx(popperClasses.selectInput)}
-                            labelId="scenario-1-label"
-                            id="scenario-1-select"
-                            value={scenarios.one}
-                            onChange={handleChange}
-                            label="Scenario 1"
+                            labelId={`${building}-timePeriod-label`}
+                            id={`${building}-timePeriod-select`}
+                            value={filterValues && filterValues.scenario && filterValues.scenario.timePeriod}
+                            onChange={onSelectFilterChange}
+                            name={`${building}-timePeriod`}
+                            MenuProps={{
+                              disablePortal: true,
+                            }}
                           >
-                            <MenuItem value="">
-                              <em>None</em>
-                            </MenuItem>
-                            <MenuItem value="Option 1">Option 1</MenuItem>
-                            <MenuItem value="Option 2">Option 2</MenuItem>
-                            <MenuItem value="Option 3">Option 3</MenuItem>
+                            <MenuItem key={`${building}-none-option`} value="">none</MenuItem>
+                            {scenarioOptions[building].timePeriod.map(option => {
+                              return (
+                                <MenuItem key={`${building}-${option}-option`} value={option}>{option}</MenuItem>
+                              );
+                            })}
                           </Select>
                         </FormControl>
-                        <FormControl variant="outlined">
-                          <InputLabel id="scenario-2">Scenario 2</InputLabel>
+                        <FormControl variant="outlined" className={clsx(popperClasses.formControl)}>
+                          <InputLabel id={`${building}-electricityPriceProfile`}>Electricity Price Profile</InputLabel>
                           <Select
                             className={clsx(popperClasses.selectInput)}
-                            labelId="scenario-2-label"
-                            id="scenario-2-select"
-                            value={scenarios.two}
-                            onChange={handleChange}
-                            label="Scenario 2"
+                            labelId={`${building}-electricityPriceProfile-label`}
+                            id={`${building}-electricityPriceProfile-select`}
+                            value={filterValues && filterValues.scenario && filterValues.scenario.electricityPriceProfile}
+                            onChange={onSelectFilterChange}
+                            name={`${building}-electricityPriceProfile`}
+                            MenuProps={{
+                              disablePortal: true,
+                            }}
                           >
-                            <MenuItem value="">
-                              <em>None</em>
-                            </MenuItem>
-                            <MenuItem value="Option 1">Option 1</MenuItem>
-                            <MenuItem value="Option 2">Option 2</MenuItem>
-                            <MenuItem value="Option 3">Option 3</MenuItem>
+                            <MenuItem key={`${building}-none-option`} value="">none</MenuItem>
+                            {scenarioOptions[building].electricityPriceProfile.map(option => {
+                              return (
+                                <MenuItem key={`${building}-${option}-option`} value={option}>{option}</MenuItem>
+                              );
+                            })}
                           </Select>
                         </FormControl>
-                        <FormControl variant="outlined">
-                          <InputLabel id="scenario-3">Scenario 3</InputLabel>
+                        <FormControl variant="outlined" className={clsx(popperClasses.formControl)}>
+                          <InputLabel id={`${building}-weatherForecastUncertainty`}>Weather Forecast Uncertainty</InputLabel>
                           <Select
                             className={clsx(popperClasses.selectInput)}
-                            labelId="scenario-3-label"
-                            id="scenario-3-select"
-                            value={scenarios.three}
-                            onChange={handleChange}
-                            label="Scenario 3"
+                            labelId={`${building}-weatherForecastUncertainty-label`}
+                            id={`${building}-weatherForecastUncertainty-select`}
+                            value={filterValues && filterValues.scenario && filterValues.scenario.weatherForecastUncertainty}
+                            onChange={onSelectFilterChange}
+                            name={`${building}-weatherForecastUncertainty`}
+                            MenuProps={{
+                              disablePortal: true,
+                            }}
                           >
-                            <MenuItem value="">
-                              <em>None</em>
-                            </MenuItem>
-                            <MenuItem value="Option 1">Option 1</MenuItem>
-                            <MenuItem value="Option 2">Option 2</MenuItem>
-                            <MenuItem value="Option 3">Option 3</MenuItem>
+                            <MenuItem key={`${building}-none-option`} value="">none</MenuItem>
+                            {scenarioOptions[building].weatherForecastUncertainty.map(option => {
+                              return (
+                                <MenuItem key={`${building}-${option}-option`} value={option}>{option}</MenuItem>
+                              );
+                            })}
                           </Select>
                         </FormControl>
-                      </React.Fragment>
-                    )}
-                  </div>*/}
+                      </div>
+                    </React.Fragment>
+                  )}
                 </div>
               ))}
             </fieldset>

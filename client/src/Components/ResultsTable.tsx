@@ -12,7 +12,8 @@ import TableSortLabel from '@material-ui/core/TableSortLabel';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
-import { Data, createRows, Order, stableSort, HeadCell, getComparator, getFilterRanges, resetFilters, filterRows} from '../Lib/TableHelpers';
+import {FilterRanges, FilterValues, ScenarioOptions} from '../../../common/interfaces';
+import { Data, createRows, Order, stableSort, HeadCell, getComparator, getBuildingScenarios, getFilterRanges, resetFilters, filterRows} from '../Lib/TableHelpers';
 
 import {FilterMenu} from './FilterMenu';
 
@@ -126,11 +127,18 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
 
 interface EnhancedTableToolbarProps {
   totalResults: number;
+  buildingScenarios: ScenarioOptions;
+  displayFilters: boolean;
+  filterRanges: FilterRanges;
+  filterValues: FilterValues;
+  updateFilters: (
+    requestedFilters: FilterValues
+  ) => void;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   const classes = useToolbarStyles();
-  const {displayFilters, filterRanges, filterValues, totalResults, updateFilters} = props;
+  const {buildingScenarios, displayFilters, filterRanges, filterValues, totalResults, updateFilters} = props;
   // const {totalResults, updateFilters} = props;
 
 
@@ -141,6 +149,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   return (
     <Toolbar className={clsx(classes.root)}>
       <FilterMenu
+        scenarioOptions={buildingScenarios}
         displayFilters={displayFilters}
         filterRanges={filterRanges}
         filterValues={filterValues}
@@ -197,6 +206,7 @@ export default function ResultsTable(props) {
   const [orderBy, setOrderBy] = React.useState<keyof Data>('dateRun');
   const [rows, setRows] = React.useState<Data[]>([]);
   const [filteredRows, setFilteredRows] = React.useState<Data[]>([]);
+  const [buildingScenarios, setBuildingScenarios]  = React.useState({});
   const [filterRanges, setFilterRanges] = React.useState({});
   const [displayFilters, setDisplayFilters] = React.useState(false);
   const [filters, setFilters] = React.useState({});
@@ -208,6 +218,7 @@ export default function ResultsTable(props) {
     let allRows: Data[] = createRows(props.results);
     setRows(allRows);
     setFilteredRows(allRows);
+    setBuildingScenarios(getBuildingScenarios(props.buildingTypes));
   }, [props]);
 
   useEffect(() => {
@@ -220,6 +231,7 @@ export default function ResultsTable(props) {
 
   useEffect(() => {
     console.log("FILTERS:", filters);
+    console.log('buildingScenarios:', buildingScenarios);
     setFilteredRows(filterRows(rows, filters));
   }, [filters]);
 
@@ -254,6 +266,7 @@ export default function ResultsTable(props) {
       <Paper className={classes.paper}>
         <EnhancedTableToolbar
           totalResults={filteredRows.length}
+          buildingScenarios={buildingScenarios}
           filterRanges={filterRanges}
           displayFilters={displayFilters}
           filterValues={filters}

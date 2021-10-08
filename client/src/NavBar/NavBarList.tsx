@@ -70,6 +70,7 @@ export const NavBarList: React.FC<NavBarListProps> = props => {
   };
 
   const handleDocsClick = () => {
+    console.log('BuildingType DOCS:', buildingTypes);
     if (props.drawerOpen) {
       setOpenDocs(!openDocs);
     } else {

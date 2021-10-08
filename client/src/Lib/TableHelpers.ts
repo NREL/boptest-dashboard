@@ -19,6 +19,7 @@ export interface Data {
   controlStep: string;
   priceScenario: string;
   weatherForecastUncertainty: string;
+  scenario: JSON;
 }
 
 export const createDataFromResult = (result): Data => {
@@ -43,6 +44,7 @@ export const createDataFromResult = (result): Data => {
     controlStep: result.controlStep,
     priceScenario: result.priceScenario,
     weatherForecastUncertainty: result.weatherForecastUncertainty,
+    scenario: result.scenario,
   };
 };
 
@@ -107,6 +109,12 @@ export const getCostRange = (rows): Data[] => {
   }, {});
 }
 
+export const getBuildingScenarios = (buildingTypes): Data[] => {
+  let buildingScenarios = {};
+  buildingTypes.forEach(building => { buildingScenarios[building.name] = building.scenarios });
+  return buildingScenarios;
+}
+
 export const getFilterRanges = (rows): Data[] => {
   return rows.reduce((acc, curr) => {
     return {
@@ -136,6 +144,11 @@ export const resetFilters = (filterRanges, buildingTypes): Data[] => {
 
   return {
     buildingType: buildingTypeFilter,
+    scenario: {
+      timePeriod: '',
+      electricityPriceProfile: '',
+      weatherForecastUncertainty: '',
+    },
     cost: {
       min: 0,
       max: filterRanges && filterRanges.costRange ? filterRanges.costRange.max : 0,
@@ -167,7 +180,10 @@ export const filterRows = (rows, filters): Data[] => {
       row.cost < filters.cost.min || row.cost > filters.cost.max ||
       row.energy < filters.energy.min || row.energy > filters.energy.max ||
       row.thermalDiscomfort < filters.thermalDiscomfort.min || row.thermalDiscomfort > filters.thermalDiscomfort.max ||
-      row.aqDiscomfort < filters.aqDiscomfort.min || row.aqDiscomfort > filters.aqDiscomfort.max
+      row.aqDiscomfort < filters.aqDiscomfort.min || row.aqDiscomfort > filters.aqDiscomfort.max ||
+      filters.scenario.timePeriod !== '' && row.scenario.timePeriod !== filters.scenario.timePeriod ||
+      filters.scenario.electricityPriceProfile !== '' && row.scenario.electricityPriceProfile !== filters.scenario.electricityPriceProfile ||
+      filters.scenario.weatherForecastUncertainty !== '' && row.scenario.weatherForecastUncertainty !== filters.scenario.weatherForecastUncertainty
     ) {
       return;
     }

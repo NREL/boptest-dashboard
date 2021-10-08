@@ -1,5 +1,5 @@
 import {SignatureDetails} from './../../common/interfaces';
-import { getBuildingTypeByUid} from './../models/BuildingType';
+import {getBuildingTypeByUid} from './../models/BuildingType';
 import {getRepository} from 'typeorm';
 import {getAccountByApiKey, getAccountByEmail} from '../models/Account';
 import {createResult, ResultEntity} from '../models/Result';
@@ -89,6 +89,7 @@ function createResultAndAssociatedModels(result: any) {
         controlStep: result.controlStep,
         priceScenario: result.priceScenario,
         weatherForecastUncertainty: result.weatherForecastUncertainty,
+        scenario: result.scenario,
 
         account: data[0],
         buildingType: data[1],
@@ -151,6 +152,7 @@ export function getSignatureDetailsForResult(
         controlStep: result.controlStep,
         priceScenario: result.priceScenario,
         weatherForecastUncertainty: result.weatherForecastUncertainty,
+        scenario: result.scenario,
       };
       return repo
         .find({
