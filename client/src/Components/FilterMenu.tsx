@@ -90,7 +90,7 @@ const usePopperStyles = makeStyles((theme: Theme) =>
       paddingTop: theme.spacing(2),
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
-      minWidth: '225px',
+      minWidth: '250px',
     },
     label: {
       alignSelf: 'center',
@@ -105,6 +105,7 @@ const usePopperStyles = makeStyles((theme: Theme) =>
       paddingBottom: theme.spacing(2),
     },
     textInput: {
+      minWidth: '100px',
     },
   })
 );

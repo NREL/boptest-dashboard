@@ -27,7 +27,7 @@ export const nnonexistentUserLogin: LoginData = {
   password: `doesn't matter.`
 }
 
-type BuildingTypePayload = Omit<BuildingType, 'id' | 'markdown' | 'results'>;
+type BuildingTypePayload = Omit<BuildingType, 'id' | 'markdown' | 'results' | 'scenarios'>;
 
 export const mockBuilding1: BuildingTypePayload = {
   uid: 'one',

@@ -120,6 +120,9 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
     },
+    filterContainer: {
+      display: 'flex',
+    },
     title: {
       // flex: '1 1 100%',
     },
@@ -132,6 +135,15 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
     }
   })
 );
+
+const ColorButton = withStyles((theme) => ({
+  root: {
+    color: '#078b75',
+    borderColor: '#078b75',
+    marginTop: theme.spacing(2),
+    marginLeft: theme.spacing(2),
+  }
+}))(Button);
 
 const ColorSelect = withStyles({
   root: {
@@ -162,6 +174,7 @@ interface EnhancedTableToolbarProps {
   buildingTypeFilterOptions: {
     [index: number]: string;
   };
+  displayClear: boolean;
   filterValues: FilterValues;
   totalResults: number;
     updateFilters: (
@@ -171,7 +184,7 @@ interface EnhancedTableToolbarProps {
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   const classes = useToolbarStyles();
-  const {buildingTypeFilterOptions, filterValues, totalResults, updateFilters} = props;
+  const {buildingTypeFilterOptions, displayClear, filterValues, totalResults, updateFilters} = props;
 
   const selectProps = {
     classes: { icon: classes.selectIcon },
@@ -184,34 +197,37 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     }
   };
 
-  const onBuildingTypeFilter = (event) => {
+  const onBuildingTypeFilter = (clear: boolean = false) => (event: React.MouseEvent<EventTarget>) => {
     const newFilter = {
       ...filterValues,
-      buildingType: event.target.value,
+      buildingType: clear ? '' : event.target.value,
     }
     updateFilters(newFilter);
   };
 
   return (
     <Toolbar className={clsx(classes.root)}>
-      <ColorSelect
-        className={clsx(classes.select)}
-        label="Filter on Building Type"
-        name="buildingType-filter"
-        onChange={onBuildingTypeFilter}
-        select
-        value={filterValues && filterValues.buildingType ? filterValues.buildingType : ""}
-        variant="outlined"
-        SelectProps={selectProps}
-        size="small"
-      >
-        <MenuItem key="buildingType-none-option" value="">none</MenuItem>
-        {buildingTypeFilterOptions.map(option => {
-          return (
-            <MenuItem key={`${option}-option`} value={option}>{option}</MenuItem>
-          );
-        })}
-      </ColorSelect>
+      <div className={clsx(classes.filterContainer)}>
+        <ColorSelect
+          className={clsx(classes.select)}
+          label="Filter on Building Type"
+          name="buildingType-filter"
+          onChange={onBuildingTypeFilter()}
+          select
+          value={filterValues && filterValues.buildingType ? filterValues.buildingType : ""}
+          variant="outlined"
+          SelectProps={selectProps}
+          size="small"
+        >
+          <MenuItem key="buildingType-none-option" value="">none</MenuItem>
+          {buildingTypeFilterOptions.map(option => {
+            return (
+              <MenuItem key={`${option}-option`} value={option}>{option}</MenuItem>
+            );
+          })}
+        </ColorSelect>
+        {displayClear && (<ColorButton variant="outlined" onClick={onBuildingTypeFilter(true)}>Clear</ColorButton>)}
+      </div>
       <Typography
         className={classes.title}
         variant="h6"
@@ -316,7 +332,7 @@ export default function ResultsTable(props) {
     setRows(allRows);
     setFilteredRows(allRows);
     setBuildingScenarios(getBuildingScenarios(props.buildingTypes));
-  }, [props]);
+  }, [props.results, props.buildingTypes]);
 
   useEffect(() => {
     setFilterRanges(getFilterRanges(rows));
@@ -361,6 +377,7 @@ export default function ResultsTable(props) {
       <Paper className={classes.paper}>
         <EnhancedTableToolbar
           buildingTypeFilterOptions={buildingScenarios && Object.keys(buildingScenarios)}
+          displayClear={displayFilters}
           filterValues={filters}
           totalResults={filteredRows.length}
           updateFilters={handleUpdateFilters}
