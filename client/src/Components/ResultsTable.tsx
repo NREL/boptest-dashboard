@@ -16,7 +16,18 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import {FilterMenu} from './FilterMenu';
 import {FilterRanges, FilterValues, ScenarioOptions} from '../../../common/interfaces';
-import {Data, createRows, Order, stableSort, HeadCell, getComparator, getBuildingScenarios, getFilterRanges, resetFilters, filterRows} from '../Lib/TableHelpers';
+import {
+  createRows,
+  Data,
+  filterRows,
+  getBuildingScenarios,
+  getComparator,
+  getFilterRanges,
+  HeadCell,
+  Order,
+  resetFilters,
+  stableSort
+} from '../Lib/TableHelpers';
 
 const headCells: HeadCell[] = [
   {
@@ -175,6 +186,7 @@ interface EnhancedTableToolbarProps {
     [index: number]: string;
   };
   displayClear: boolean;
+  filterRanges: FilterRanges;
   filterValues: FilterValues;
   totalResults: number;
     updateFilters: (
@@ -184,7 +196,14 @@ interface EnhancedTableToolbarProps {
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   const classes = useToolbarStyles();
-  const {buildingTypeFilterOptions, displayClear, filterValues, totalResults, updateFilters} = props;
+  const {
+    buildingTypeFilterOptions,
+    displayClear,
+    filterRanges,
+    filterValues,
+    totalResults,
+    updateFilters
+  } = props;
 
   const selectProps = {
     classes: { icon: classes.selectIcon },
@@ -199,7 +218,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
 
   const onBuildingTypeFilter = (clear: boolean = false) => (event: React.MouseEvent<EventTarget>) => {
     const newFilter = {
-      ...filterValues,
+      ...resetFilters(filterRanges),
       buildingType: clear ? '' : event.target.value,
     }
     updateFilters(newFilter);
@@ -219,7 +238,6 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
           SelectProps={selectProps}
           size="small"
         >
-          <MenuItem key="buildingType-none-option" value="">none</MenuItem>
           {buildingTypeFilterOptions.map(option => {
             return (
               <MenuItem key={`${option}-option`} value={option}>{option}</MenuItem>
@@ -339,7 +357,7 @@ export default function ResultsTable(props) {
   }, [rows]);
 
   useEffect(() => {
-    setFilters(resetFilters(filterRanges, props.buildingTypes));
+    setFilters(resetFilters(filterRanges));
   }, [filterRanges]);
 
   useEffect(() => {
@@ -349,11 +367,10 @@ export default function ResultsTable(props) {
   const handleUpdateFilters = (requestedFilters) => {
     if (requestedFilters.buildingType === '') {
       setDisplayFilters(false);
-      setFilters(resetFilters(filterRanges, props.buildingTypes));
     } else {
       setDisplayFilters(true);
-      setFilters(requestedFilters);
     }
+    setFilters(requestedFilters);
   }
 
   const handleRequestSort = (
@@ -378,6 +395,7 @@ export default function ResultsTable(props) {
         <EnhancedTableToolbar
           buildingTypeFilterOptions={buildingScenarios && Object.keys(buildingScenarios)}
           displayClear={displayFilters}
+          filterRanges={filterRanges}
           filterValues={filters}
           totalResults={filteredRows.length}
           updateFilters={handleUpdateFilters}

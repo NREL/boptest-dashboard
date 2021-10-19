@@ -76,7 +76,7 @@ export async function seedTestData(apiKey: string) {
         electricityPriceProfile: ['constant', 'dynamic'],
         weatherForecastUncertainty: ['deterministic', 'unknown'],
       },
-    },
+    },// apiKey
   ];
 
   // create results (which will associate the above and create kpis on the fly)
@@ -88,16 +88,17 @@ export async function seedTestData(apiKey: string) {
       account: {
         apiKey: 'jerrysapikey',
       },
-      thermalDiscomfort: 6,
-      energyUse: 5,
-      cost: 100,
-      emissions: 19,
-      iaq: 43,
-      timeRatio: 900,
-      testTimePeriod: 'Summer',
-      controlStep: 'controlStep',
-      priceScenario: 'priceScenario',
-      weatherForecastUncertainty: 'deterministic',
+      thermalDiscomfort: 6, // tdis_tot
+      energyUse: 5, // ener_tot
+      cost: 100, // cost_tot
+      emissions: 19, // emis_tot
+      iaq: 43, // idis_tot
+      timeRatio: 900, // time_rat
+      testTimePeriod: 'Summer', // moved to scenarios
+      controlStep: 'controlStep', // number
+      priceScenario: 'priceScenario', // moved to scenarios
+      weatherForecastUncertainty: 'deterministic', // moved to scenarios
+      // not really available
       controllerProperties: {
         controllerType: 'controllerType1',
         problemFormulation: 'problem1',
@@ -105,6 +106,10 @@ export async function seedTestData(apiKey: string) {
         numStates: 15,
         predictionHorizon: 700,
       },
+      // testcase with id
+      // testcase: {
+        // id: "bestest_air"
+      //}
       buildingType: buildingTypes[0],
       scenario: {
         timePeriod: 'cooling peak',

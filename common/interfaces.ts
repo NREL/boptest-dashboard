@@ -159,6 +159,12 @@ export interface FilterValues {
   };
 }
 
+export interface BuildingScenarios {
+  [key: string]: {
+    [index: number]: string;
+  };
+}
+
 export interface ScenarioOptions {
   [index: number]: string;
 }

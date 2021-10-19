@@ -1,3 +1,5 @@
+import {BuildingScenarios, FilterRanges, FilterValues} from '../../../common/interfaces';
+
 export interface Data {
   id: number;
   uid: string;
@@ -100,22 +102,13 @@ export interface HeadCell {
   numeric: boolean;
 }
 
-export const getCostRange = (rows): Data[] => {
-  let costRange = rows.reduce((acc, curr) => {
-    return {
-      min: acc.min < curr.cost ? acc.min : curr.cost,
-      max: acc.max > curr.cost ? acc.max : curr.cost,
-    }
-  }, {});
-}
-
-export const getBuildingScenarios = (buildingTypes): Data[] => {
+export const getBuildingScenarios = (buildingTypes): BuildingScenarios => {
   let buildingScenarios = {};
   buildingTypes.forEach(building => { buildingScenarios[building.name] = building.scenarios });
   return buildingScenarios;
 }
 
-export const getFilterRanges = (rows): Data[] => {
+export const getFilterRanges = (rows): FilterRanges => {
   return rows.reduce((acc, curr) => {
     return {
       costRange: {
@@ -138,7 +131,7 @@ export const getFilterRanges = (rows): Data[] => {
   }, { costRange: {}, thermalDiscomfortRange: {}, aqDiscomfortRange: {}, energyRange: {} });
 }
 
-export const resetFilters = (filterRanges, buildingTypes): Data[] => {
+export const resetFilters = (filterRanges): FilterValues => {
   return {
     buildingType: '',
     scenario: {
@@ -168,19 +161,19 @@ export const resetFilters = (filterRanges, buildingTypes): Data[] => {
 export const filterRows = (rows, filters): Data[] => {
   let filteredRows: Data[] = [];
   let buildingFilter = filters.buildingType;
+  let scenarioFilter = filters.scenario;
   if (rows.length <= 0 || buildingFilter === '') {
     return rows;
   }
   rows.forEach(row => {
-    if (row.buildingTypeName !== buildingFilter) return;
-    if (
+    if (row.buildingTypeName !== buildingFilter || (
+      scenarioFilter.timePeriod !== '' && row.scenario.timePeriod !== scenarioFilter.timePeriod ||
+      scenarioFilter.electricityPriceProfile !== '' && row.scenario.electricityPriceProfile !== scenarioFilter.electricityPriceProfile ||
+      scenarioFilter.weatherForecastUncertainty !== '' && row.scenario.weatherForecastUncertainty !== scenarioFilter.weatherForecastUncertainty ||
       row.cost < filters.cost.min || row.cost > filters.cost.max ||
       row.energy < filters.energy.min || row.energy > filters.energy.max ||
       row.thermalDiscomfort < filters.thermalDiscomfort.min || row.thermalDiscomfort > filters.thermalDiscomfort.max ||
-      row.aqDiscomfort < filters.aqDiscomfort.min || row.aqDiscomfort > filters.aqDiscomfort.max ||
-      filters.scenario.timePeriod !== '' && row.scenario.timePeriod !== filters.scenario.timePeriod ||
-      filters.scenario.electricityPriceProfile !== '' && row.scenario.electricityPriceProfile !== filters.scenario.electricityPriceProfile ||
-      filters.scenario.weatherForecastUncertainty !== '' && row.scenario.weatherForecastUncertainty !== filters.scenario.weatherForecastUncertainty
+      row.aqDiscomfort < filters.aqDiscomfort.min || row.aqDiscomfort > filters.aqDiscomfort.max)
     ) {
       return;
     }
