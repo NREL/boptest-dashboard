@@ -16,7 +16,7 @@ export interface Data {
   timeRatio: number;
   emissions: number;
   compTimeRatio: number;
-  controllerProperties: JSON;
+  // controllerProperties: JSON;
   testTimePeriod: string;
   controlStep: string;
   priceScenario: string;
@@ -41,7 +41,7 @@ export const createDataFromResult = (result): Data => {
     timeRatio: result.timeRatio,
     emissions: result.emissions,
     compTimeRatio: result.timeRatio,
-    controllerProperties: result.controllerProperties,
+    // controllerProperties: result.controllerProperties,
     testTimePeriod: result.testTimePeriod,
     controlStep: result.controlStep,
     priceScenario: result.priceScenario,
@@ -136,7 +136,7 @@ export const resetFilters = (filterRanges): FilterValues => {
     buildingType: '',
     scenario: {
       timePeriod: '',
-      electricityPriceProfile: '',
+      electricityPrice: '',
       weatherForecastUncertainty: '',
     },
     cost: {
@@ -166,6 +166,8 @@ export const filterRows = (rows, filters): Data[] => {
     return rows;
   }
   rows.forEach(row => {
+    console.log('row scenario', row.scenario);
+    console.log('scenario filter', scenarioFilter);
     if (row.buildingTypeName !== buildingFilter || (
       scenarioFilter.timePeriod !== '' && row.scenario.timePeriod !== scenarioFilter.timePeriod ||
       scenarioFilter.electricityPriceProfile !== '' && row.scenario.electricityPriceProfile !== scenarioFilter.electricityPriceProfile ||

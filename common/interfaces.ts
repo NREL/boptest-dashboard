@@ -92,8 +92,8 @@ export interface Result {
   uid: string;
   deleted: boolean;
   dateRun: Date;
+  boptestVersion: String;
   isShared: boolean;
-  controllerProperties: JSON;
 
   // KPI stuff
   thermalDiscomfort: number;

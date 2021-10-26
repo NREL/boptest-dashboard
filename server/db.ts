@@ -60,9 +60,9 @@ export async function seedTestData(apiKey: string) {
       markdownURL: readmeUrl,
       pdfURL: readmeUrl,
       scenarios: {
-        timePeriod: ['cooling peak', 'heating peak'],
-        electricityPriceProfile: ['constant', 'dynamic', 'highly dynamic'],
-        weatherForecastUncertainty: ['deterministic'],
+        validTimePeriods: ['cooling peak', 'heating peak'],
+        validElectricityPrices: ['constant', 'dynamic', 'highly dynamic'],
+        validWeatherForecastUncertainties: ['deterministic'],
       },
     },
     {
@@ -72,9 +72,9 @@ export async function seedTestData(apiKey: string) {
       markdownURL: readmeUrl,
       pdfURL: readmeUrl,
       scenarios: {
-        timePeriod: ['heating peak', 'heating typical'],
-        electricityPriceProfile: ['constant', 'dynamic'],
-        weatherForecastUncertainty: ['deterministic', 'unknown'],
+        validTimePeriods: ['heating peak', 'heating typical'],
+        validElectricityPrices: ['constant', 'dynamic'],
+        validWeatherForecastUncertainties: ['deterministic', 'unknown'],
       },
     },// apiKey
   ];
@@ -82,132 +82,115 @@ export async function seedTestData(apiKey: string) {
   // create results (which will associate the above and create kpis on the fly)
   const results = [
     {
-      dateRun: '2020-08-04T23:00:00.000Z',
-      isShared: true,
       uid: 'result1',
+      dateRun: '2020-08-04T23:00:00.000Z',
+      boptestVersion: '0.1.0',
+      isShared: true,
+      controlStep: '360.0', // number
       account: {
         apiKey: 'jerrysapikey',
       },
-      thermalDiscomfort: 6, // tdis_tot
-      energyUse: 5, // ener_tot
-      cost: 100, // cost_tot
-      emissions: 19, // emis_tot
-      iaq: 43, // idis_tot
-      timeRatio: 900, // time_rat
-      testTimePeriod: 'Summer', // moved to scenarios
-      controlStep: 'controlStep', // number
-      priceScenario: 'priceScenario', // moved to scenarios
-      weatherForecastUncertainty: 'deterministic', // moved to scenarios
-      // not really available
-      controllerProperties: {
-        controllerType: 'controllerType1',
-        problemFormulation: 'problem1',
-        modelType: 'modelType1',
-        numStates: 15,
-        predictionHorizon: 700,
+      kpis: {
+        cost_tot: 100,  // cost
+        emis_tot: 19,   // emissions
+        ener_tot: 5,    // energyUse
+        idis_tot: 43,   // iaq
+        tdis_tot: 6,    // thermalDiscomfort
+        time_rat: 900,  // timeRatio
+      },
+      scenario: {
+        timePeriod: 'cooling peak',
+        electricityPrice: 'constant',
+        weatherForecastUncertainty: 'deterministic',
       },
       // testcase with id
       // testcase: {
         // id: "bestest_air"
       //}
-      buildingType: buildingTypes[0],
-      scenario: {
-        timePeriod: 'cooling peak',
-        electricityPriceProfile: 'constant',
-        weatherForecastUncertainty: 'deterministic',
+      // buildingType: buildingTypes[0],
+      buildingType: {
+        uid: 'buildingType-1',
       },
     },
     {
-      dateRun: '2020-08-04T23:00:00.000Z',
-      isShared: true,
       uid: 'result2',
+      dateRun: '2020-08-04T23:00:00.000Z',
+      boptestVersion: '0.1.0',
+      isShared: true,
+      controlStep: '360.0',
       account: {
         apiKey: 'carlsapikey',
       },
-      thermalDiscomfort: 62,
-      energyUse: 15,
-      cost: 12,
-      emissions: 11,
-      iaq: 430,
-      timeRatio: 1200,
-      testTimePeriod: 'Winter',
-      controlStep: 'controlStep',
-      priceScenario: 'priceScenario',
-      weatherForecastUncertainty: 'unknown',
-      controllerProperties: {
-        controllerType: 'controllerType2',
-        problemFormulation: 'problem2',
-        modelType: 'modelType2',
-        numStates: 25,
-        predictionHorizon: 8000,
+      kpis: {
+        cost_tot: 12,
+        emis_tot: 11,
+        ener_tot: 15,
+        idis_tot: 430,
+        tdis_tot: 62,
+        time_rat: 1200,
       },
-      buildingType: buildingTypes[1],
       scenario: {
         timePeriod: 'heating peak',
-        electricityPriceProfile: 'constant',
+        electricityPrice: 'constant',
         weatherForecastUncertainty: 'unknown',
       },
+      // buildingType: buildingTypes[1],
+      buildingType: {
+        uid: 'buildingType-2',
+      },
     },
     {
-      dateRun: '2020-08-04T23:00:00.000Z',
-      isShared: true,
       uid: 'result3',
+      dateRun: '2020-08-04T23:00:00.000Z',
+      boptestVersion: '0.1.0',
+      isShared: true,
+      controlStep: '360.0',
       account: {
         apiKey: apiKey,
       },
-      thermalDiscomfort: 72,
-      energyUse: 25,
-      cost: 15,
-      emissions: 12,
-      iaq: 450,
-      timeRatio: 1250,
-      testTimePeriod: 'Winter',
-      controlStep: 'controlStep',
-      priceScenario: 'priceScenario',
-      weatherForecastUncertainty: 'deterministic',
-      controllerProperties: {
-        controllerType: 'controllerType3',
-        problemFormulation: 'problem3',
-        modelType: 'modelType3',
-        numStates: 22,
-        predictionHorizon: 8500,
+      kpis: {
+        cost_tot: 15,
+        emis_tot: 12,
+        ener_tot: 25,
+        idis_tot: 450,
+        tdis_tot: 72,
+        time_rat: 1250,
       },
-      buildingType: buildingTypes[1],
       scenario: {
         timePeriod: 'heating typical',
-        electricityPriceProfile: 'dynamic',
+        electricityPrice: 'dynamic',
         weatherForecastUncertainty: 'deterministic',
+      },
+      // buildingType: buildingTypes[1],
+      buildingType: {
+        uid: 'buildingType-2',
       },
     },
     {
-      dateRun: '2020-08-04T23:00:00.000Z',
-      isShared: true,
       uid: 'result4',
+      dateRun: '2020-08-04T23:00:00.000Z',
+      boptestVersion: '0.1.0',
+      isShared: true,
+      controlStep: '360.0',
       account: {
         apiKey: apiKey,
       },
-      thermalDiscomfort: 78,
-      energyUse: 27,
-      cost: 19,
-      emissions: 16,
-      iaq: 454,
-      timeRatio: 1450,
-      testTimePeriod: 'Winter',
-      controlStep: 'controlStep',
-      priceScenario: 'priceScenario',
-      weatherForecastUncertainty: 'deterministic',
-      controllerProperties: {
-        controllerType: 'controllerType3',
-        problemFormulation: 'problem3',
-        modelType: 'modelType3',
-        numStates: 24,
-        predictionHorizon: 8525,
+      kpis: {
+        cost_tot: 19,
+        emis_tot: 16,
+        ener_tot: 27,
+        idis_tot: 454,
+        tdis_tot: 78,
+        time_rat: 1450,
       },
-      buildingType: buildingTypes[0],
       scenario: {
         timePeriod: 'heating peak',
-        electricityPriceProfile: 'highly dynamic',
+        electricityPrice: 'highly dynamic',
         weatherForecastUncertainty: 'deterministic',
+      },
+      // buildingType: buildingTypes[0],
+      buildingType: {
+        uid: 'buildingType-1',
       },
     },
   ];
