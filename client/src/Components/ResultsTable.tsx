@@ -25,7 +25,7 @@ import {
   getFilterRanges,
   HeadCell,
   Order,
-  resetFilters,
+  setupFilters,
   stableSort
 } from '../Lib/TableHelpers';
 
@@ -187,10 +187,10 @@ interface EnhancedTableToolbarProps {
   };
   displayClear: boolean;
   filterRanges: FilterRanges;
-  filterValues: FilterValues;
+  buildingFilterValue: string;
   totalResults: number;
-    updateFilters: (
-    requestedFilters: FilterValues
+  updateBuildingFilter: (
+    requestedBuilding: string
   ) => void;
 }
 
@@ -200,9 +200,9 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     buildingTypeFilterOptions,
     displayClear,
     filterRanges,
-    filterValues,
+    buildingFilterValue,
     totalResults,
-    updateFilters
+    updateBuildingFilter
   } = props;
 
   const selectProps = {
@@ -217,11 +217,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   };
 
   const onBuildingTypeFilter = (clear: boolean = false) => (event: React.MouseEvent<EventTarget>) => {
-    const newFilter = {
-      ...resetFilters(filterRanges),
-      buildingType: clear ? '' : event.target.value,
-    }
-    updateFilters(newFilter);
+    updateBuildingFilter(clear ? '' : event.target.value);
   };
 
   return (
@@ -233,7 +229,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
           name="buildingType-filter"
           onChange={onBuildingTypeFilter()}
           select
-          value={filterValues && filterValues.buildingType ? filterValues.buildingType : ""}
+          value={buildingFilterValue}
           variant="outlined"
           SelectProps={selectProps}
           size="small"
@@ -342,6 +338,7 @@ export default function ResultsTable(props) {
   const [buildingScenarios, setBuildingScenarios]  = React.useState({});
   const [filterRanges, setFilterRanges] = React.useState({});
   const [displayFilters, setDisplayFilters] = React.useState(false);
+  const [buildingTypeFilter, setBuildingTypeFilter] = React.useState<string>('');
   const [filters, setFilters] = React.useState({});
 
   // set the rows from the results that we get
@@ -357,20 +354,29 @@ export default function ResultsTable(props) {
   }, [rows]);
 
   useEffect(() => {
-    setFilters(resetFilters(filterRanges));
+    setFilters(setupFilters(filterRanges, []));
   }, [filterRanges]);
 
   useEffect(() => {
-    setFilteredRows(filterRows(rows, filters));
+    if (buildingTypeFilter === '') {
+      setDisplayFilters(false);
+      setFilters(setupFilters(filterRanges, []));
+    } else {
+      setDisplayFilters(true);
+      setFilters(setupFilters(filterRanges, Object.keys(buildingScenarios[buildingTypeFilter])));
+    }
+  }, [buildingTypeFilter]);
+
+  useEffect(() => {
+    setFilteredRows(filterRows(rows, buildingTypeFilter, filters));
   }, [filters]);
 
   const handleUpdateFilters = (requestedFilters) => {
-    if (requestedFilters.buildingType === '') {
-      setDisplayFilters(false);
-    } else {
-      setDisplayFilters(true);
-    }
     setFilters(requestedFilters);
+  }
+
+  const handleUpdateBuildingFilter = (requestedBuilding) => {
+    setBuildingTypeFilter(requestedBuilding);
   }
 
   const handleRequestSort = (
@@ -396,13 +402,13 @@ export default function ResultsTable(props) {
           buildingTypeFilterOptions={buildingScenarios && Object.keys(buildingScenarios)}
           displayClear={displayFilters}
           filterRanges={filterRanges}
-          filterValues={filters}
+          buildingFilterValue={buildingTypeFilter}
           totalResults={filteredRows.length}
-          updateFilters={handleUpdateFilters}
+          updateBuildingFilter={handleUpdateBuildingFilter}
         />
         {displayFilters && (
           <FilterToolbar
-            scenarioOptions={buildingScenarios[filters.buildingType]}
+            scenarioOptions={buildingScenarios[buildingTypeFilter]}
             filterRanges={filterRanges}
             filterValues={filters}
             updateFilters={handleUpdateFilters}

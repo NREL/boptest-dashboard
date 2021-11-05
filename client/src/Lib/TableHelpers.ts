@@ -17,10 +17,11 @@ export interface Data {
   emissions: number;
   compTimeRatio: number;
   // controllerProperties: JSON;
-  testTimePeriod: string;
+  timePeriod: string;
   controlStep: string;
-  priceScenario: string;
+  electricityPrice: string;
   weatherForecastUncertainty: string;
+  forecastParameters: JSON;
   scenario: JSON;
 }
 
@@ -42,10 +43,11 @@ export const createDataFromResult = (result): Data => {
     emissions: result.emissions,
     compTimeRatio: result.timeRatio,
     // controllerProperties: result.controllerProperties,
-    testTimePeriod: result.testTimePeriod,
+    timePeriod: result.timePeriod,
     controlStep: result.controlStep,
-    priceScenario: result.priceScenario,
+    electricityPrice: result.electricityPrice,
     weatherForecastUncertainty: result.weatherForecastUncertainty,
+    forecastParameters: result.forecastParameters,
     scenario: result.scenario,
   };
 };
@@ -131,14 +133,12 @@ export const getFilterRanges = (rows): FilterRanges => {
   }, { costRange: {}, thermalDiscomfortRange: {}, aqDiscomfortRange: {}, energyRange: {} });
 }
 
-export const resetFilters = (filterRanges): FilterValues => {
+export const setupFilters = (filterRanges, scenarioKeys): FilterValues => {
+  let scenarioFilters = {};
+  scenarioKeys.forEach(key => { scenarioFilters[key] = '' });
+
   return {
-    buildingType: '',
-    scenario: {
-      timePeriod: '',
-      electricityPrice: '',
-      weatherForecastUncertainty: '',
-    },
+    scenario: { ...scenarioFilters },
     cost: {
       min: 0,
       max: filterRanges && filterRanges.costRange ? filterRanges.costRange.max : 0,
@@ -158,26 +158,25 @@ export const resetFilters = (filterRanges): FilterValues => {
   };
 }
 
-export const filterRows = (rows, filters): Data[] => {
+export const filterRows = (rows, buildingTypeFilter, filters): Data[] => {
   let filteredRows: Data[] = [];
-  let buildingFilter = filters.buildingType;
   let scenarioFilter = filters.scenario;
-  if (rows.length <= 0 || buildingFilter === '') {
+  if (rows.length <= 0 || buildingTypeFilter === '') {
     return rows;
   }
   rows.forEach(row => {
-    console.log('row scenario', row.scenario);
-    console.log('scenario filter', scenarioFilter);
-    if (row.buildingTypeName !== buildingFilter || (
-      scenarioFilter.timePeriod !== '' && row.scenario.timePeriod !== scenarioFilter.timePeriod ||
-      scenarioFilter.electricityPriceProfile !== '' && row.scenario.electricityPriceProfile !== scenarioFilter.electricityPriceProfile ||
-      scenarioFilter.weatherForecastUncertainty !== '' && row.scenario.weatherForecastUncertainty !== scenarioFilter.weatherForecastUncertainty ||
+    if (row.buildingTypeName !== buildingTypeFilter || (
       row.cost < filters.cost.min || row.cost > filters.cost.max ||
       row.energy < filters.energy.min || row.energy > filters.energy.max ||
       row.thermalDiscomfort < filters.thermalDiscomfort.min || row.thermalDiscomfort > filters.thermalDiscomfort.max ||
       row.aqDiscomfort < filters.aqDiscomfort.min || row.aqDiscomfort > filters.aqDiscomfort.max)
     ) {
       return;
+    }
+    for (const key in scenarioFilter) {
+      if (scenarioFilter[key] !== '' && row.scenario[key] !== scenarioFilter[key]) {
+        return;
+      }
     }
     filteredRows.push(row);
   });

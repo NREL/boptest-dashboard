@@ -132,8 +132,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
   });
 
   const filters = Object.keys(open);
-  // const scenarioKeys = scenarioOptions ? Object.keys(scenarioOptions) : [];
-  const scenarioKeys = ['timePeriod', 'electricityPrice', 'weatherForcastUncertainty'];
+  const scenarioKeys = scenarioOptions ? Object.keys(scenarioOptions) : [];
 
   // EVENTS
 

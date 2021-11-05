@@ -54,14 +54,17 @@ export const ResultEntity = new EntitySchema<Result>({
     controlStep: {
       type: String,
     },
-    testTimePeriod: {
+    timePeriod: {
       type: String,
     },
-    priceScenario: {
+    electricityPrice: {
       type: String,
     },
     weatherForecastUncertainty: {
       type: String,
+    },
+    forecastParameters: {
+      type: 'jsonb',
     },
     scenario: {
       type: 'jsonb',

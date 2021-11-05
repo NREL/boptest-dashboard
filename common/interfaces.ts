@@ -80,10 +80,6 @@ export interface Account {
 
 export type Signature = Pick<
   Result,
-  | "testTimePeriod"
-  | "controlStep"
-  | "priceScenario"
-  | "weatherForecastUncertainty"
   | "scenario"
 >;
 
@@ -104,10 +100,11 @@ export interface Result {
   timeRatio: number;
 
   // Building Type stuff (formerly testcase stuff)
-  testTimePeriod: string;
+  timePeriod: string;
   controlStep: string;
-  priceScenario: string;
+  electricityPrice: string;
   weatherForecastUncertainty: string;
+  forecastParameters: JSON;
   scenario: JSON;
 
   account: Account;
@@ -135,9 +132,6 @@ export interface FilterRanges {
 }
 
 export interface FilterValues {
-  buildingType: {
-    [key: string]: boolean;
-  };
   scenario: {
     [key: string]: string;
   };
@@ -167,4 +161,12 @@ export interface BuildingScenarios {
 
 export interface ScenarioOptions {
   [index: number]: string;
+}
+
+export interface Scenario {
+  [key: string]: string;
+}
+
+export interface Scenarios {
+  [key: string]: any;
 }
