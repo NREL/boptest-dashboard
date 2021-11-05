@@ -4,17 +4,23 @@ import ResultsTable from '../Components/ResultsTable';
 import {Modal} from '../Components/Modal';
 import {ResultDetails} from '../Components/ResultDetails';
 
-const endpoint = '/api/results';
+const endpointResults = '/api/results';
+const endpointBuildingTypes = '/api/buildingTypes';
 
 export const Results: React.FC = () => {
   const [results, setResults] = useState([]);
+  const [buildingTypes, setBuildingTypes] = useState([]);
   const [showResultModal, setShowResultModal] = useState(false);
   const [selectedResult, setSelectedResult] = useState(null);
 
   // build out simple data fetcher straight in the useEffect for now
   useEffect(() => {
-    axios.get(endpoint).then(response => {
+    axios.get(endpointResults).then(response => {
       setResults(response.data);
+    });
+
+    axios.get(endpointBuildingTypes).then(response => {
+      setBuildingTypes(response.data);
     });
   }, []);
 
@@ -32,7 +38,7 @@ export const Results: React.FC = () => {
   return (
     <div>
       {/* filters components placeholder */}
-      <ResultsTable results={results} setSelectedResult={handleChange} />
+      <ResultsTable results={results} buildingTypes={buildingTypes} setSelectedResult={handleChange} />
       {showResultModal && (
         <Modal
           closeModal={closeModal}

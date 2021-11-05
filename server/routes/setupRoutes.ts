@@ -17,10 +17,10 @@ setupRouter.post('/db', (req: express.Request, res: express.Response) => {
       console.log('Successfully got Account');
       if (suEmails.includes(accout.email)) {
         seedTestData(req.body.apiKey)
-        .then(() => res.send(200))
+        .then(() => res.sendStatus(200))
         .catch(err => res.json(err));
       } else {
-        res.send(401);
+        res.sendStatus(401);
       }
     })
     .catch(err => {
@@ -28,6 +28,6 @@ setupRouter.post('/db', (req: express.Request, res: express.Response) => {
       res.json(err);
     });
   } else {
-    res.send(401);
+    res.sendStatus(401);
   }
 });

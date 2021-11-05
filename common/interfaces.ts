@@ -66,6 +66,7 @@ export interface BuildingType {
   markdownURL: string;
   pdfURL: string;
   results: Result[];
+  scenarios: JSON;
 }
 
 export interface Account {
@@ -75,7 +76,6 @@ export interface Account {
   apiKey: string;
   results: Result[];
   shareAllResults: boolean | null;
-
 }
 
 export type Signature = Pick<
@@ -84,6 +84,7 @@ export type Signature = Pick<
   | "controlStep"
   | "priceScenario"
   | "weatherForecastUncertainty"
+  | "scenario"
 >;
 
 export interface Result {
@@ -107,7 +108,63 @@ export interface Result {
   controlStep: string;
   priceScenario: string;
   weatherForecastUncertainty: string;
+  scenario: JSON;
 
   account: Account;
   buildingType: BuildingType;
+}
+
+// Filter Interfaces
+export interface FilterRanges {
+  costRange: {
+    min: number;
+    max: number;
+  };
+  thermalDiscomfortRange: {
+    min: number;
+    max: number;
+  };
+  aqDiscomfortRange: {
+    min: number;
+    max: number;
+  };
+  energyRange: {
+    min: number;
+    max: number;
+  };
+}
+
+export interface FilterValues {
+  buildingType: {
+    [key: string]: boolean;
+  };
+  scenario: {
+    [key: string]: string;
+  };
+  cost: {
+    min: number;
+    max: number;
+  };
+  thermalDiscomfort: {
+    min: number;
+    max: number;
+  };
+  aqDiscomfort: {
+    min: number;
+    max: number;
+  };
+  energy: {
+    min: number;
+    max: number;
+  };
+}
+
+export interface BuildingScenarios {
+  [key: string]: {
+    [index: number]: string;
+  };
+}
+
+export interface ScenarioOptions {
+  [index: number]: string;
 }

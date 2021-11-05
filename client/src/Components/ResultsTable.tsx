@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import clsx from 'clsx';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles, Theme, withStyles} from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -8,10 +9,25 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
+import TextField from '@material-ui/core/TextField';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
-import { Data, createRows, Order, stableSort, HeadCell, getComparator} from '../Lib/TableHelpers';
+import {FilterMenu} from './FilterMenu';
+import {FilterRanges, FilterValues, ScenarioOptions} from '../../../common/interfaces';
+import {
+  createRows,
+  Data,
+  filterRows,
+  getBuildingScenarios,
+  getComparator,
+  getFilterRanges,
+  HeadCell,
+  Order,
+  resetFilters,
+  stableSort
+} from '../Lib/TableHelpers';
 
 const headCells: HeadCell[] = [
   {
@@ -67,11 +83,10 @@ interface EnhancedTableProps {
   ) => void;
   order: Order;
   orderBy: string;
-  rowCount: number;
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
-  const {classes, order, orderBy, rowCount, onRequestSort} = props;
+  const {classes, order, orderBy, onRequestSort} = props;
   const createSortHandler = (property: keyof Data) => (
     event: React.MouseEvent<unknown>
   ) => {
@@ -112,25 +127,125 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 const useToolbarStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
+      justifyContent: 'space-between',
       paddingLeft: theme.spacing(2),
-      paddingRight: theme.spacing(1),
+      paddingRight: theme.spacing(2),
+    },
+    filterContainer: {
+      display: 'flex',
     },
     title: {
-      flex: '1 1 100%',
+      // flex: '1 1 100%',
     },
+    select: {
+      marginTop: theme.spacing(2),
+      minWidth: '225px',
+    },
+    selectIcon: {
+      fill: '#078b75',
+    }
   })
 );
 
+const ColorButton = withStyles((theme) => ({
+  root: {
+    color: '#078b75',
+    borderColor: '#078b75',
+    marginTop: theme.spacing(2),
+    marginLeft: theme.spacing(2),
+  }
+}))(Button);
+
+const ColorSelect = withStyles({
+  root: {
+    '& label': {
+      color: '#078b75',
+    },
+    '& label.Mui-focused': {
+      color: '#078b75',
+    },
+    '& .MuiInput-underline:after': {
+      borderBottomColor: '#078b75',
+    },
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: '#078b75',
+      },
+      '&:hover fieldset': {
+        borderColor: '#078b75',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#078b75',
+      },
+    },
+  }
+})(TextField);
+
 interface EnhancedTableToolbarProps {
+  buildingTypeFilterOptions: {
+    [index: number]: string;
+  };
+  displayClear: boolean;
+  filterRanges: FilterRanges;
+  filterValues: FilterValues;
   totalResults: number;
+    updateFilters: (
+    requestedFilters: FilterValues
+  ) => void;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   const classes = useToolbarStyles();
-  const {totalResults} = props;
+  const {
+    buildingTypeFilterOptions,
+    displayClear,
+    filterRanges,
+    filterValues,
+    totalResults,
+    updateFilters
+  } = props;
+
+  const selectProps = {
+    classes: { icon: classes.selectIcon },
+    MenuProps: {
+      anchorOrigin: {
+        vertical: 'bottom',
+        horizontal: 'left'
+      },
+      getContentAnchorEl: null
+    }
+  };
+
+  const onBuildingTypeFilter = (clear: boolean = false) => (event: React.MouseEvent<EventTarget>) => {
+    const newFilter = {
+      ...resetFilters(filterRanges),
+      buildingType: clear ? '' : event.target.value,
+    }
+    updateFilters(newFilter);
+  };
 
   return (
     <Toolbar className={clsx(classes.root)}>
+      <div className={clsx(classes.filterContainer)}>
+        <ColorSelect
+          className={clsx(classes.select)}
+          label="Filter on Building Type"
+          name="buildingType-filter"
+          onChange={onBuildingTypeFilter()}
+          select
+          value={filterValues && filterValues.buildingType ? filterValues.buildingType : ""}
+          variant="outlined"
+          SelectProps={selectProps}
+          size="small"
+        >
+          {buildingTypeFilterOptions.map(option => {
+            return (
+              <MenuItem key={`${option}-option`} value={option}>{option}</MenuItem>
+            );
+          })}
+        </ColorSelect>
+        {displayClear && (<ColorButton variant="outlined" onClick={onBuildingTypeFilter(true)}>Clear</ColorButton>)}
+      </div>
       <Typography
         className={classes.title}
         variant="h6"
@@ -139,6 +254,48 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
       >
         {totalResults} Total Results
       </Typography>
+    </Toolbar>
+  );
+};
+
+const useFilterToolbarStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      justifyContent: 'space-between',
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
+    },
+    title: {
+      // flex: '1 1 100%',
+    },
+  })
+);
+
+interface FilterToolbarProps {
+  scenarioOptions: ScenarioOptions;
+  filterRanges: FilterRanges;
+  filterValues: FilterValues;
+  updateFilters: (
+    requestedFilters: FilterValues
+  ) => void;
+}
+
+const FilterToolbar = (props: FilterToolbarProps) => {
+  const classes = useFilterToolbarStyles();
+  const {filterRanges, filterValues, scenarioOptions, updateFilters} = props;
+
+  const onRequestUpdateFilters = (requestedFilters) => {
+    updateFilters(requestedFilters);
+  };
+
+  return (
+    <Toolbar className={clsx(classes.root)}>
+      <FilterMenu
+        filterRanges={filterRanges}
+        filterValues={filterValues}
+        onRequestFilters={onRequestUpdateFilters}
+        scenarioOptions={scenarioOptions}
+      />
     </Toolbar>
   );
 };
@@ -181,11 +338,40 @@ export default function ResultsTable(props) {
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Data>('dateRun');
   const [rows, setRows] = React.useState<Data[]>([]);
+  const [filteredRows, setFilteredRows] = React.useState<Data[]>([]);
+  const [buildingScenarios, setBuildingScenarios]  = React.useState({});
+  const [filterRanges, setFilterRanges] = React.useState({});
+  const [displayFilters, setDisplayFilters] = React.useState(false);
+  const [filters, setFilters] = React.useState({});
 
   // set the rows from the results that we get
   useEffect(() => {
-    setRows(createRows(props.results));
-  }, [props]);
+    let allRows: Data[] = createRows(props.results);
+    setRows(allRows);
+    setFilteredRows(allRows);
+    setBuildingScenarios(getBuildingScenarios(props.buildingTypes));
+  }, [props.results, props.buildingTypes]);
+
+  useEffect(() => {
+    setFilterRanges(getFilterRanges(rows));
+  }, [rows]);
+
+  useEffect(() => {
+    setFilters(resetFilters(filterRanges));
+  }, [filterRanges]);
+
+  useEffect(() => {
+    setFilteredRows(filterRows(rows, filters));
+  }, [filters]);
+
+  const handleUpdateFilters = (requestedFilters) => {
+    if (requestedFilters.buildingType === '') {
+      setDisplayFilters(false);
+    } else {
+      setDisplayFilters(true);
+    }
+    setFilters(requestedFilters);
+  }
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -206,7 +392,22 @@ export default function ResultsTable(props) {
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar totalResults={rows.length} />
+        <EnhancedTableToolbar
+          buildingTypeFilterOptions={buildingScenarios && Object.keys(buildingScenarios)}
+          displayClear={displayFilters}
+          filterRanges={filterRanges}
+          filterValues={filters}
+          totalResults={filteredRows.length}
+          updateFilters={handleUpdateFilters}
+        />
+        {displayFilters && (
+          <FilterToolbar
+            scenarioOptions={buildingScenarios[filters.buildingType]}
+            filterRanges={filterRanges}
+            filterValues={filters}
+            updateFilters={handleUpdateFilters}
+          />
+        )}
         <TableContainer>
           <Table
             className={classes.table}
@@ -220,10 +421,9 @@ export default function ResultsTable(props) {
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
             />
             <TableBody>
-              {stableSort(rows, getComparator(order, orderBy))
+              {stableSort(filteredRows, getComparator(order, orderBy))
                 //.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const labelId = `enhanced-table-checkbox-${index}`;

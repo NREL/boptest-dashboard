@@ -1,3 +1,5 @@
+import {BuildingScenarios, FilterRanges, FilterValues} from '../../../common/interfaces';
+
 export interface Data {
   id: number;
   uid: string;
@@ -19,6 +21,7 @@ export interface Data {
   controlStep: string;
   priceScenario: string;
   weatherForecastUncertainty: string;
+  scenario: JSON;
 }
 
 export const createDataFromResult = (result): Data => {
@@ -43,6 +46,7 @@ export const createDataFromResult = (result): Data => {
     controlStep: result.controlStep,
     priceScenario: result.priceScenario,
     weatherForecastUncertainty: result.weatherForecastUncertainty,
+    scenario: result.scenario,
   };
 };
 
@@ -96,4 +100,84 @@ export interface HeadCell {
   id: keyof Data;
   label: string;
   numeric: boolean;
+}
+
+export const getBuildingScenarios = (buildingTypes): BuildingScenarios => {
+  let buildingScenarios = {};
+  buildingTypes.forEach(building => { buildingScenarios[building.name] = building.scenarios });
+  return buildingScenarios;
+}
+
+export const getFilterRanges = (rows): FilterRanges => {
+  return rows.reduce((acc, curr) => {
+    return {
+      costRange: {
+        min: acc.costRange.min < curr.cost ? acc.costRange.min : curr.cost,
+        max: Math.ceil((acc.costRange.max > curr.cost ? acc.costRange.max : curr.cost)/50)*50,
+      },
+      thermalDiscomfortRange: {
+        min: acc.thermalDiscomfortRange.min < curr.thermalDiscomfort ? acc.thermalDiscomfortRange.min : curr.thermalDiscomfort,
+        max: Math.ceil((acc.thermalDiscomfortRange.max > curr.thermalDiscomfort ? acc.thermalDiscomfortRange.max : curr.thermalDiscomfort)/50)*50,
+      },
+      aqDiscomfortRange: {
+        min: acc.aqDiscomfortRange.min < curr.aqDiscomfort ? acc.aqDiscomfortRange.min : curr.aqDiscomfort,
+        max: Math.ceil((acc.aqDiscomfortRange.max > curr.aqDiscomfort ? acc.aqDiscomfortRange.max : curr.aqDiscomfort)/50)*50,
+      },
+      energyRange: {
+        min: acc.energyRange.min < curr.energy ? acc.energyRange.min : curr.energy,
+        max: Math.ceil((acc.energyRange.max > curr.energy ? acc.energyRange.max : curr.energy)/50)*50,
+      },
+    }
+  }, { costRange: {}, thermalDiscomfortRange: {}, aqDiscomfortRange: {}, energyRange: {} });
+}
+
+export const resetFilters = (filterRanges): FilterValues => {
+  return {
+    buildingType: '',
+    scenario: {
+      timePeriod: '',
+      electricityPriceProfile: '',
+      weatherForecastUncertainty: '',
+    },
+    cost: {
+      min: 0,
+      max: filterRanges && filterRanges.costRange ? filterRanges.costRange.max : 0,
+    },
+    thermalDiscomfort: {
+      min: 0,
+      max: filterRanges && filterRanges.thermalDiscomfortRange ? filterRanges.thermalDiscomfortRange.max : 0,
+    },
+    aqDiscomfort: {
+      min: 0,
+      max: filterRanges && filterRanges.aqDiscomfortRange ? filterRanges.aqDiscomfortRange.max : 0,
+    },
+    energy: {
+      min: 0,
+      max: filterRanges && filterRanges.energyRange ? filterRanges.energyRange.max : 0,
+    },
+  };
+}
+
+export const filterRows = (rows, filters): Data[] => {
+  let filteredRows: Data[] = [];
+  let buildingFilter = filters.buildingType;
+  let scenarioFilter = filters.scenario;
+  if (rows.length <= 0 || buildingFilter === '') {
+    return rows;
+  }
+  rows.forEach(row => {
+    if (row.buildingTypeName !== buildingFilter || (
+      scenarioFilter.timePeriod !== '' && row.scenario.timePeriod !== scenarioFilter.timePeriod ||
+      scenarioFilter.electricityPriceProfile !== '' && row.scenario.electricityPriceProfile !== scenarioFilter.electricityPriceProfile ||
+      scenarioFilter.weatherForecastUncertainty !== '' && row.scenario.weatherForecastUncertainty !== scenarioFilter.weatherForecastUncertainty ||
+      row.cost < filters.cost.min || row.cost > filters.cost.max ||
+      row.energy < filters.energy.min || row.energy > filters.energy.max ||
+      row.thermalDiscomfort < filters.thermalDiscomfort.min || row.thermalDiscomfort > filters.thermalDiscomfort.max ||
+      row.aqDiscomfort < filters.aqDiscomfort.min || row.aqDiscomfort > filters.aqDiscomfort.max)
+    ) {
+      return;
+    }
+    filteredRows.push(row);
+  });
+  return filteredRows;
 }

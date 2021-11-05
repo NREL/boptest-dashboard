@@ -31,6 +31,9 @@ export const BuildingTypeEntity = new EntitySchema<BuildingType>({
     pdfURL: {
       type: String,
     },
+    scenarios: {
+      type: 'jsonb',
+    },
   },
   relations: {
     results: {

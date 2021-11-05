@@ -64,6 +64,9 @@ export const ResultEntity = new EntitySchema<Result>({
     weatherForecastUncertainty: {
       type: String,
     },
+    scenario: {
+      type: 'jsonb',
+    },
   },
   relations: {
     account: {
