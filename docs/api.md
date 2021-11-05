@@ -16,7 +16,7 @@ POST: `api/results`
       "isShared": true,
       "controlStep": "360.0",
       "account": {
-        "apiKey": "API_KEY_FROM_WEB_APP"
+        "apiKey": "apiKey"
       },
       "kpis": {
         "cost_tot": 21,
@@ -44,11 +44,12 @@ POST: `api/results`
 }
 ```
 
-## Add Building
+## Add Testcase
 
-POST `api/buildingTypes`
+POST `api/testcases`
 
-- This endpoint accepts an array of building types. So it can be used to create a single building type or a batch of them depending on how many objects are in the array.
+- This endpoint accepts an array of testcase types. So it can be used to create a single testcase type or a batch of them depending on how many objects are in the array.
+- A list of the currently valid testcases, and corresponding scenario values is available here https://github.com/ibpsa/project1-boptest/blob/master/testcases/README.md
 
 ### Example Payload:
 
@@ -74,11 +75,11 @@ POST `api/buildingTypes`
 }
 ```
 
-## Update Building
+## Update Testcase
 
-PATCH `/api/buildingTypes?uid={your_build_uid}`
+PATCH `/api/testcases?uid={your_testcase_uid}`
 
-- Though like the `POST` request, the building is wrapped in an array of `buildingTypes`, you may only PATCH one building at a time. THE `uid` is specified as a query parameter.
+- Though like the `POST` request, the testcase is wrapped in an array of `testcases`, you may only PATCH one testcase at a time. THE `uid` is specified as a query parameter.
 
 ```json
 {
