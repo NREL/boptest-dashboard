@@ -90,6 +90,11 @@ export async function seedTestData(apiKey: string) {
       account: {
         apiKey: 'jerrysapikey',
       },
+      tags: [
+        'string1',
+        'string2',
+        'string3'
+      ],
       kpis: {
         cost_tot: 100,  // cost
         emis_tot: 19,   // emissions
@@ -120,6 +125,11 @@ export async function seedTestData(apiKey: string) {
       account: {
         apiKey: apiKey,
       },
+      tags: [
+        'tags1',
+        'tags2',
+        'tags3'
+      ],
       kpis: {
         cost_tot: 110,  // cost
         emis_tot: 13,   // emissions
@@ -150,6 +160,11 @@ export async function seedTestData(apiKey: string) {
       account: {
         apiKey: apiKey,
       },
+      tags: [
+        'string1',
+        'string2',
+        'string3'
+      ],
       kpis: {
         cost_tot: 105,  // cost
         emis_tot: 22,   // emissions
@@ -180,6 +195,11 @@ export async function seedTestData(apiKey: string) {
       account: {
         apiKey: apiKey,
       },
+      tags: [
+        'tags1',
+        'tags2',
+        'tags3'
+      ],
       kpis: {
         cost_tot: 95,  // cost
         emis_tot: 14,   // emissions
@@ -210,6 +230,11 @@ export async function seedTestData(apiKey: string) {
       account: {
         apiKey: apiKey,
       },
+      tags: [
+        'string1',
+        'string2',
+        'string3'
+      ],
       kpis: {
         cost_tot: 19,
         emis_tot: 16,
@@ -240,6 +265,11 @@ export async function seedTestData(apiKey: string) {
       account: {
         apiKey: apiKey,
       },
+      tags: [
+        'other1',
+        'other2',
+        'other3'
+      ],
       kpis: {
         cost_tot: 23,
         emis_tot: 19,
@@ -270,6 +300,11 @@ export async function seedTestData(apiKey: string) {
       account: {
         apiKey: apiKey,
       },
+      tags: [
+        'string1',
+        'string2',
+        'string3'
+      ],
       kpis: {
         cost_tot: 21,
         emis_tot: 12,
@@ -300,6 +335,11 @@ export async function seedTestData(apiKey: string) {
       account: {
         apiKey: 'carlsapikey',
       },
+      tags: [
+        'string1',
+        'string2',
+        'string3'
+      ],
       kpis: {
         cost_tot: 15,
         emis_tot: 13,
@@ -330,6 +370,11 @@ export async function seedTestData(apiKey: string) {
       account: {
         apiKey: apiKey,
       },
+      tags: [
+        'tags1',
+        'tags2',
+        'tags3'
+      ],
       kpis: {
         cost_tot: 10,
         emis_tot: 10,
@@ -360,6 +405,11 @@ export async function seedTestData(apiKey: string) {
       account: {
         apiKey: apiKey,
       },
+      tags: [
+        'string1',
+        'string2',
+        'string3'
+      ],
       kpis: {
         cost_tot: 9,
         emis_tot: 8,
@@ -390,6 +440,11 @@ export async function seedTestData(apiKey: string) {
       account: {
         apiKey: apiKey,
       },
+      tags: [
+        'tags1',
+        'tags2',
+        'tags3'
+      ],
       kpis: {
         cost_tot: 5,
         emis_tot: 6,
@@ -420,6 +475,11 @@ export async function seedTestData(apiKey: string) {
       account: {
         apiKey: apiKey,
       },
+      tags: [
+        'info1',
+        'info2',
+        'info3'
+      ],
       kpis: {
         cost_tot: 15,
         emis_tot: 12,
@@ -450,6 +510,11 @@ export async function seedTestData(apiKey: string) {
       account: {
         apiKey: apiKey,
       },
+      tags: [
+        'other1',
+        'other2',
+        'other3'
+      ],
       kpis: {
         cost_tot: 22,
         emis_tot: 23,
@@ -480,6 +545,11 @@ export async function seedTestData(apiKey: string) {
       account: {
         apiKey: apiKey,
       },
+      tags: [
+        'kpi1',
+        'kpi2',
+        'kpi3'
+      ],
       kpis: {
         cost_tot: 11,
         emis_tot: 11,

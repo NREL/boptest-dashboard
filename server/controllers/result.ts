@@ -78,6 +78,8 @@ function createResultAndAssociatedModels(result: any) {
         boptestVersion: result.boptestVersion,
         isShared: result.isShared,
 
+        tags: result.tags,
+
         thermalDiscomfort: result.kpis.tdis_tot,
         energyUse: result.kpis.ener_tot,
         cost: result.kpis.cost_tot,

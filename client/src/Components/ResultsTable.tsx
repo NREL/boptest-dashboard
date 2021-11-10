@@ -18,6 +18,7 @@ import {FilterMenu} from './FilterMenu';
 import {FilterRanges, FilterValues, ScenarioOptions} from '../../../common/interfaces';
 import {
   createRows,
+  createTagOptions,
   Data,
   filterRows,
   getBuildingScenarios,
@@ -269,6 +270,7 @@ const useFilterToolbarStyles = makeStyles((theme: Theme) =>
 
 interface FilterToolbarProps {
   scenarioOptions: ScenarioOptions;
+  tagOptions: string[];
   filterRanges: FilterRanges;
   filterValues: FilterValues;
   updateFilters: (
@@ -278,7 +280,7 @@ interface FilterToolbarProps {
 
 const FilterToolbar = (props: FilterToolbarProps) => {
   const classes = useFilterToolbarStyles();
-  const {filterRanges, filterValues, scenarioOptions, updateFilters} = props;
+  const {filterRanges, filterValues, scenarioOptions, tagOptions, updateFilters} = props;
 
   const onRequestUpdateFilters = (requestedFilters) => {
     updateFilters(requestedFilters);
@@ -291,6 +293,7 @@ const FilterToolbar = (props: FilterToolbarProps) => {
         filterValues={filterValues}
         onRequestFilters={onRequestUpdateFilters}
         scenarioOptions={scenarioOptions}
+        tagOptions={tagOptions}
       />
     </Toolbar>
   );
@@ -340,6 +343,7 @@ export default function ResultsTable(props) {
   const [displayFilters, setDisplayFilters] = React.useState(false);
   const [buildingTypeFilter, setBuildingTypeFilter] = React.useState<string>('');
   const [filters, setFilters] = React.useState({});
+  const [tagOptions, setTagOptions] = React.useState<string[]>([]);
 
   // set the rows from the results that we get
   useEffect(() => {
@@ -370,6 +374,10 @@ export default function ResultsTable(props) {
   useEffect(() => {
     setFilteredRows(filterRows(rows, buildingTypeFilter, filters));
   }, [filters]);
+
+  useEffect(() => {
+    setTagOptions(createTagOptions(filteredRows));
+  }, [filteredRows]);
 
   const handleUpdateFilters = (requestedFilters) => {
     setFilters(requestedFilters);
@@ -409,6 +417,7 @@ export default function ResultsTable(props) {
         {displayFilters && (
           <FilterToolbar
             scenarioOptions={buildingScenarios[buildingTypeFilter]}
+            tagOptions={tagOptions}
             filterRanges={filterRanges}
             filterValues={filters}
             updateFilters={handleUpdateFilters}

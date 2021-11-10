@@ -23,6 +23,7 @@ export interface Data {
   weatherForecastUncertainty: string;
   forecastParameters: JSON;
   scenario: JSON;
+  tags: string[];
 }
 
 export const createDataFromResult = (result): Data => {
@@ -49,6 +50,7 @@ export const createDataFromResult = (result): Data => {
     weatherForecastUncertainty: result.weatherForecastUncertainty,
     forecastParameters: result.forecastParameters,
     scenario: result.scenario,
+    tags: result.tags,
   };
 };
 
@@ -139,6 +141,7 @@ export const setupFilters = (filterRanges, scenarioKeys): FilterValues => {
 
   return {
     scenario: { ...scenarioFilters },
+    tags: [],
     cost: {
       min: 0,
       max: filterRanges && filterRanges.costRange ? filterRanges.costRange.max : 0,
@@ -161,6 +164,7 @@ export const setupFilters = (filterRanges, scenarioKeys): FilterValues => {
 export const filterRows = (rows, buildingTypeFilter, filters): Data[] => {
   let filteredRows: Data[] = [];
   let scenarioFilter = filters.scenario;
+  let tagFilter = filters.tags;
   if (rows.length <= 0 || buildingTypeFilter === '') {
     return rows;
   }
@@ -178,7 +182,24 @@ export const filterRows = (rows, buildingTypeFilter, filters): Data[] => {
         return;
       }
     }
+    for (const tag in tagFilter) {
+      if (!row.tags.includes(tagFilter[tag])) {
+        return;
+      }
+    };
     filteredRows.push(row);
   });
   return filteredRows;
+}
+
+export const createTagOptions = (rows): string[] => {
+  let tagOptions: string[] = [];
+  rows.forEach(row => {
+    row.tags.forEach(tag => {
+      if(!tagOptions.includes(tag)) {
+        tagOptions.push(tag);
+      }
+    })
+  });
+  return tagOptions;
 }

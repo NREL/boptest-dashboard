@@ -84,6 +84,40 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
 
   var dateString = new Date(props.result.dateRun).toLocaleString();
 
+  const renderTags = () => {
+    let tagArray = [];
+    let isGrey = true;
+    if (props.result.tags.length <= 0) {
+      return (
+        <TableRow className={classes.grayed}>
+          <TableCell colSpan={2}>
+            <Typography variant="body2">
+              This result does not have any tags associated with it.
+            </Typography>
+          </TableCell>
+        </TableRow>
+      );
+    }
+    props.result.tags.forEach((tag, idx) => {
+      if (idx % 2 === 0) {
+        tagArray.push(
+          <TableRow className={isGrey ? classes.grayed : ''} key={idx}>
+            <TableCell>
+              <Typography variant="body1">{tag}</Typography>
+            </TableCell>
+            {idx+1 < props.result.tags.length && (
+              <TableCell>
+                <Typography variant="body1">{props.result.tags[idx+1]}</Typography>
+              </TableCell>
+            )}
+          </TableRow>
+        );
+        isGrey = !isGrey;
+      }
+    });
+    return tagArray;
+  }
+
   return (
     <div className={classes.idTable}>
       <TableContainer className={classes.tableContainer}>
@@ -186,6 +220,19 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
                 </Typography>
               </TableCell>
             </TableRow>
+            {props.result.tags.length > 0 && (
+              <TableRow>
+                <TableCell colSpan={2}>
+                  <Typography
+                    variant="subtitle2"
+                    className={classes.sectionHeader}
+                  >
+                    TAGS
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            )}
+            {renderTags()}
             {/*flattenedProperties.length > 0 && (
               <TableRow>
                 <TableCell colSpan={2}>

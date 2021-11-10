@@ -27,6 +27,10 @@ export const ResultEntity = new EntitySchema<Result>({
     isShared: {
       type: Boolean,
     },
+    tags: {
+      type: String,
+      array: true,
+    },
     thermalDiscomfort: {
       type: 'float',
       scale: 5,
