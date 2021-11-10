@@ -89,7 +89,7 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
     let isGrey = true;
     for (const scenarioKey in props.result.scenario) {
       scenarioArray.push(
-        <TableRow className={isGrey ? classes.grayed : ''}>
+        <TableRow className={isGrey ? classes.grayed : ''} key={scenarioKey}>
           <TableCell>
             <Typography variant="body2">
               {camelCaseToTitleCaseWithSpaces(scenarioKey)}
@@ -128,10 +128,12 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
             <TableCell>
               <Typography variant="body1">{tag}</Typography>
             </TableCell>
-            {idx+1 < props.result.tags.length && (
+            {idx+1 < props.result.tags.length ? (
               <TableCell>
                 <Typography variant="body1">{props.result.tags[idx+1]}</Typography>
               </TableCell>
+            ) : (
+              <TableCell/>
             )}
           </TableRow>
         );
