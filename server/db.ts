@@ -86,7 +86,7 @@ export async function seedTestData(apiKey: string) {
       dateRun: '2020-08-04T23:00:00.000Z',
       boptestVersion: '0.1.0',
       isShared: true,
-      controlStep: '360.0', // number
+      controlStep: '360.0',
       account: {
         apiKey: 'jerrysapikey',
       },
@@ -121,7 +121,7 @@ export async function seedTestData(apiKey: string) {
       dateRun: '2020-08-04T23:00:00.000Z',
       boptestVersion: '0.1.0',
       isShared: true,
-      controlStep: '360.0', // number
+      controlStep: '360.0',
       account: {
         apiKey: apiKey,
       },
@@ -131,12 +131,12 @@ export async function seedTestData(apiKey: string) {
         'tags3'
       ],
       kpis: {
-        cost_tot: 110,  // cost
-        emis_tot: 13,   // emissions
-        ener_tot: 8,    // energyUse
-        idis_tot: 49,   // iaq
-        tdis_tot: 10,    // thermalDiscomfort
-        time_rat: 855,  // timeRatio
+        cost_tot: 110,
+        emis_tot: 13,
+        ener_tot: 8,
+        idis_tot: 49,
+        tdis_tot: 10,
+        time_rat: 855,
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -156,7 +156,7 @@ export async function seedTestData(apiKey: string) {
       dateRun: '2020-08-04T23:00:00.000Z',
       boptestVersion: '0.1.0',
       isShared: true,
-      controlStep: '360.0', // number
+      controlStep: '360.0',
       account: {
         apiKey: apiKey,
       },
@@ -166,12 +166,12 @@ export async function seedTestData(apiKey: string) {
         'string3'
       ],
       kpis: {
-        cost_tot: 105,  // cost
-        emis_tot: 22,   // emissions
-        ener_tot: 4,    // energyUse
-        idis_tot: 37,   // iaq
-        tdis_tot: 3,    // thermalDiscomfort
-        time_rat: 915,  // timeRatio
+        cost_tot: 105,
+        emis_tot: 22,
+        ener_tot: 4,
+        idis_tot: 37,
+        tdis_tot: 3,
+        time_rat: 915,
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -191,7 +191,7 @@ export async function seedTestData(apiKey: string) {
       dateRun: '2020-08-04T23:00:00.000Z',
       boptestVersion: '0.1.0',
       isShared: true,
-      controlStep: '360.0', // number
+      controlStep: '360.0',
       account: {
         apiKey: apiKey,
       },
@@ -201,12 +201,12 @@ export async function seedTestData(apiKey: string) {
         'tags3'
       ],
       kpis: {
-        cost_tot: 95,  // cost
-        emis_tot: 14,   // emissions
-        ener_tot: 7,    // energyUse
-        idis_tot: 50,   // iaq
-        tdis_tot: 7,    // thermalDiscomfort
-        time_rat: 925,  // timeRatio
+        cost_tot: 95,
+        emis_tot: 14,
+        ener_tot: 7,
+        idis_tot: 50,
+        tdis_tot: 7,
+        time_rat: 925,
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -302,8 +302,8 @@ export async function seedTestData(apiKey: string) {
       },
       tags: [
         'string1',
-        'string2',
-        'string3'
+        'tag2',
+        'other1'
       ],
       kpis: {
         cost_tot: 21,
@@ -406,9 +406,11 @@ export async function seedTestData(apiKey: string) {
         apiKey: apiKey,
       },
       tags: [
+        'tags1',
+        'kpi2',
+        'other3',
         'string1',
-        'string2',
-        'string3'
+        'info2'
       ],
       kpis: {
         cost_tot: 9,
