@@ -84,6 +84,29 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
 
   var dateString = new Date(props.result.dateRun).toLocaleString();
 
+  const renderScenario = () => {
+    let scenarioArray = [];
+    let isGrey = true;
+    for (const scenarioKey in props.result.scenario) {
+      scenarioArray.push(
+        <TableRow className={isGrey ? classes.grayed : ''}>
+          <TableCell>
+            <Typography variant="body2">
+              {camelCaseToTitleCaseWithSpaces(scenarioKey)}
+            </Typography>
+          </TableCell>
+          <TableCell>
+            <Typography variant="body1">
+              {props.result.scenario[scenarioKey]}
+            </Typography>
+          </TableCell>
+        </TableRow>
+      );
+      isGrey = !isGrey;
+    }
+    return scenarioArray;
+  }
+
   const renderTags = () => {
     let tagArray = [];
     let isGrey = true;
@@ -136,7 +159,7 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
             <TableRow className={classes.grayed}>
               <TableCell className={classes.longboi} colSpan={2}>
                 <Typography variant="body2">
-                  Residential multi-zone hydronic
+                  {props.result.buildingTypeName}
                 </Typography>
               </TableCell>
             </TableRow>
@@ -152,33 +175,57 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
             </TableRow>
             <TableRow className={classes.grayed}>
               <TableCell>
-                <Typography variant="body2">Simulation Time</Typography>
+                <Typography variant="body2">Time Period</Typography>
               </TableCell>
               <TableCell>
                 <Typography variant="body1">
-                  {props.result.simulationTime}
+                  {props.result.timePeriod}
                 </Typography>
               </TableCell>
             </TableRow>
             <TableRow>
               <TableCell>
-                <Typography variant="body2">Price Scenario</Typography>
+                <Typography variant="body2">Electricity Price Scenario</Typography>
               </TableCell>
               <TableCell>
                 <Typography variant="body1">
-                  {props.result.priceScenario}
+                  {props.result.electricityPrice}
                 </Typography>
               </TableCell>
             </TableRow>
             <TableRow className={classes.grayed}>
               <TableCell>
                 <Typography variant="body2">
-                  Uncertainty Distribution
+                  Weather Forcast Uncertainty
                 </Typography>
               </TableCell>
               <TableCell>
                 <Typography variant="body1">
-                  {props.result.uncertaintyDistribution}
+                  {props.result.weatherForecastUncertainty}
+                </Typography>
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>
+                <Typography variant="body2">
+                  Forcast Horizon
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body1">
+                  {props.result.forecastParameters.horizon}
+                </Typography>
+              </TableCell>
+            </TableRow>
+            <TableRow className={classes.grayed}>
+              <TableCell>
+                <Typography variant="body2">
+                  Forcast Interval
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body1">
+                  {props.result.forecastParameters.interval}
                 </Typography>
               </TableCell>
             </TableRow>
@@ -198,7 +245,7 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
               </TableCell>
               <TableCell>
                 <Typography variant="body1">
-                  {props.result.resultUid}
+                  {props.result.uid}
                 </Typography>
               </TableCell>
             </TableRow>
@@ -208,6 +255,26 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
               </TableCell>
               <TableCell>
                 <Typography variant="body1">{dateString}</Typography>
+              </TableCell>
+            </TableRow>
+             <TableRow className={classes.grayed}>
+              <TableCell>
+                <Typography variant="body2">BOPTest Version</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body1">
+                  {props.result.boptestVersion}
+                </Typography>
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>
+                <Typography variant="body2">Control Step</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body1">
+                  {props.result.controlStep}
+                </Typography>
               </TableCell>
             </TableRow>
             <TableRow className={classes.grayed}>
@@ -220,6 +287,19 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
                 </Typography>
               </TableCell>
             </TableRow>
+            {props.result.scenario && (
+              <TableRow>
+                <TableCell colSpan={2}>
+                  <Typography
+                    variant="subtitle2"
+                    className={classes.sectionHeader}
+                  >
+                    SCENARIO
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            )}
+            {renderScenario()}
             {props.result.tags.length > 0 && (
               <TableRow>
                 <TableCell colSpan={2}>
