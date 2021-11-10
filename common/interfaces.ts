@@ -91,6 +91,8 @@ export interface Result {
   boptestVersion: String;
   isShared: boolean;
 
+  tags: string[];
+
   // KPI stuff
   thermalDiscomfort: number;
   energyUse: number;
@@ -135,6 +137,7 @@ export interface FilterValues {
   scenario: {
     [key: string]: string;
   };
+  tags: string[];
   cost: {
     min: number;
     max: number;

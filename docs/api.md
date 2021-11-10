@@ -18,6 +18,11 @@ POST: `api/results`
       "account": {
         "apiKey": "apiKey"
       },
+      "tags": [
+        "string1",
+        "string2",
+        "string3"
+      ],
       "kpis": {
         "cost_tot": 21,
         "emis_tot": 17,
