@@ -24,6 +24,8 @@ export interface Data {
   forecastParameters: JSON;
   scenario: JSON;
   tags: string[];
+  boptestVersion: string;
+  controlStep: string;
 }
 
 export const createDataFromResult = (result): Data => {
@@ -51,6 +53,8 @@ export const createDataFromResult = (result): Data => {
     forecastParameters: result.forecastParameters,
     scenario: result.scenario,
     tags: result.tags,
+    boptestVersion: result.boptestVersion,
+    controlStep: result.controlStep,
   };
 };
 

@@ -653,7 +653,7 @@ export default function DashboardResultsTable(props) {
                         padding="none"
                       >
                         <Typography variant="body1">
-                          {row.buildingType}
+                          {row.buildingTypeName}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
