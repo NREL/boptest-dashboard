@@ -46,8 +46,11 @@ resultRouter.get(
 
 resultRouter.post('/', (req: express.Request, res: express.Response) => {
   createResults(req.body.results)
-    .then(() => {
-      res.sendStatus(200);
+    .then((responses: any) => {
+      const fulfilled = responses.filter((response: any) => response.status === 'fulfilled').map((response: any) => response.value);
+      const rejected = responses.filter((response: any) => response.status === 'rejected').map((response: any) => response.reason);
+      rejected.length <= 0 ? res.status(200) : res.status(400);
+      res.send({ fulfilled: fulfilled, rejected: rejected });
     })
     .catch(err => res.status(500).json(err));
 });

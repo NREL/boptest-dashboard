@@ -64,6 +64,7 @@ export function updateBuildingType(
     building.markdownURL = newData.markdownURL;
     building.name = newData.name;
     building.pdfURL = newData.pdfURL;
+    building.scenarios = newData.scenarios;
     return buildingTypeRepo.save(building);
   });
 }

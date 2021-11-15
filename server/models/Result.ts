@@ -21,12 +21,15 @@ export const ResultEntity = new EntitySchema<Result>({
     dateRun: {
       type: Date,
     },
+    boptestVersion: {
+      type: String,
+    },
     isShared: {
       type: Boolean,
     },
-    controllerProperties: {
-      type: 'jsonb',
-      nullable: true,
+    tags: {
+      type: String,
+      array: true,
     },
     thermalDiscomfort: {
       type: 'float',
@@ -52,17 +55,20 @@ export const ResultEntity = new EntitySchema<Result>({
       type: 'float',
       scale: 5,
     },
-    testTimePeriod: {
-      type: String,
-    },
     controlStep: {
       type: String,
     },
-    priceScenario: {
+    timePeriod: {
+      type: String,
+    },
+    electricityPrice: {
       type: String,
     },
     weatherForecastUncertainty: {
       type: String,
+    },
+    forecastParameters: {
+      type: 'jsonb',
     },
     scenario: {
       type: 'jsonb',

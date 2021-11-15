@@ -13,7 +13,7 @@ import Popper from '@material-ui/core/Popper';
 import Select from '@material-ui/core/Select';
 import Slider from '@material-ui/core/Slider';
 import TextField from '@material-ui/core/TextField';
-import {FilterRanges, FilterValues, ScenarioOptions} from '../../../common/interfaces';
+import {FilterRanges, FilterValues} from '../../../common/interfaces';
 
 const useMenuStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -79,10 +79,6 @@ const ColorTextField = withStyles({
 
 const usePopperStyles = makeStyles((theme: Theme) =>
   createStyles({
-    root: {
-      // width: '400px',
-      // height: '400px',
-    },
     container: {
       display: 'flex',
       justifyContent: 'center',
@@ -104,6 +100,16 @@ const usePopperStyles = makeStyles((theme: Theme) =>
       width: '100%',
       paddingBottom: theme.spacing(2),
     },
+    tagsMsgContainer: {
+      paddingBottom: theme.spacing(2),
+    },
+    tagsContainer: {
+      display: 'flex',
+      justifyContent: 'space-evenly',
+      flexWrap: 'wrap',
+      maxWidth: '500px',
+      paddingBottom: theme.spacing(2),
+    },
     textInput: {
       minWidth: '100px',
     },
@@ -116,19 +122,20 @@ interface FilterMenuProps {
   onRequestFilters: (
     requestedFilters: FilterValues
   ) => void;
-  scenarioOptions: ScenarioOptions;
+  scenarioOptions: string[];
+  tagOptions: string[];
 }
 
 export const FilterMenu: React.FC<FilterMenuProps> = props => {
   const menuClasses = useMenuStyles();
   const popperClasses = usePopperStyles();
-  const {filterRanges, filterValues, onRequestFilters, scenarioOptions} = props;
+  const {filterRanges, filterValues, onRequestFilters, scenarioOptions, tagOptions} = props;
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
   const [open, setOpen] = React.useState({
     cost: false,
     discomfort: false,
     energy: false,
-    more: false
+    tags: false
   });
 
   const filters = Object.keys(open);
@@ -151,19 +158,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
       ...filterValues,
       [filterType[0]]: {
         ...filterValues[filterType[0]],
-        [filterType[1]]: event.target.type === 'checkbox' ? event.target.checked : Number(event.target.value),
-      },
-    }
-    onRequestFilters(newFilter);
-  }
-
-  const onSliderFilterChange = (event: any, newValue: number | number[]) => {
-    const filterType = event.target.id;
-    const newFilter = {
-      ...filterValues,
-      [filterType]: {
-        min: newValue[0],
-        max: newValue[1],
+        [filterType[1]]: Number(event.target.value),
       },
     }
     onRequestFilters(newFilter);
@@ -179,6 +174,16 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
     }
     onRequestFilters(newFilter);
   };
+
+  const onTagFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newFilter = {
+      ...filterValues,
+    }
+    event.target.checked ?
+      newFilter.tags.push(event.target.name) :
+      newFilter.tags = newFilter.tags.filter(tag => tag !== event.target.name);
+    onRequestFilters(newFilter);
+  }
 
   // RENDERS
 
@@ -217,14 +222,6 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                 onChange={onFilterChange}
               />
             </div>
-            {/*<Slider
-                id="cost"
-                value={[filterValues && filterValues.cost && filterValues.cost.min, filterValues && filterValues.cost && filterValues.cost.max]}
-                onChange={onSliderFilterChange}
-                valueLabelDisplay="auto"
-                aria-labelledby="range-slider"
-                // getAriaValueText={valuetext}
-              />*/}
           </div>
         )
       case 'discomfort':
@@ -331,8 +328,31 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
         return(
           <div className={clsx(popperClasses.container)}>
             <legend className={clsx(popperClasses.label)}>
-              More
+              Tags
             </legend>
+            {tagOptions && tagOptions.length <= 0 ? (
+              <div className={clsx(popperClasses.tagsMsgContainer)}>
+                The current filtered results do not have any tags associated with them.
+              </div>
+            ) : (
+              <div className={clsx(popperClasses.tagsContainer)}>
+                {tagOptions && tagOptions.map((tag) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        id={`tags-${tag}`}
+                        checked={filterValues && filterValues.tags.includes(tag)}
+                        onChange={onTagFilterChange}
+                        name={tag}
+                        style={{color: "#078b75"}}
+                      />
+                    }
+                    label={tag}
+                    key={tag}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )
     }
@@ -351,7 +371,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                 placement={'bottom'}
               >
                 <ClickAwayListener onClickAway={handleClosePopper(filter)}>
-                  <Paper className={clsx(popperClasses.root)} elevation={3}>
+                  <Paper elevation={3}>
                     {renderPopperContents(filter)}
                   </Paper>
                 </ClickAwayListener>

@@ -3,7 +3,7 @@ import {getBuildingTypeByUid} from './../models/BuildingType';
 import {getRepository} from 'typeorm';
 import {getAccountByApiKey, getAccountByEmail} from '../models/Account';
 import {createResult, ResultEntity} from '../models/Result';
-import {Result, Signature} from '../../common/interfaces';
+import {Result, Scenario, Scenarios, Signature} from '../../common/interfaces';
 
 export function getResults(): Promise<Result[]> {
   // request data
@@ -73,33 +73,51 @@ function createResultAndAssociatedModels(result: any) {
     .then(data => {
       const resultData = {
         deleted: false,
-        dateRun: result.dateRun,
-        isShared: result.isShared,
-        controllerProperties: result.controllerProperties,
         uid: result.uid,
+        dateRun: result.dateRun,
+        boptestVersion: result.boptestVersion,
+        isShared: result.isShared,
 
-        thermalDiscomfort: result.thermalDiscomfort,
-        energyUse: result.energyUse,
-        cost: result.cost,
-        emissions: result.emissions,
-        iaq: result.iaq,
-        timeRatio: result.timeRatio,
+        tags: result.tags,
 
-        testTimePeriod: result.testTimePeriod,
+        thermalDiscomfort: result.kpis.tdis_tot,
+        energyUse: result.kpis.ener_tot,
+        cost: result.kpis.cost_tot,
+        emissions: result.kpis.emis_tot,
+        iaq: result.kpis.idis_tot,
+        timeRatio: result.kpis.time_rat,
+
+        timePeriod: result.scenario.timePeriod,
+        electricityPrice: result.scenario.electricityPrice,
+        weatherForecastUncertainty: result.scenario.weatherForecastUncertainty,
         controlStep: result.controlStep,
-        priceScenario: result.priceScenario,
-        weatherForecastUncertainty: result.weatherForecastUncertainty,
+        forecastParameters: result.forecastParameters,
         scenario: result.scenario,
 
         account: data[0],
         buildingType: data[1],
       };
+
+      const buildingScenarios: Scenarios = { ...data[1].scenarios };
+      const scenario: Scenario = { ...result.scenario };
+
+      for(const key in scenario) {
+        if (
+          !buildingScenarios[key] ||
+          !buildingScenarios[key].includes(scenario[key])
+        ) {
+          return Promise.reject({
+            message: `Invalid Data: Result (${result.uid}) tried to use scenario type: "${key}" with value: "${scenario[key]}" for building type: "${data[1].name}"`,
+            data: result
+          });
+        }
+      }
       return createResult(resultData);
     });
 }
 
 export function createResults(results: any) {
-  return Promise.all(
+  return Promise.allSettled(
     results.map((result: any) => {
       return createResultAndAssociatedModels(result);
     })
@@ -148,10 +166,6 @@ export function getSignatureDetailsForResult(
     })
     .then(result => {
       const targetSignature: Signature = {
-        testTimePeriod: result.testTimePeriod,
-        controlStep: result.controlStep,
-        priceScenario: result.priceScenario,
-        weatherForecastUncertainty: result.weatherForecastUncertainty,
         scenario: result.scenario,
       };
       return repo

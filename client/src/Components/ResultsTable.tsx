@@ -15,9 +15,10 @@ import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import {FilterMenu} from './FilterMenu';
-import {FilterRanges, FilterValues, ScenarioOptions} from '../../../common/interfaces';
+import {FilterRanges, FilterValues} from '../../../common/interfaces';
 import {
   createRows,
+  createTagOptions,
   Data,
   filterRows,
   getBuildingScenarios,
@@ -25,7 +26,7 @@ import {
   getFilterRanges,
   HeadCell,
   Order,
-  resetFilters,
+  setupFilters,
   stableSort
 } from '../Lib/TableHelpers';
 
@@ -134,9 +135,6 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
     filterContainer: {
       display: 'flex',
     },
-    title: {
-      // flex: '1 1 100%',
-    },
     select: {
       marginTop: theme.spacing(2),
       minWidth: '225px',
@@ -187,10 +185,10 @@ interface EnhancedTableToolbarProps {
   };
   displayClear: boolean;
   filterRanges: FilterRanges;
-  filterValues: FilterValues;
+  buildingFilterValue: string;
   totalResults: number;
-    updateFilters: (
-    requestedFilters: FilterValues
+  updateBuildingFilter: (
+    requestedBuilding: string
   ) => void;
 }
 
@@ -200,9 +198,9 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     buildingTypeFilterOptions,
     displayClear,
     filterRanges,
-    filterValues,
+    buildingFilterValue,
     totalResults,
-    updateFilters
+    updateBuildingFilter
   } = props;
 
   const selectProps = {
@@ -217,11 +215,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   };
 
   const onBuildingTypeFilter = (clear: boolean = false) => (event: React.MouseEvent<EventTarget>) => {
-    const newFilter = {
-      ...resetFilters(filterRanges),
-      buildingType: clear ? '' : event.target.value,
-    }
-    updateFilters(newFilter);
+    updateBuildingFilter(clear ? '' : event.target.value);
   };
 
   return (
@@ -233,7 +227,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
           name="buildingType-filter"
           onChange={onBuildingTypeFilter()}
           select
-          value={filterValues && filterValues.buildingType ? filterValues.buildingType : ""}
+          value={buildingFilterValue}
           variant="outlined"
           SelectProps={selectProps}
           size="small"
@@ -247,7 +241,6 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
         {displayClear && (<ColorButton variant="outlined" onClick={onBuildingTypeFilter(true)}>Clear</ColorButton>)}
       </div>
       <Typography
-        className={classes.title}
         variant="h6"
         id="tableTitle"
         component="div"
@@ -265,14 +258,12 @@ const useFilterToolbarStyles = makeStyles((theme: Theme) =>
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
     },
-    title: {
-      // flex: '1 1 100%',
-    },
   })
 );
 
 interface FilterToolbarProps {
-  scenarioOptions: ScenarioOptions;
+  scenarioOptions: string[];
+  tagOptions: string[];
   filterRanges: FilterRanges;
   filterValues: FilterValues;
   updateFilters: (
@@ -282,7 +273,7 @@ interface FilterToolbarProps {
 
 const FilterToolbar = (props: FilterToolbarProps) => {
   const classes = useFilterToolbarStyles();
-  const {filterRanges, filterValues, scenarioOptions, updateFilters} = props;
+  const {filterRanges, filterValues, scenarioOptions, tagOptions, updateFilters} = props;
 
   const onRequestUpdateFilters = (requestedFilters) => {
     updateFilters(requestedFilters);
@@ -295,6 +286,7 @@ const FilterToolbar = (props: FilterToolbarProps) => {
         filterValues={filterValues}
         onRequestFilters={onRequestUpdateFilters}
         scenarioOptions={scenarioOptions}
+        tagOptions={tagOptions}
       />
     </Toolbar>
   );
@@ -342,7 +334,9 @@ export default function ResultsTable(props) {
   const [buildingScenarios, setBuildingScenarios]  = React.useState({});
   const [filterRanges, setFilterRanges] = React.useState({});
   const [displayFilters, setDisplayFilters] = React.useState(false);
+  const [buildingTypeFilter, setBuildingTypeFilter] = React.useState<string>('');
   const [filters, setFilters] = React.useState({});
+  const [tagOptions, setTagOptions] = React.useState<string[]>([]);
 
   // set the rows from the results that we get
   useEffect(() => {
@@ -357,20 +351,33 @@ export default function ResultsTable(props) {
   }, [rows]);
 
   useEffect(() => {
-    setFilters(resetFilters(filterRanges));
+    setFilters(setupFilters(filterRanges, []));
   }, [filterRanges]);
 
   useEffect(() => {
-    setFilteredRows(filterRows(rows, filters));
-  }, [filters]);
-
-  const handleUpdateFilters = (requestedFilters) => {
-    if (requestedFilters.buildingType === '') {
+    if (buildingTypeFilter === '') {
       setDisplayFilters(false);
+      setFilters(setupFilters(filterRanges, []));
     } else {
       setDisplayFilters(true);
+      setFilters(setupFilters(filterRanges, Object.keys(buildingScenarios[buildingTypeFilter])));
     }
+  }, [buildingTypeFilter]);
+
+  useEffect(() => {
+    setFilteredRows(filterRows(rows, buildingTypeFilter, filters));
+  }, [filters]);
+
+  useEffect(() => {
+    setTagOptions(createTagOptions(filteredRows));
+  }, [filteredRows]);
+
+  const handleUpdateFilters = (requestedFilters) => {
     setFilters(requestedFilters);
+  }
+
+  const handleUpdateBuildingFilter = (requestedBuilding) => {
+    setBuildingTypeFilter(requestedBuilding);
   }
 
   const handleRequestSort = (
@@ -396,13 +403,14 @@ export default function ResultsTable(props) {
           buildingTypeFilterOptions={buildingScenarios && Object.keys(buildingScenarios)}
           displayClear={displayFilters}
           filterRanges={filterRanges}
-          filterValues={filters}
+          buildingFilterValue={buildingTypeFilter}
           totalResults={filteredRows.length}
-          updateFilters={handleUpdateFilters}
+          updateBuildingFilter={handleUpdateBuildingFilter}
         />
         {displayFilters && (
           <FilterToolbar
-            scenarioOptions={buildingScenarios[filters.buildingType]}
+            scenarioOptions={buildingScenarios[buildingTypeFilter]}
+            tagOptions={tagOptions}
             filterRanges={filterRanges}
             filterValues={filters}
             updateFilters={handleUpdateFilters}

@@ -24,23 +24,25 @@ POST: `api/results`
         "string3"
       ],
       "kpis": {
-        "cost_tot": 0.7025804273828494,
-        "emis_tot": 0.4612590709883337,
-        "ener_tot": 2.762030365199603,
-        "idis_tot": 0.0,
-        "tdis_tot": 19.214004362870106,
-        "time_rat": 2.4704477435639305e-05
+        "cost_tot": 21,
+        "emis_tot": 17,
+        "ener_tot": 29,
+        "idis_tot": 444,
+        "tdis_tot": 79,
+        "time_rat": 1460,
       },
       "forecastParameters": {
         "horizon": 21600.0,
         "interval": 3600.0
       },
+      // each scenario key (ex: timePeriod) should be identical to the key for the scenarios object on the results given buildingType
       "scenario": {
-        "electricityPrice": "constant",
-        "timePeriod": "peak_heat_day"
+        "timePeriod": "heating peak",
+        "electricityPrice": "highly dynamic",
+        "weatherForecastUncertainty": "deterministic"
       },
-      "testcase": {
-        "id": "bestest_air"
+      "buildingType": {
+        "uid": "buildingType-1"
       }
     }
   ]
@@ -60,19 +62,21 @@ POST `api/testcases`
 
 ```json
 {
-  "testcases": [
+  "buildingTypes": [
     {
-      "id": "bestest_air",
-      "name": "BESTEST Air",
-      "scenarios" : {
-        "validElectricityPrices": ["constant", "dynamic", "highly_dynamic"],
-        "validTimePeriods": ["peak_heat_day", "typical_heat_day", "peak_cool_day", "typical_cool_day", "mix_day"]
-      },
-      "pdfURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/someFile.pdf",
-      "markdownURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/README.md"
+      "uid": "buildingType-1",
+      "name": "BIG building",
+      "markdownURL": "URL_TO_PUBLIC_MARKDOWN_FILE",
+      "pdfURL": "URL_TO_PULIC_PDF",
+      // these exact scenarios keys should be the keys for a scenario on a result for this buildingType
+      "scenarios": {
+        "timePeriod": ["cooling peak", "heating peak", "heating typical"],
+        "electricityPrice": ["constant", "dynamic", "highly dynamic"],
+        "weatherForecastUncertainty": ["deterministic"]
+      }
     }
   ],
-  "apiKey": "SU_API_KEY"
+  "apiKey": "API_KEY_FROM_WEB_APP"
 }
 ```
 
@@ -84,18 +88,20 @@ PATCH `/api/testcases?uid={your_testcase_uid}`
 
 ```json
 {
-  "testcases": [
+  "buildingTypes": [
     {
-      "id": "bestest_air",
-      "name": "BESTEST Air",
+      "name": "BIG building",
+      "markdownURL": "URL_TO_PUBLIC_MARKDOWN_FILE",
+      "pdfURL": "URL_TO_PULIC_PDF",
       "scenarios": {
-        "validElectricityPrices": ["constant", "dynamic", "highly_dynamic"],
-        "validTimePeriods": ["peak_heat_day", "typical_heat_day", "peak_cool_day", "typical_cool_day", "mix_day"]
-      },
-      "pdfURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/someFile.pdf",
-      "markdownURL": "https://raw.githubusercontent.com/NREL/project1-boptest/master/README.md"
+        "timePeriod": ["cooling peak", "heating peak", "heating typical"],
+        "electricityPrice": ["constant", "dynamic", "highly dynamic"],
+        "weatherForecastUncertainty": ["deterministic"],
+        // new keys can be added, old results will not be affected, but new results will require that key in it's scenario
+        "airQuality": ["smoky"]
+      }
     }
   ],
-  "apiKey": "SU_API_KEY"
+  "apiKey": "API_KEY_FROM_WEB_APP"
 }
 ```

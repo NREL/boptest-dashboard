@@ -9,6 +9,7 @@ import {useUser} from '../Context/user-context';
 
 export const Dashboard: React.FC = () => {
   const [results, setResults] = useState([]);
+  const [buildingTypes, setBuildingTypes] = useState([]);
   const [showResultModal, setShowResultModal] = useState(false);
   const [selectedResult, setSelectedResult] = useState(null);
 
@@ -20,9 +21,16 @@ export const Dashboard: React.FC = () => {
     });
   }
 
+  const updateBuildingTypes = () => {
+    axios.get('/api/buildingTypes').then(response => {
+      setBuildingTypes(response.data);
+    });
+  }
+
   // build out simple data fetcher straight in the useEffect for now
   useEffect(() => {
     updateResults();
+    updateBuildingTypes();
   }, []);
 
   // when we get a selected result, show the result modal
@@ -41,9 +49,9 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div>
-      {/* filters components placeholder */}
       <DashboardResultsTable
         results={results}
+        buildingTypes={buildingTypes}
         setSelectedResult={handleChange}
         updateResults={updateResults}
       />

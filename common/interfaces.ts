@@ -80,10 +80,6 @@ export interface Account {
 
 export type Signature = Pick<
   Result,
-  | "testTimePeriod"
-  | "controlStep"
-  | "priceScenario"
-  | "weatherForecastUncertainty"
   | "scenario"
 >;
 
@@ -92,8 +88,10 @@ export interface Result {
   uid: string;
   deleted: boolean;
   dateRun: Date;
+  boptestVersion: String;
   isShared: boolean;
-  controllerProperties: JSON;
+
+  tags: string[];
 
   // KPI stuff
   thermalDiscomfort: number;
@@ -104,10 +102,11 @@ export interface Result {
   timeRatio: number;
 
   // Building Type stuff (formerly testcase stuff)
-  testTimePeriod: string;
+  timePeriod: string;
   controlStep: string;
-  priceScenario: string;
+  electricityPrice: string;
   weatherForecastUncertainty: string;
+  forecastParameters: JSON;
   scenario: JSON;
 
   account: Account;
@@ -135,12 +134,10 @@ export interface FilterRanges {
 }
 
 export interface FilterValues {
-  buildingType: {
-    [key: string]: boolean;
-  };
   scenario: {
     [key: string]: string;
   };
+  tags: string[];
   cost: {
     min: number;
     max: number;
@@ -160,11 +157,13 @@ export interface FilterValues {
 }
 
 export interface BuildingScenarios {
-  [key: string]: {
-    [index: number]: string;
-  };
+  [key: string]: string[];
 }
 
-export interface ScenarioOptions {
-  [index: number]: string;
+export interface Scenario {
+  [key: string]: string;
+}
+
+export interface Scenarios {
+  [key: string]: any;
 }
