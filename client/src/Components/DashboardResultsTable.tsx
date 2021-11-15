@@ -22,7 +22,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import {FilterMenu} from './FilterMenu';
-import {FilterRanges, FilterValues, ScenarioOptions} from '../../../common/interfaces';
+import {FilterRanges, FilterValues} from '../../../common/interfaces';
 import {
   createRows,
   createTagOptions,
@@ -173,9 +173,6 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
     filterContainer: {
       display: 'flex',
     },
-    title: {
-      // flex: '1 1 100%',
-    },
     select: {
       marginTop: theme.spacing(2),
       minWidth: '225px',
@@ -285,7 +282,6 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
       </div>
       {numSelected > 0 ? (
         <Typography
-          className={classes.title}
           color="inherit"
           variant="h6"
           component="div"
@@ -294,7 +290,6 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
         </Typography>
       ) : (
         <Typography
-          className={classes.title}
           variant="h6"
           id="tableTitle"
           component="div"
@@ -313,14 +308,11 @@ const useFilterToolbarStyles = makeStyles((theme: Theme) =>
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
     },
-    title: {
-      // flex: '1 1 100%',
-    },
   })
 );
 
 interface FilterToolbarProps {
-  scenarioOptions: ScenarioOptions;
+  scenarioOptions: string[];
   tagOptions: string[];
   filterRanges: FilterRanges;
   filterValues: FilterValues;
@@ -365,10 +357,8 @@ const useStyles = makeStyles((theme: Theme) =>
       color: 'white',
     },
     downloadButtonContainer: {
-      // width: '90%',
       display: 'flex',
       flexDirection: 'row-reverse',
-      // margin: '0 auto'
       paddingRight: theme.spacing(2),
       paddingTop: theme.spacing(1),
     },
@@ -437,7 +427,6 @@ export default function DashboardResultsTable(props) {
   }, [props.results, props.buildingTypes]);
 
   useEffect(() => {
-    // setRows(rows);
     setChecked(false);
   }, [checked]);
 

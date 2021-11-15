@@ -15,7 +15,7 @@ import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import {FilterMenu} from './FilterMenu';
-import {FilterRanges, FilterValues, ScenarioOptions} from '../../../common/interfaces';
+import {FilterRanges, FilterValues} from '../../../common/interfaces';
 import {
   createRows,
   createTagOptions,
@@ -135,9 +135,6 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
     filterContainer: {
       display: 'flex',
     },
-    title: {
-      // flex: '1 1 100%',
-    },
     select: {
       marginTop: theme.spacing(2),
       minWidth: '225px',
@@ -244,7 +241,6 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
         {displayClear && (<ColorButton variant="outlined" onClick={onBuildingTypeFilter(true)}>Clear</ColorButton>)}
       </div>
       <Typography
-        className={classes.title}
         variant="h6"
         id="tableTitle"
         component="div"
@@ -262,14 +258,11 @@ const useFilterToolbarStyles = makeStyles((theme: Theme) =>
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
     },
-    title: {
-      // flex: '1 1 100%',
-    },
   })
 );
 
 interface FilterToolbarProps {
-  scenarioOptions: ScenarioOptions;
+  scenarioOptions: string[];
   tagOptions: string[];
   filterRanges: FilterRanges;
   filterValues: FilterValues;

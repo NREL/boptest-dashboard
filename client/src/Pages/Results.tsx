@@ -37,7 +37,6 @@ export const Results: React.FC = () => {
 
   return (
     <div>
-      {/* filters components placeholder */}
       <ResultsTable results={results} buildingTypes={buildingTypes} setSelectedResult={handleChange} />
       {showResultModal && (
         <Modal

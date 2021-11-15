@@ -16,7 +16,6 @@ export interface Data {
   timeRatio: number;
   emissions: number;
   compTimeRatio: number;
-  // controllerProperties: JSON;
   timePeriod: string;
   controlStep: string;
   electricityPrice: string;
@@ -45,7 +44,6 @@ export const createDataFromResult = (result): Data => {
     timeRatio: result.timeRatio,
     emissions: result.emissions,
     compTimeRatio: result.timeRatio,
-    // controllerProperties: result.controllerProperties,
     timePeriod: result.timePeriod,
     controlStep: result.controlStep,
     electricityPrice: result.electricityPrice,
@@ -205,5 +203,5 @@ export const createTagOptions = (rows): string[] => {
       }
     })
   });
-  return tagOptions;
+  return tagOptions.sort();
 }

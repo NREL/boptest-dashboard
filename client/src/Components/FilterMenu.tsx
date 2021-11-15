@@ -13,7 +13,7 @@ import Popper from '@material-ui/core/Popper';
 import Select from '@material-ui/core/Select';
 import Slider from '@material-ui/core/Slider';
 import TextField from '@material-ui/core/TextField';
-import {FilterRanges, FilterValues, ScenarioOptions} from '../../../common/interfaces';
+import {FilterRanges, FilterValues} from '../../../common/interfaces';
 
 const useMenuStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -79,10 +79,6 @@ const ColorTextField = withStyles({
 
 const usePopperStyles = makeStyles((theme: Theme) =>
   createStyles({
-    root: {
-      // width: '400px',
-      // height: '400px',
-    },
     container: {
       display: 'flex',
       justifyContent: 'center',
@@ -126,7 +122,7 @@ interface FilterMenuProps {
   onRequestFilters: (
     requestedFilters: FilterValues
   ) => void;
-  scenarioOptions: ScenarioOptions;
+  scenarioOptions: string[];
   tagOptions: string[];
 }
 
@@ -163,18 +159,6 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
       [filterType[0]]: {
         ...filterValues[filterType[0]],
         [filterType[1]]: Number(event.target.value),
-      },
-    }
-    onRequestFilters(newFilter);
-  }
-
-  const onSliderFilterChange = (event: any, newValue: number | number[]) => {
-    const filterType = event.target.id;
-    const newFilter = {
-      ...filterValues,
-      [filterType]: {
-        min: newValue[0],
-        max: newValue[1],
       },
     }
     onRequestFilters(newFilter);
@@ -238,14 +222,6 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                 onChange={onFilterChange}
               />
             </div>
-            {/*<Slider
-                id="cost"
-                value={[filterValues && filterValues.cost && filterValues.cost.min, filterValues && filterValues.cost && filterValues.cost.max]}
-                onChange={onSliderFilterChange}
-                valueLabelDisplay="auto"
-                aria-labelledby="range-slider"
-                // getAriaValueText={valuetext}
-              />*/}
           </div>
         )
       case 'discomfort':
@@ -395,7 +371,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                 placement={'bottom'}
               >
                 <ClickAwayListener onClickAway={handleClosePopper(filter)}>
-                  <Paper className={clsx(popperClasses.root)} elevation={3}>
+                  <Paper elevation={3}>
                     {renderPopperContents(filter)}
                   </Paper>
                 </ClickAwayListener>
