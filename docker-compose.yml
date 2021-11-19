@@ -14,9 +14,8 @@ services:
     volumes:
       - ./server:/usr/src/app/:z
       - /usr/src/app/node_modules #ignore node_modules (they are installed in the container)
-      - ./client/build:/usr/client/build:z
-      - ./client/src/static/assets:/usr/client/assets:z
       - ./common:/usr/src/common:z
+      - staticfiles:/usr/client/build
   pg:
     image: "postgres"
     container_name: "postgres"
@@ -29,8 +28,13 @@ services:
       - ./pg/db_data:/var/lib/postgresql/data:z
   client:
     container_name: "client"
-    build: ./client
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile
     volumes:
-      - ./client/build:/usr/client/build:z
       - ./client/src:/usr/client/src:z
-      - ./common:/usr/common:z
+      - ./common:/usr/client/common:z
+      - staticfiles:/usr/client/build
+
+volumes:
+  staticfiles:

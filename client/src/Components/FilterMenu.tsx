@@ -13,7 +13,7 @@ import Popper from '@material-ui/core/Popper';
 import Select from '@material-ui/core/Select';
 import Slider from '@material-ui/core/Slider';
 import TextField from '@material-ui/core/TextField';
-import {FilterRanges, FilterValues} from '../../../common/interfaces';
+import {FilterRanges, FilterValues} from '../../common/interfaces';
 
 const useMenuStyles = makeStyles((theme: Theme) =>
   createStyles({

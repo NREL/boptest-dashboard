@@ -15,7 +15,7 @@ import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import {FilterMenu} from './FilterMenu';
-import {FilterRanges, FilterValues} from '../../../common/interfaces';
+import {FilterRanges, FilterValues} from '../common/interfaces';
 import {
   createRows,
   createTagOptions,

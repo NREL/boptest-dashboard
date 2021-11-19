@@ -9,7 +9,7 @@ import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import {useUser} from './../../Context/user-context';
-import {LoginData} from './../../../../common/interfaces';
+import {LoginData} from '../../../common/interfaces';
 import {AppRoute} from '../../enums';
 
 const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;

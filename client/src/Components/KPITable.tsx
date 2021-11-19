@@ -3,7 +3,7 @@ import React, {useEffect, useState} from 'react';
 import {Table, TableBody, TableCell, TableRow} from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import {SignatureDetails} from '../../../common/interfaces';
+import {SignatureDetails} from '../../common/interfaces';
 import {KPIBarChart} from './KPIBarChart';
 
 const numberOfResultsToShowChart = 3;

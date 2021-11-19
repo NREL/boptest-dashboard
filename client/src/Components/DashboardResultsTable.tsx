@@ -22,7 +22,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import {FilterMenu} from './FilterMenu';
-import {FilterRanges, FilterValues} from '../../../common/interfaces';
+import {FilterRanges, FilterValues} from '../../common/interfaces';
 import {
   createRows,
   createTagOptions,

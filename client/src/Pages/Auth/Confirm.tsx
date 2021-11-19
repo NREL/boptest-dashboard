@@ -5,7 +5,7 @@ import {Button, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
-import {ConfirmData} from './../../../../common/interfaces';
+import {ConfirmData} from '../../../common/interfaces';
 import {useUser} from './../../Context/user-context';
 
 const useStyles = makeStyles((theme: Theme) =>

@@ -30,9 +30,4 @@ module.exports = {
     ],
   },
   externals: [nodeExternals()],
-  plugins: [
-    new WebpackShellPlugin({
-      onBuildEnd: ['npm run run:dev'],
-    }),
-  ],
 };

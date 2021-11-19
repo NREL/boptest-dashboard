@@ -9,7 +9,7 @@ import {
 } from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import {SignatureDetails} from '../../../common/interfaces';
+import {SignatureDetails} from '../../common/interfaces';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

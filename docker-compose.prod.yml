@@ -5,7 +5,6 @@ services:
   client:
     expose:
       - "8000"
-    command: "npm run watch"
   nginx:
     container_name: "nginx"
     restart: always
@@ -13,8 +12,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./client/build:/usr/share/nginx/html
-      - ./client/src/static/assets:/usr/share/nginx/assets
+      - staticfiles:/usr/share/nginx/html
       - ./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf
     links:
       - client

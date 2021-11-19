@@ -1,4 +1,4 @@
-import {BuildingScenarios, FilterRanges, FilterValues} from '../../../common/interfaces';
+import {FilterRanges, FilterValues, BuildingScenarios, BuildingType, Scenario} from '../../common/interfaces';
 
 export interface Data {
   id: number;
@@ -17,7 +17,6 @@ export interface Data {
   emissions: number;
   compTimeRatio: number;
   timePeriod: string;
-  controlStep: string;
   electricityPrice: string;
   weatherForecastUncertainty: string;
   forecastParameters: JSON;
@@ -27,7 +26,7 @@ export interface Data {
   controlStep: string;
 }
 
-export const createDataFromResult = (result): Data => {
+export const createDataFromResult = (result: any): Data => {
   return {
     id: result.id,
     uid: result.uid,
@@ -45,7 +44,6 @@ export const createDataFromResult = (result): Data => {
     emissions: result.emissions,
     compTimeRatio: result.timeRatio,
     timePeriod: result.timePeriod,
-    controlStep: result.controlStep,
     electricityPrice: result.electricityPrice,
     weatherForecastUncertainty: result.weatherForecastUncertainty,
     forecastParameters: result.forecastParameters,
@@ -56,7 +54,7 @@ export const createDataFromResult = (result): Data => {
   };
 };
 
-export const createRows = (results): Data[] => {
+export const createRows = (results: any): Data[] => {
   let rows: Data[] = [];
   if (!results || !Array.isArray(results) || results.length == 0) {
     return rows;
@@ -108,13 +106,13 @@ export interface HeadCell {
   numeric: boolean;
 }
 
-export const getBuildingScenarios = (buildingTypes): BuildingScenarios => {
-  let buildingScenarios = {};
-  buildingTypes.forEach(building => { buildingScenarios[building.name] = building.scenarios });
+export const getBuildingScenarios = (buildingTypes: BuildingType[]): BuildingScenarios => {
+  let buildingScenarios: any = {};
+  buildingTypes.forEach((building: BuildingType) => { buildingScenarios[building.name] = building.scenarios });
   return buildingScenarios;
 }
 
-export const getFilterRanges = (rows): FilterRanges => {
+export const getFilterRanges = (rows: Data[]): FilterRanges => {
   return rows.reduce((acc, curr) => {
     return {
       costRange: {
@@ -134,11 +132,16 @@ export const getFilterRanges = (rows): FilterRanges => {
         max: Math.ceil((acc.energyRange.max > curr.energy ? acc.energyRange.max : curr.energy)/50)*50,
       },
     }
-  }, { costRange: {}, thermalDiscomfortRange: {}, aqDiscomfortRange: {}, energyRange: {} });
+  }, { 
+    costRange: { min: 0, max: 0 },
+    thermalDiscomfortRange: { min: 0, max: 0 },
+    aqDiscomfortRange: { min: 0, max: 0 },
+    energyRange: { min: 0, max: 0 } 
+  });
 }
 
-export const setupFilters = (filterRanges, scenarioKeys): FilterValues => {
-  let scenarioFilters = {};
+export const setupFilters = (filterRanges: FilterRanges, scenarioKeys: string[]): FilterValues => {
+  let scenarioFilters: any = {};
   scenarioKeys.forEach(key => { scenarioFilters[key] = '' });
 
   return {
@@ -163,14 +166,14 @@ export const setupFilters = (filterRanges, scenarioKeys): FilterValues => {
   };
 }
 
-export const filterRows = (rows, buildingTypeFilter, filters): Data[] => {
+export const filterRows = (rows: Data[], buildingTypeFilter: string, filters: FilterValues): Data[] => {
   let filteredRows: Data[] = [];
-  let scenarioFilter = filters.scenario;
-  let tagFilter = filters.tags;
+  let scenarioFilter: Scenario = filters.scenario;
+  let tagFilter: string[] = filters.tags;
   if (rows.length <= 0 || buildingTypeFilter === '') {
     return rows;
   }
-  rows.forEach(row => {
+  rows.forEach((row: any) => {
     if (row.buildingTypeName !== buildingTypeFilter || (
       row.cost < filters.cost.min || row.cost > filters.cost.max ||
       row.energy < filters.energy.min || row.energy > filters.energy.max ||
@@ -194,10 +197,10 @@ export const filterRows = (rows, buildingTypeFilter, filters): Data[] => {
   return filteredRows;
 }
 
-export const createTagOptions = (rows): string[] => {
+export const createTagOptions = (rows: Data[]): string[] => {
   let tagOptions: string[] = [];
-  rows.forEach(row => {
-    row.tags.forEach(tag => {
+  rows.forEach((row: any) => {
+    row.tags.forEach((tag: any) => {
       if(!tagOptions.includes(tag)) {
         tagOptions.push(tag);
       }

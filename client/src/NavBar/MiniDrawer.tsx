@@ -16,6 +16,8 @@ import {Content} from '../Content';
 import {AppRoute, Title} from '../enums';
 import {NavBarList} from './NavBarList';
 
+import { ReactComponent as Logo } from '../static/assets/boptest-logo.svg';
+
 const drawerWidth = 240;
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -133,10 +135,9 @@ export const MiniDrawer: React.FC = () => {
             <MenuIcon />
           </IconButton>
           <div className={classes.titlebar}>
-            <img
-              src="./assets/boptest-logo.svg"
-              className={classes.boptestIcon}
-            />
+            <div className={classes.boptestIcon}>
+              <Logo />
+            </div>
             <Typography variant="h6" className={classes.titlebarTitle}>{title}</Typography>
             <AuthInfo />
           </div>

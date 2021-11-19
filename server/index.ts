@@ -35,11 +35,10 @@ app.use(
 );
 
 // serve static files from the React app
-console.log('env:', process.env.NODE_ENV);
+console.log('ENV:', process.env.NODE_ENV);
 if (!IN_PROD) {
   console.log("Serving static files from APP");
   app.use(express.static(path.join(__dirname, '/usr/client/build')));
-  app.use('/assets', express.static(path.join(__dirname, '/usr/client/assets')));
 } else {
   console.log("Serving static files from nginx");
 }
@@ -54,7 +53,6 @@ app.use('/', appRouter);
 
 const {PORT = 8080} = process.env;
 
-// question: need to find out if this needs to run in Prod. ~Amit
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log('server started at http://localhost:' + PORT);

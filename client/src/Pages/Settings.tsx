@@ -11,7 +11,7 @@ import {
 } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
-import {ChangePasswordData} from '../../../common/interfaces';
+import {ChangePasswordData} from '../../common/interfaces';
 import {useUser} from '../Context/user-context';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
