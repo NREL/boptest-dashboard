@@ -88,7 +88,7 @@ export interface Result {
   uid: string;
   deleted: boolean;
   dateRun: Date;
-  boptestVersion: String;
+  boptestVersion: string;
   isShared: boolean;
 
   tags: string[];

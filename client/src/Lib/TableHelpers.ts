@@ -3,6 +3,7 @@ import {
   FilterValues,
   BuildingScenarios,
   BuildingType,
+  Result,
   Scenario,
 } from '../../common/interfaces';
 
@@ -32,7 +33,7 @@ export interface Data {
   controlStep: string;
 }
 
-export const createDataFromResult = (result: any): Data => {
+export const createDataFromResult = (result: Result): Data => {
   return {
     id: result.id,
     uid: result.uid,
@@ -60,7 +61,7 @@ export const createDataFromResult = (result: any): Data => {
   };
 };
 
-export const createRows = (results: any): Data[] => {
+export const createRows = (results: Result[]): Data[] => {
   const rows: Data[] = [];
   if (!results || !Array.isArray(results) || results.length === 0) {
     return rows;
