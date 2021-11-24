@@ -8,12 +8,14 @@ import {
   suSignup,
   mockBuilding1,
   mockBuilding2,
+  mockResult1,
   nonSuSignup,
   nnonexistentUserLogin
 } from './mockPayloads';
 
 const authRoute = `http://${process.env.SERVER_HOST}:8080/api/auth`;
-const buildingRoute = `http://${process.env.SERVER_HOST}:8080/api/buildingTypes`
+const buildingRoute = `http://${process.env.SERVER_HOST}:8080/api/buildingTypes`;
+const resultRoute = `http://${process.env.SERVER_HOST}:8080/api/results`;
 
 const session = axios.create({
   jar: new tough.CookieJar(),
@@ -148,4 +150,27 @@ describe('Main', () => {
         expect(false).toEqual(true);
       })
   });
+
+  // test('Regular user can post a result with their API Key', () => {
+  //   return session.post(authRoute + '/login', nonSuLogin)
+  //     .then(res => {
+  //       expect(res.status).toEqual(200);
+  //     })
+  //     .then(() => get(authRoute + '/key'))
+  //     .then(res => {
+  //       expect(res.status).toEqual(200);
+  //       return res.data.apiKey;
+  //     })
+  //     .then(key => {
+  //       mockResult1[account][apiKey] = key;
+  //       session.post(resultRoute, {results: [mockResult1]})
+  //     })
+  //     .then((res) => {
+  //       expect(res.status).toEqual(200);
+  //     })
+  //     .catch(() => {
+  //       // We should never hit the un-happy path.
+  //       expect(false).toEqual(true);
+  //     });
+  // });
 });
