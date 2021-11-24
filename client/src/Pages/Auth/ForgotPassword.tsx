@@ -3,12 +3,12 @@ import {Link, useHistory} from 'react-router-dom';
 import axios from 'axios';
 import {Button, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import {ForgotPasswordData} from '../../../common/interfaces';
 import {AppRoute} from '../../enums';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     root: {
       padding: '16px 0 0 16px',

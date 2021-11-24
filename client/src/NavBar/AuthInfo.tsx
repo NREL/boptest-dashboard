@@ -1,11 +1,11 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
-import {Divider, Typography, Button} from '@material-ui/core';
-import {createStyles, makeStyles, Theme, withStyles} from '@material-ui/core/styles';
+import {Divider, Button} from '@material-ui/core';
+import {createStyles, makeStyles, withStyles} from '@material-ui/core/styles';
 import {useUser} from '../Context/user-context';
 import axios from 'axios';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     root: {
       padding: '16px 0 0 16px',
@@ -17,21 +17,20 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     lineItem: {
       display: 'flex',
-      alignItems: 'center'
+      alignItems: 'center',
     },
     link: {
       color: 'white',
       textDecoration: 'none',
     },
-    
   })
 );
 
-const ColorButton = withStyles((theme) => ({
+const ColorButton = withStyles(() => ({
   root: {
     color: 'white',
     borderColor: 'white',
-  }
+  },
 }))(Button);
 
 export const AuthInfo: React.FC = () => {

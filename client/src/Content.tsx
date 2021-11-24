@@ -1,6 +1,6 @@
 import React from 'react';
 import {Route, Switch} from 'react-router-dom';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
 
 import {About} from './Pages/About';
 import {ApiKey} from './Pages/ApiKey';
@@ -11,7 +11,7 @@ import {Results} from './Pages/Results';
 import {Settings} from './Pages/Settings';
 import {AppRoute} from './enums';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     content: {
       height: '100%',

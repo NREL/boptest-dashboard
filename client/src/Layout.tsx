@@ -1,6 +1,6 @@
 import React from 'react';
 import {BrowserRouter, Route, Switch} from 'react-router-dom';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
 
 import {AppRoute} from './enums';
 import {MiniDrawer} from './NavBar/MiniDrawer';
@@ -11,7 +11,7 @@ import {ForgotPassword} from './Pages/Auth/ForgotPassword';
 import {Signup} from './Pages/Auth/Signup';
 import {UserProvider} from './Context/user-context';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     pageLayout: {
       display: 'flex',
