@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 
 const SESSION_NAME = process.env.SESSION_NAME!;
 const SESSION_SECRET = process.env.SESSION_SECRET!;
-const IN_PROD: boolean = process.env.CONTEXT! === 'production';
+const IN_PROD: boolean = process.env.NODE_ENV! === 'production';
 
 app.use(
   session({
@@ -35,8 +35,13 @@ app.use(
 );
 
 // serve static files from the React app
-app.use(express.static(path.join(__dirname, '/usr/client/build')));
-app.use('/assets', express.static(path.join(__dirname, '/usr/client/assets')));
+console.log('ENV:', process.env.NODE_ENV);
+if (!IN_PROD) {
+  console.log("Serving static files from APP");
+  app.use(express.static(path.join(__dirname, '/usr/client/build')));
+} else {
+  console.log("Serving static files from nginx");
+}
 
 // define routes
 app.use('/api/auth', authRouter);
@@ -48,7 +53,6 @@ app.use('/', appRouter);
 
 const {PORT = 8080} = process.env;
 
-// question: need to find out if this needs to run in Prod. ~Amit
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log('server started at http://localhost:' + PORT);

@@ -1,12 +1,12 @@
 import React from 'react';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
 
 import {Bullet} from '@nivo/bullet';
 
 const backgroundColor = '#eceff0';
 const markerColor = '#078b75';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     bullet: {
       padding: '16px 8px 16px 8px',

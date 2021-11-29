@@ -8,6 +8,7 @@
     "start:dev": "webpack --watch --config webpack.dev.js",
     "start:prod": "webpack --config webpack.prod.js",
     "run:dev": "nodemon ../build/server/index.js --watch ../build",
+    "run:prod": "node ../build/server/index.js",
     "test": "jest",
     "check": "gts check ./*.ts*",
     "clean": "gts clean ./*.ts*",

@@ -3,12 +3,12 @@ import {useHistory, useParams} from 'react-router-dom';
 import axios from 'axios';
 import {Button, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
-import {ConfirmData} from './../../../../common/interfaces';
+import {ConfirmData} from '../../../common/interfaces';
 import {useUser} from './../../Context/user-context';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     root: {
       padding: '16px 0 0 16px',
@@ -58,7 +58,7 @@ export const Confirm: React.FC = () => {
 
   const {setAuthedEmail, setAuthedName} = useUser();
 
-  let {username} = useParams<ConfirmParams>();
+  const {username} = useParams<ConfirmParams>();
 
   // state values for all the text fields
   const [confirmationCode, setConfirmationCode] = React.useState('');

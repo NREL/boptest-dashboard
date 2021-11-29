@@ -1,6 +1,10 @@
 import React, {useEffect} from 'react';
-import clsx from 'clsx';
-import {createStyles, makeStyles, Theme, withStyles} from '@material-ui/core/styles';
+import {
+  createStyles,
+  makeStyles,
+  Theme,
+  withStyles,
+} from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -15,7 +19,7 @@ import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import {FilterMenu} from './FilterMenu';
-import {FilterRanges, FilterValues} from '../../../common/interfaces';
+import {FilterRanges, FilterValues} from '../common/interfaces';
 import {
   createRows,
   createTagOptions,
@@ -27,7 +31,7 @@ import {
   HeadCell,
   Order,
   setupFilters,
-  stableSort
+  stableSort,
 } from '../Lib/TableHelpers';
 
 const headCells: HeadCell[] = [
@@ -88,11 +92,10 @@ interface EnhancedTableProps {
 
 function EnhancedTableHead(props: EnhancedTableProps) {
   const {classes, order, orderBy, onRequestSort} = props;
-  const createSortHandler = (property: keyof Data) => (
-    event: React.MouseEvent<unknown>
-  ) => {
-    onRequestSort(event, property);
-  };
+  const createSortHandler =
+    (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
+      onRequestSort(event, property);
+    };
 
   return (
     <TableHead>
@@ -141,17 +144,17 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
     },
     selectIcon: {
       fill: '#078b75',
-    }
+    },
   })
 );
 
-const ColorButton = withStyles((theme) => ({
+const ColorButton = withStyles(theme => ({
   root: {
     color: '#078b75',
     borderColor: '#078b75',
     marginTop: theme.spacing(2),
     marginLeft: theme.spacing(2),
-  }
+  },
 }))(Button);
 
 const ColorSelect = withStyles({
@@ -176,7 +179,7 @@ const ColorSelect = withStyles({
         borderColor: '#078b75',
       },
     },
-  }
+  },
 })(TextField);
 
 interface EnhancedTableToolbarProps {
@@ -184,12 +187,9 @@ interface EnhancedTableToolbarProps {
     [index: number]: string;
   };
   displayClear: boolean;
-  filterRanges: FilterRanges;
   buildingFilterValue: string;
   totalResults: number;
-  updateBuildingFilter: (
-    requestedBuilding: string
-  ) => void;
+  updateBuildingFilter: (requestedBuilding: string) => void;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
@@ -197,32 +197,33 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   const {
     buildingTypeFilterOptions,
     displayClear,
-    filterRanges,
     buildingFilterValue,
     totalResults,
-    updateBuildingFilter
+    updateBuildingFilter,
   } = props;
 
   const selectProps = {
-    classes: { icon: classes.selectIcon },
+    classes: {icon: classes.selectIcon},
     MenuProps: {
       anchorOrigin: {
         vertical: 'bottom',
-        horizontal: 'left'
+        horizontal: 'left',
       },
-      getContentAnchorEl: null
-    }
+      getContentAnchorEl: null,
+    },
   };
 
-  const onBuildingTypeFilter = (clear: boolean = false) => (event: React.MouseEvent<EventTarget>) => {
-    updateBuildingFilter(clear ? '' : event.target.value);
-  };
+  const onBuildingTypeFilter =
+    (clear = false) =>
+    (event: React.MouseEvent<EventTarget>) => {
+      updateBuildingFilter(clear ? '' : event.target.value);
+    };
 
   return (
-    <Toolbar className={clsx(classes.root)}>
-      <div className={clsx(classes.filterContainer)}>
+    <Toolbar className={classes.root}>
+      <div className={classes.filterContainer}>
         <ColorSelect
-          className={clsx(classes.select)}
+          className={classes.select}
           label="Filter on Building Type"
           name="buildingType-filter"
           onChange={onBuildingTypeFilter()}
@@ -234,17 +235,19 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
         >
           {buildingTypeFilterOptions.map(option => {
             return (
-              <MenuItem key={`${option}-option`} value={option}>{option}</MenuItem>
+              <MenuItem key={`${option}-option`} value={option}>
+                {option}
+              </MenuItem>
             );
           })}
         </ColorSelect>
-        {displayClear && (<ColorButton variant="outlined" onClick={onBuildingTypeFilter(true)}>Clear</ColorButton>)}
+        {displayClear && (
+          <ColorButton variant="outlined" onClick={onBuildingTypeFilter(true)}>
+            Clear
+          </ColorButton>
+        )}
       </div>
-      <Typography
-        variant="h6"
-        id="tableTitle"
-        component="div"
-      >
+      <Typography variant="h6" id="tableTitle" component="div">
         {totalResults} Total Results
       </Typography>
     </Toolbar>
@@ -266,21 +269,25 @@ interface FilterToolbarProps {
   tagOptions: string[];
   filterRanges: FilterRanges;
   filterValues: FilterValues;
-  updateFilters: (
-    requestedFilters: FilterValues
-  ) => void;
+  updateFilters: (requestedFilters: FilterValues) => void;
 }
 
 const FilterToolbar = (props: FilterToolbarProps) => {
   const classes = useFilterToolbarStyles();
-  const {filterRanges, filterValues, scenarioOptions, tagOptions, updateFilters} = props;
+  const {
+    filterRanges,
+    filterValues,
+    scenarioOptions,
+    tagOptions,
+    updateFilters,
+  } = props;
 
-  const onRequestUpdateFilters = (requestedFilters) => {
+  const onRequestUpdateFilters = requestedFilters => {
     updateFilters(requestedFilters);
   };
 
   return (
-    <Toolbar className={clsx(classes.root)}>
+    <Toolbar className={classes.root}>
       <FilterMenu
         filterRanges={filterRanges}
         filterValues={filterValues}
@@ -331,16 +338,17 @@ export default function ResultsTable(props) {
   const [orderBy, setOrderBy] = React.useState<keyof Data>('dateRun');
   const [rows, setRows] = React.useState<Data[]>([]);
   const [filteredRows, setFilteredRows] = React.useState<Data[]>([]);
-  const [buildingScenarios, setBuildingScenarios]  = React.useState({});
+  const [buildingScenarios, setBuildingScenarios] = React.useState({});
   const [filterRanges, setFilterRanges] = React.useState({});
   const [displayFilters, setDisplayFilters] = React.useState(false);
-  const [buildingTypeFilter, setBuildingTypeFilter] = React.useState<string>('');
+  const [buildingTypeFilter, setBuildingTypeFilter] =
+    React.useState<string>('');
   const [filters, setFilters] = React.useState({});
   const [tagOptions, setTagOptions] = React.useState<string[]>([]);
 
   // set the rows from the results that we get
   useEffect(() => {
-    let allRows: Data[] = createRows(props.results);
+    const allRows: Data[] = createRows(props.results);
     setRows(allRows);
     setFilteredRows(allRows);
     setBuildingScenarios(getBuildingScenarios(props.buildingTypes));
@@ -360,7 +368,12 @@ export default function ResultsTable(props) {
       setFilters(setupFilters(filterRanges, []));
     } else {
       setDisplayFilters(true);
-      setFilters(setupFilters(filterRanges, Object.keys(buildingScenarios[buildingTypeFilter])));
+      setFilters(
+        setupFilters(
+          filterRanges,
+          Object.keys(buildingScenarios[buildingTypeFilter])
+        )
+      );
     }
   }, [buildingTypeFilter]);
 
@@ -372,13 +385,13 @@ export default function ResultsTable(props) {
     setTagOptions(createTagOptions(filteredRows));
   }, [filteredRows]);
 
-  const handleUpdateFilters = (requestedFilters) => {
+  const handleUpdateFilters = requestedFilters => {
     setFilters(requestedFilters);
-  }
+  };
 
-  const handleUpdateBuildingFilter = (requestedBuilding) => {
+  const handleUpdateBuildingFilter = requestedBuilding => {
     setBuildingTypeFilter(requestedBuilding);
-  }
+  };
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -400,9 +413,10 @@ export default function ResultsTable(props) {
     <div className={classes.root}>
       <Paper className={classes.paper}>
         <EnhancedTableToolbar
-          buildingTypeFilterOptions={buildingScenarios && Object.keys(buildingScenarios)}
+          buildingTypeFilterOptions={
+            buildingScenarios && Object.keys(buildingScenarios)
+          }
           displayClear={displayFilters}
-          filterRanges={filterRanges}
           buildingFilterValue={buildingTypeFilter}
           totalResults={filteredRows.length}
           updateBuildingFilter={handleUpdateBuildingFilter}
@@ -436,7 +450,7 @@ export default function ResultsTable(props) {
                 .map((row, index) => {
                   const labelId = `enhanced-table-checkbox-${index}`;
 
-                  var dateString = new Date(row.dateRun).toLocaleString();
+                  const dateString = new Date(row.dateRun).toLocaleString();
 
                   return (
                     <TableRow

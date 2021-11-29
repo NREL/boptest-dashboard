@@ -3,29 +3,29 @@ import axios from 'axios';
 import {Link, useHistory} from 'react-router-dom';
 import {Button, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import {useUser} from './../../Context/user-context';
-import {LoginData} from './../../../../common/interfaces';
+import {LoginData} from '../../../common/interfaces';
 import {AppRoute} from '../../enums';
 
 const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     root: {
       padding: '5em',
       width: '100%',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
     },
     paper: {
       padding: '1em',
-      width: '50%'
+      width: '50%',
     },
     fields: {
       display: 'flex',
@@ -92,7 +92,9 @@ export const Login: React.FC = () => {
   };
 
   const handleSnackMessageClose = (_, reason) => {
-    if (reason === 'clickaway') { return; }
+    if (reason === 'clickaway') {
+      return;
+    }
     setSnackMessageOpen(false);
   };
 
@@ -119,9 +121,10 @@ export const Login: React.FC = () => {
 
   return (
     <div className={classes.root}>
-      { isLoading 
-        ? <CircularProgress /> 
-        : <Paper className={classes.paper}>
+      {isLoading ? (
+        <CircularProgress />
+      ) : (
+        <Paper className={classes.paper}>
           <ValidatorForm onSubmit={signIn} className={classes.fields}>
             <Typography variant="h6" className={classes.field}>
               SIGN IN
@@ -178,8 +181,12 @@ export const Login: React.FC = () => {
             </div>
           </ValidatorForm>
         </Paper>
-      }
-      <Snackbar open={snackMessageOpen} autoHideDuration={6000} onClose={handleSnackMessageClose}>
+      )}
+      <Snackbar
+        open={snackMessageOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackMessageClose}
+      >
         <Alert onClose={handleSnackMessageClose} severity="error">
           {snackMessage}
         </Alert>

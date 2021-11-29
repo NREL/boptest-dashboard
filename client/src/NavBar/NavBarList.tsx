@@ -19,7 +19,6 @@ import {Link} from 'react-router-dom';
 import {AppRoute} from '../enums';
 import {useUser} from '../Context/user-context';
 
-
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -92,10 +91,7 @@ export const NavBarList: React.FC<NavBarListProps> = props => {
         <ListItemText primary="Home" />
       </ListItem>
 
-      <ListItem
-        button
-        onClick={handleDocsClick}
-      >
+      <ListItem button onClick={handleDocsClick}>
         <ListItemIcon>
           <DocsIcon className={classes.icon} />
         </ListItemIcon>
@@ -132,43 +128,46 @@ export const NavBarList: React.FC<NavBarListProps> = props => {
         </ListItemIcon>
         <ListItemText primary="Test Results" />
       </ListItem>
-      
       {loggedIn ? (
         <div>
           <ListItem
-          button
-          onClick={handleDashClick}
-          component={Link}
-          to={AppRoute.Dashboard}
-        >
-          <ListItemIcon>
-            <PersonIcon className={classes.icon} />
-          </ListItemIcon>
-          <ListItemText primary="Dashboard" />
-          {openDash ? <ExpandLess /> : <ExpandMore />}
-        </ListItem>
-        <Collapse in={openDash && props.drawerOpen} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            <ListItem
-              button
-              className={classes.nested}
-              component={Link}
-              to={AppRoute.Settings}
-            >
-              <ListItemText primary="Settings" />
-            </ListItem>
-            <ListItem
-              button
-              className={classes.nested}
-              component={Link}
-              to={AppRoute.ApiKey}
-            >
-              <ListItemText primary="API Key" />
-            </ListItem>
-          </List>
-        </Collapse>
-      </div>
-      ): null}
+            button
+            onClick={handleDashClick}
+            component={Link}
+            to={AppRoute.Dashboard}
+          >
+            <ListItemIcon>
+              <PersonIcon className={classes.icon} />
+            </ListItemIcon>
+            <ListItemText primary="Dashboard" />
+            {openDash ? <ExpandLess /> : <ExpandMore />}
+          </ListItem>
+          <Collapse
+            in={openDash && props.drawerOpen}
+            timeout="auto"
+            unmountOnExit
+          >
+            <List component="div" disablePadding>
+              <ListItem
+                button
+                className={classes.nested}
+                component={Link}
+                to={AppRoute.Settings}
+              >
+                <ListItemText primary="Settings" />
+              </ListItem>
+              <ListItem
+                button
+                className={classes.nested}
+                component={Link}
+                to={AppRoute.ApiKey}
+              >
+                <ListItemText primary="API Key" />
+              </ListItem>
+            </List>
+          </Collapse>
+        </div>
+      ) : null}
       <ListItem button component={Link} to={AppRoute.About}>
         <ListItemIcon>
           <InfoIcon className={classes.icon} />

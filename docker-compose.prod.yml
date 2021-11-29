@@ -3,4 +3,18 @@ services:
   server:
     command: "npm run start:prod"
   client:
-    command: "npm run watch"
+    expose:
+      - "8000"
+  nginx:
+    container_name: "nginx"
+    restart: always
+    build: ./nginx
+    ports:
+      - "80:80"
+    volumes:
+      - staticfiles:/usr/share/nginx/html
+      - ./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf
+    links:
+      - client
+    depends_on:
+      - client

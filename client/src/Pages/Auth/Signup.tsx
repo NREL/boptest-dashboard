@@ -1,19 +1,18 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {Link, useHistory} from 'react-router-dom';
 import axios from 'axios';
 import {Button, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
-import {SignupData} from './../../../../common/interfaces';
+import {SignupData} from '../../../common/interfaces';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 
 const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;
 
-
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     root: {
       padding: '16px 0 0 16px',
@@ -91,12 +90,13 @@ export const Signup: React.FC = props => {
   };
 
   const handleSnackMessageClose = (_, reason) => {
-    if (reason === 'clickaway') { return; }
+    if (reason === 'clickaway') {
+      return;
+    }
     setSnackMessageOpen(false);
   };
 
   const registerAccount = () => {
-
     setIsLoading(true);
 
     const signupData: SignupData = {
@@ -127,9 +127,10 @@ export const Signup: React.FC = props => {
 
   return (
     <div className={classes.root}>
-      { isLoading 
-      ? <CircularProgress /> 
-      : <Paper className={classes.paper}>
+      {isLoading ? (
+        <CircularProgress />
+      ) : (
+        <Paper className={classes.paper}>
           <ValidatorForm onSubmit={registerAccount} className={classes.fields}>
             <Typography variant="h6" className={classes.field}>
               REGISTER
@@ -210,8 +211,12 @@ export const Signup: React.FC = props => {
             </div>
           </ValidatorForm>
         </Paper>
-      }
-      <Snackbar open={snackMessageOpen} autoHideDuration={6000} onClose={handleSnackMessageClose}>
+      )}
+      <Snackbar
+        open={snackMessageOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackMessageClose}
+      >
         <Alert onClose={handleSnackMessageClose} severity="error">
           {snackMessage}
         </Alert>

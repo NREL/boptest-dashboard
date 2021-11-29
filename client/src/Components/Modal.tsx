@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactModal from 'react-modal';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     modal: {
       position: 'absolute',
@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface ModalProps {
   renderProp: React.ReactElement;
-  closeModal: any;
+  closeModal: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = props => {

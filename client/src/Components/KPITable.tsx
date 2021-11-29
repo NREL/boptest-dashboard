@@ -1,14 +1,14 @@
 import axios from 'axios';
 import React, {useEffect, useState} from 'react';
 import {Table, TableBody, TableCell, TableRow} from '@material-ui/core';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import {SignatureDetails} from '../../../common/interfaces';
+import {SignatureDetails, Result} from '../../common/interfaces';
 import {KPIBarChart} from './KPIBarChart';
 
 const numberOfResultsToShowChart = 3;
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     kpiTable: {
       width: '65%',
@@ -21,15 +21,11 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface KPITableProps {
-  result: any;
+  result: Result;
 }
 
 const getSignatureEndpoint = (resultId: string) => {
   return `/api/results/${resultId}/signature`;
-};
-
-const buildChart = () => {
-  return <Typography variant="h6">Chart goes here</Typography>;
 };
 
 export const KPITable: React.FC<KPITableProps> = props => {

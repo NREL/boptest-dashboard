@@ -10,15 +10,15 @@ import {
   Typography,
 } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
-import {ChangePasswordData} from '../../../common/interfaces';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
+import {ChangePasswordData} from '../../common/interfaces';
 import {useUser} from '../Context/user-context';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 
 const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     root: {
       display: 'flex',
@@ -82,8 +82,8 @@ const changeUserNameEndpoint = '/api/accounts/name';
 const changeGlobalShareSettingsEndpoint = '/api/accounts/global-share';
 
 export const Settings: React.FC = () => {
+  const {authedEmail, authedName, authedId, globalShareSetting} = useUser();
 
-  const {authedEmail, authedName, authedId, globalShareSetting, setGlobalShareSetting} = useUser();
   const classes = useStyles();
 
   const [username, setUsername] = useState('');
@@ -110,7 +110,9 @@ export const Settings: React.FC = () => {
   };
 
   const handleSnackMessageClose = (_, reason) => {
-    if (reason === 'clickaway') { return; }
+    if (reason === 'clickaway') {
+      return;
+    }
     setSnackMessageOpen(false);
   };
 
@@ -126,20 +128,25 @@ export const Settings: React.FC = () => {
 
   const shareResults = event => {
     let shareValue: boolean | null;
-    if (event.target.value === 'yes') { shareValue = true}
-    else if (event.target.value === 'no') { shareValue = false}
-    else { shareValue = null }
-    axios.patch(changeGlobalShareSettingsEndpoint, {globalShare: shareValue})
-      .then(() => location.reload())
+    if (event.target.value === 'yes') {
+      shareValue = true;
+    } else if (event.target.value === 'no') {
+      shareValue = false;
+    } else {
+      shareValue = null;
+    }
+    axios
+      .patch(changeGlobalShareSettingsEndpoint, {globalShare: shareValue})
+      .then(() => location.reload());
   };
 
   const changeUserName = () => {
-    axios.patch(changeUserNameEndpoint, {userId: authedId, newName: username})
-      .then(() => location.reload())
+    axios
+      .patch(changeUserNameEndpoint, {userId: authedId, newName: username})
+      .then(() => location.reload());
   };
 
   const changePassword = () => {
-
     const data: ChangePasswordData = {
       email: authedEmail,
       oldPassword: oldPassword,
@@ -259,7 +266,10 @@ export const Settings: React.FC = () => {
         You can choose which results to share or keep private on your dashboard
         page.
       </Typography>
-      <RadioGroup value={globalShareSetting} onChange={event => shareResults(event)}>
+      <RadioGroup
+        value={globalShareSetting}
+        onChange={event => shareResults(event)}
+      >
         <FormControlLabel
           value="default"
           control={
@@ -297,7 +307,11 @@ export const Settings: React.FC = () => {
           label="No, keep all results private"
         />
       </RadioGroup>
-      <Snackbar open={snackMessageOpen} autoHideDuration={6000} onClose={handleSnackMessageClose}>
+      <Snackbar
+        open={snackMessageOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackMessageClose}
+      >
         <Alert onClose={handleSnackMessageClose} severity={snackMessage[1]}>
           {snackMessage[0]}
         </Alert>

@@ -5,14 +5,14 @@ import {Button, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
-import {ConfirmNewPasswordData} from '../../../../common/interfaces';
+import {ConfirmNewPasswordData} from '../../../common/interfaces';
 import {AppRoute} from '../../enums';
 
 const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     root: {
       padding: '16px 0 0 16px',
@@ -87,7 +87,9 @@ export const ConfirmPassword: React.FC = () => {
   };
 
   const handleSnackMessageClose = (_, reason) => {
-    if (reason === 'clickaway') { return; }
+    if (reason === 'clickaway') {
+      return;
+    }
     setSnackMessageOpen(false);
   };
 
@@ -204,7 +206,11 @@ export const ConfirmPassword: React.FC = () => {
           </div>
         </ValidatorForm>
       </Paper>
-      <Snackbar open={snackMessageOpen} autoHideDuration={6000} onClose={handleSnackMessageClose}>
+      <Snackbar
+        open={snackMessageOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackMessageClose}
+      >
         <Alert onClose={handleSnackMessageClose} severity="error">
           {snackMessage}
         </Alert>

@@ -1,5 +1,4 @@
-import axios from 'axios';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {
   Table,
   TableBody,
@@ -7,11 +6,11 @@ import {
   TableContainer,
   TableRow,
 } from '@material-ui/core';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import {SignatureDetails} from '../../../common/interfaces';
+import {Result} from '../../common/interfaces';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     tableContainer: {
       padding: '0 0 16px 0',
@@ -38,34 +37,21 @@ const camelCaseToTitleCaseWithSpaces = (camelCase: string): string => {
 };
 
 interface ResultInfoTableProps {
-  result: any;
+  result: Result;
 }
-
-const getSignatureEndpoint = (resultId: string) => {
-  return `/api/results/${resultId}/signature`;
-};
 
 export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
   const classes = useStyles();
-  const [details, setDetails] = useState<SignatureDetails | undefined>(
-    undefined
-  );
 
-  // propulate the signature details
   useEffect(() => {
     // prevent the use effect from firing on render if we don't have a result
     if (props.result === undefined) return;
-
-    // get the signature details for the result
-    axios.get(getSignatureEndpoint(props.result.uid)).then(response => {
-      setDetails(response.data);
-    });
   }, [props.result]);
 
-  var dateString = new Date(props.result.dateRun).toLocaleString();
+  const dateString = new Date(props.result.dateRun).toLocaleString();
 
   const renderScenario = () => {
-    let scenarioArray = [];
+    const scenarioArray = [];
     let isGrey = true;
     for (const scenarioKey in props.result.scenario) {
       scenarioArray.push(
@@ -85,10 +71,10 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
       isGrey = !isGrey;
     }
     return scenarioArray;
-  }
+  };
 
   const renderTags = () => {
-    let tagArray = [];
+    const tagArray = [];
     let isGrey = true;
     if (props.result.tags.length <= 0) {
       return (
@@ -108,12 +94,14 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
             <TableCell>
               <Typography variant="body1">{tag}</Typography>
             </TableCell>
-            {idx+1 < props.result.tags.length ? (
+            {idx + 1 < props.result.tags.length ? (
               <TableCell>
-                <Typography variant="body1">{props.result.tags[idx+1]}</Typography>
+                <Typography variant="body1">
+                  {props.result.tags[idx + 1]}
+                </Typography>
               </TableCell>
             ) : (
-              <TableCell/>
+              <TableCell />
             )}
           </TableRow>
         );
@@ -121,7 +109,7 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
       }
     });
     return tagArray;
-  }
+  };
 
   return (
     <div className={classes.idTable}>
@@ -167,7 +155,9 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
             </TableRow>
             <TableRow>
               <TableCell>
-                <Typography variant="body2">Electricity Price Scenario</Typography>
+                <Typography variant="body2">
+                  Electricity Price Scenario
+                </Typography>
               </TableCell>
               <TableCell>
                 <Typography variant="body1">
@@ -189,9 +179,7 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
             </TableRow>
             <TableRow>
               <TableCell>
-                <Typography variant="body2">
-                  Forcast Horizon
-                </Typography>
+                <Typography variant="body2">Forcast Horizon</Typography>
               </TableCell>
               <TableCell>
                 <Typography variant="body1">
@@ -201,9 +189,7 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
             </TableRow>
             <TableRow className={classes.grayed}>
               <TableCell>
-                <Typography variant="body2">
-                  Forcast Interval
-                </Typography>
+                <Typography variant="body2">Forcast Interval</Typography>
               </TableCell>
               <TableCell>
                 <Typography variant="body1">
@@ -226,9 +212,7 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
                 <Typography variant="body2">Identifier</Typography>
               </TableCell>
               <TableCell>
-                <Typography variant="body1">
-                  {props.result.uid}
-                </Typography>
+                <Typography variant="body1">{props.result.uid}</Typography>
               </TableCell>
             </TableRow>
             <TableRow>
@@ -239,7 +223,7 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
                 <Typography variant="body1">{dateString}</Typography>
               </TableCell>
             </TableRow>
-             <TableRow className={classes.grayed}>
+            <TableRow className={classes.grayed}>
               <TableCell>
                 <Typography variant="body2">BOPTest Version</Typography>
               </TableCell>

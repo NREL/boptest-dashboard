@@ -1,11 +1,12 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import {Divider} from '@material-ui/core';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
 import {KPITable} from './KPITable';
 import {ResultInfoTable} from './ResultInfoTable';
+import {Result} from '../../common/interfaces';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     root: {
       padding: '0 16px 0 0',
@@ -20,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface ResultDetailsProps {
-  result: any;
+  result: Result;
 }
 
 export const ResultDetails: React.FC<ResultDetailsProps> = props => {

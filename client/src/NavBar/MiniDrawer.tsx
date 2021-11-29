@@ -1,6 +1,5 @@
 import React, {useEffect} from 'react';
 import {useLocation} from 'react-router-dom';
-import clsx from 'clsx';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
@@ -15,6 +14,8 @@ import {AuthInfo} from './AuthInfo';
 import {Content} from '../Content';
 import {AppRoute, Title} from '../enums';
 import {NavBarList} from './NavBarList';
+
+import {ReactComponent as Logo} from '../static/assets/boptest-logo.svg';
 
 const drawerWidth = 240;
 
@@ -66,10 +67,10 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '100%',
       display: 'flex',
       justifyContent: 'space-between',
-      alignItems: 'center'
+      alignItems: 'center',
     },
     titlebarTitle: {
-      textAlign:'center'
+      textAlign: 'center',
     },
     boptestIcon: {
       width: '7%',
@@ -106,7 +107,7 @@ export const MiniDrawer: React.FC = () => {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
   const [title, setTitle] = React.useState('BOPTest');
-  let location = useLocation();
+  const location = useLocation();
 
   useEffect(() => {
     setTitle(getTitleFromPath(location.pathname));
@@ -126,33 +127,30 @@ export const MiniDrawer: React.FC = () => {
             aria-label="open drawer"
             onClick={handleDrawerClick}
             edge="start"
-            className={clsx(classes.menuButton, {
-              [classes.hide]: open,
-            })}
+            className={`${classes.menuButton} ${open && classes.hide}`}
           >
             <MenuIcon />
           </IconButton>
           <div className={classes.titlebar}>
-            <img
-              src="./assets/boptest-logo.svg"
-              className={classes.boptestIcon}
-            />
-            <Typography variant="h6" className={classes.titlebarTitle}>{title}</Typography>
+            <div className={classes.boptestIcon}>
+              <Logo />
+            </div>
+            <Typography variant="h6" className={classes.titlebarTitle}>
+              {title}
+            </Typography>
             <AuthInfo />
           </div>
         </Toolbar>
       </AppBar>
       <Drawer
         variant="permanent"
-        className={clsx(classes.drawer, {
-          [classes.drawerOpen]: open,
-          [classes.drawerClose]: !open,
-        })}
+        className={`${classes.drawer} ${open && classes.drawerOpen} ${
+          !open && classes.drawerClose
+        }`}
         classes={{
-          paper: clsx({
-            [classes.drawerOpen]: open,
-            [classes.drawerClose]: !open,
-          }),
+          paper: `${open && classes.drawerOpen} ${
+            !open && classes.drawerClose
+          }`,
         }}
       >
         <div className={classes.toolbar}></div>
