@@ -46,6 +46,8 @@ The `SUPER_USERS` have access to all routes in the app including ones that creat
 
 Open a terminal, cd to the directory you cloned the repo into
 
+# Development
+
 The entire app will build and run off a single docker-compose command:
 
 ```bash
@@ -59,6 +61,36 @@ When you're done working on the site, do a `Ctrl-C` in the window with docker-co
 ```bash
 docker-compose down
 ```
+
+# Production
+
+The entire app will build and be served via nginx with the following docker-compose command:
+
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+```
+
+To turn the servers off run the following docker-compose command:
+
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml down -v
+```
+
+# Notes
+
+To delete all volumes run the following docker command after either Dev or Prod down command:
+
+```bash
+docker system prune -a --volumes
+```
+
+To clear your local database after deleting all your volumes run the following command:
+
+```bash
+rm -rf pg/db_data
+```
+
+When you are done deleting your database be sure to log into AWS Cognito and delete user accounts associated with your database.
 
 ### Package Management
 
