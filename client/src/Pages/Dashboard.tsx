@@ -5,27 +5,23 @@ import DashboardResultsTable from '../Components/DashboardResultsTable';
 import {Modal} from '../Components/Modal';
 import {ResultDetails} from '../Components/ResultDetails';
 
-import {useUser} from '../Context/user-context';
-
 export const Dashboard: React.FC = () => {
   const [results, setResults] = useState([]);
   const [buildingTypes, setBuildingTypes] = useState([]);
   const [showResultModal, setShowResultModal] = useState(false);
   const [selectedResult, setSelectedResult] = useState(null);
 
-  const {authedEmail} = useUser();
-
   const updateResults = () => {
     axios.get('/api/results/my-results').then(response => {
       setResults(response.data);
     });
-  }
+  };
 
   const updateBuildingTypes = () => {
     axios.get('/api/buildingTypes').then(response => {
       setBuildingTypes(response.data);
     });
-  }
+  };
 
   // build out simple data fetcher straight in the useEffect for now
   useEffect(() => {
@@ -35,13 +31,13 @@ export const Dashboard: React.FC = () => {
 
   // when we get a selected result, show the result modal
   useEffect(() => {
-    if (selectedResult != null) {
+    if (selectedResult !== null) {
       setShowResultModal(true);
     }
   }, [selectedResult]);
 
   const handleChange = result => {
-    let updatedResult = {uid: result.resultUid, ...result}
+    const updatedResult = {uid: result.resultUid, ...result};
     setSelectedResult(updatedResult);
   };
 

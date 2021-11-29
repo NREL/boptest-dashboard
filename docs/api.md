@@ -4,6 +4,9 @@
 
 POST: `api/results`
 
+- This endpoint accepts an array of results. So it can be used to create a single result or a batch of them depending on how many objects are in the array.
+- This endpoint will return a status `400` if any result in the array is rejected. Fulfilled results will still be added to the database even if there are rejected results. To tell which results were fulfilled and which were rejected look at the following path in the response: `{response: {data: {fulfilled: [], rejected: []}}}`
+
 ### Example Payload:
 
 ```json
@@ -51,7 +54,7 @@ POST: `api/results`
 
 ## Add Testcase
 
-POST `api/testcases`
+POST `api/buildingTypes`
 
 - This endpoint accepts an array of testcase types. So it can be used to create a single testcase type or a batch of them depending on how many objects are in the array.
 - A list of the currently valid testcases, and corresponding scenario values is available here https://github.com/ibpsa/project1-boptest/blob/master/testcases/README.md
@@ -82,9 +85,9 @@ POST `api/testcases`
 
 ## Update Testcase
 
-PATCH `/api/testcases?uid={your_testcase_uid}`
+PUT `/api/buildingTypes?uid={your_buildingType_uid}`
 
-- Though like the `POST` request, the testcase is wrapped in an array of `testcases`, you may only PATCH one testcase at a time. THE `uid` is specified as a query parameter.
+- Though like the `POST` request, the testcase is wrapped in an array of `buildingTypes`, you may only PUT one testcase at a time. The `uid` is specified as a query parameter.
 
 ```json
 {

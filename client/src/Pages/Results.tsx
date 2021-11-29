@@ -26,7 +26,7 @@ export const Results: React.FC = () => {
 
   // when we get a selected result, show the result modal
   useEffect(() => {
-    if (selectedResult != null) {
+    if (selectedResult !== null) {
       setShowResultModal(true);
     }
   }, [selectedResult]);
@@ -37,7 +37,11 @@ export const Results: React.FC = () => {
 
   return (
     <div>
-      <ResultsTable results={results} buildingTypes={buildingTypes} setSelectedResult={handleChange} />
+      <ResultsTable
+        results={results}
+        buildingTypes={buildingTypes}
+        setSelectedResult={handleChange}
+      />
       {showResultModal && (
         <Modal
           closeModal={closeModal}

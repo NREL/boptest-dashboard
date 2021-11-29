@@ -1,15 +1,16 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import {useLocation} from 'react-router-dom';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
 import {Typography} from '@material-ui/core';
+import {BuildingType} from '../../common/interfaces';
 
 interface LocationState {
   pathname: string;
-  buildingType: any;
+  buildingType: BuildingType;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     root: {
       padding: '16px',
@@ -28,7 +29,9 @@ export const Doc: React.FC = () => {
       <Typography variant="h3">{buildingType.name}</Typography>
       <ReactMarkdown source={buildingType.markdown} escapeHtml={false} />
       <Typography variant="h5">
-        <a target="_blank" href={buildingType.pdfURL}>Download PDF</a>
+        <a target="_blank" href={buildingType.pdfURL}>
+          Download PDF
+        </a>
       </Typography>
     </div>
   );

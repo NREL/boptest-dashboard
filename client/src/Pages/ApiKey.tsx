@@ -1,11 +1,11 @@
 import axios from 'axios';
 import React, {useEffect} from 'react';
 import {Box, Button, TextField, Typography} from '@material-ui/core';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, makeStyles} from '@material-ui/core/styles';
 
 const envType = process.env.NODE_ENV;
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     root: {
       display: 'flex',
@@ -43,23 +43,24 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '25%',
       backgroundColor: 'rgb(0, 150, 136)',
       color: 'white',
-    }
+    },
   })
 );
 
-const apiKeySelector: string = 'user-api-key';
+const apiKeySelector = 'user-api-key';
 
 const copyApiKeyToClipboard = () => {
-  let copyText = document.getElementById(apiKeySelector) as HTMLInputElement;;
+  const copyText = document.getElementById(apiKeySelector) as HTMLInputElement;
   copyText.select();
   copyText.setSelectionRange(0, 99999); /*For mobile devices*/
-  document.execCommand("copy");
-}
+  document.execCommand('copy');
+};
 
-const syncTestData = (apiKey) => {
-  axios.post('/api/setup/db', {apiKey: apiKey})
-    .then((res) => console.log('Status:', res.status));
-}
+const syncTestData = apiKey => {
+  axios
+    .post('/api/setup/db', {apiKey: apiKey})
+    .then(res => console.log('Status:', res.status));
+};
 
 export const ApiKey: React.FC = () => {
   const classes = useStyles();
@@ -72,9 +73,9 @@ export const ApiKey: React.FC = () => {
       setApiKey(res.data.apiKey);
     });
 
-    if(envType === 'development') {
+    if (envType === 'development') {
       setShowSyncTestData(true);
-    };
+    }
   }, []);
 
   return (

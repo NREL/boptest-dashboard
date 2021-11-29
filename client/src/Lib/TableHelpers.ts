@@ -1,4 +1,11 @@
-import {FilterRanges, FilterValues, BuildingScenarios, BuildingType, Scenario} from '../../common/interfaces';
+import {
+  FilterRanges,
+  FilterValues,
+  BuildingScenarios,
+  BuildingType,
+  Result,
+  Scenario,
+} from '../../common/interfaces';
 
 export interface Data {
   id: number;
@@ -26,7 +33,7 @@ export interface Data {
   controlStep: string;
 }
 
-export const createDataFromResult = (result: any): Data => {
+export const createDataFromResult = (result: Result): Data => {
   return {
     id: result.id,
     uid: result.uid,
@@ -54,9 +61,9 @@ export const createDataFromResult = (result: any): Data => {
   };
 };
 
-export const createRows = (results: any): Data[] => {
-  let rows: Data[] = [];
-  if (!results || !Array.isArray(results) || results.length == 0) {
+export const createRows = (results: Result[]): Data[] => {
+  const rows: Data[] = [];
+  if (!results || !Array.isArray(results) || results.length === 0) {
     return rows;
   }
   results.forEach(result => {
@@ -106,84 +113,146 @@ export interface HeadCell {
   numeric: boolean;
 }
 
-export const getBuildingScenarios = (buildingTypes: BuildingType[]): BuildingScenarios => {
-  let buildingScenarios: any = {};
-  buildingTypes.forEach((building: BuildingType) => { buildingScenarios[building.name] = building.scenarios });
+export const getBuildingScenarios = (
+  buildingTypes: BuildingType[]
+): BuildingScenarios => {
+  const buildingScenarios: any = {};
+  buildingTypes.forEach((building: BuildingType) => {
+    buildingScenarios[building.name] = building.scenarios;
+  });
   return buildingScenarios;
-}
+};
 
 export const getFilterRanges = (rows: Data[]): FilterRanges => {
-  return rows.reduce((acc, curr) => {
-    return {
-      costRange: {
-        min: acc.costRange.min < curr.cost ? acc.costRange.min : curr.cost,
-        max: Math.ceil((acc.costRange.max > curr.cost ? acc.costRange.max : curr.cost)/50)*50,
-      },
-      thermalDiscomfortRange: {
-        min: acc.thermalDiscomfortRange.min < curr.thermalDiscomfort ? acc.thermalDiscomfortRange.min : curr.thermalDiscomfort,
-        max: Math.ceil((acc.thermalDiscomfortRange.max > curr.thermalDiscomfort ? acc.thermalDiscomfortRange.max : curr.thermalDiscomfort)/50)*50,
-      },
-      aqDiscomfortRange: {
-        min: acc.aqDiscomfortRange.min < curr.aqDiscomfort ? acc.aqDiscomfortRange.min : curr.aqDiscomfort,
-        max: Math.ceil((acc.aqDiscomfortRange.max > curr.aqDiscomfort ? acc.aqDiscomfortRange.max : curr.aqDiscomfort)/50)*50,
-      },
-      energyRange: {
-        min: acc.energyRange.min < curr.energy ? acc.energyRange.min : curr.energy,
-        max: Math.ceil((acc.energyRange.max > curr.energy ? acc.energyRange.max : curr.energy)/50)*50,
-      },
+  return rows.reduce(
+    (acc, curr) => {
+      return {
+        costRange: {
+          min: acc.costRange.min < curr.cost ? acc.costRange.min : curr.cost,
+          max:
+            Math.ceil(
+              (acc.costRange.max > curr.cost ? acc.costRange.max : curr.cost) /
+                50
+            ) * 50,
+        },
+        thermalDiscomfortRange: {
+          min:
+            acc.thermalDiscomfortRange.min < curr.thermalDiscomfort
+              ? acc.thermalDiscomfortRange.min
+              : curr.thermalDiscomfort,
+          max:
+            Math.ceil(
+              (acc.thermalDiscomfortRange.max > curr.thermalDiscomfort
+                ? acc.thermalDiscomfortRange.max
+                : curr.thermalDiscomfort) / 50
+            ) * 50,
+        },
+        aqDiscomfortRange: {
+          min:
+            acc.aqDiscomfortRange.min < curr.aqDiscomfort
+              ? acc.aqDiscomfortRange.min
+              : curr.aqDiscomfort,
+          max:
+            Math.ceil(
+              (acc.aqDiscomfortRange.max > curr.aqDiscomfort
+                ? acc.aqDiscomfortRange.max
+                : curr.aqDiscomfort) / 50
+            ) * 50,
+        },
+        energyRange: {
+          min:
+            acc.energyRange.min < curr.energy
+              ? acc.energyRange.min
+              : curr.energy,
+          max:
+            Math.ceil(
+              (acc.energyRange.max > curr.energy
+                ? acc.energyRange.max
+                : curr.energy) / 50
+            ) * 50,
+        },
+      };
+    },
+    {
+      costRange: {min: 0, max: 0},
+      thermalDiscomfortRange: {min: 0, max: 0},
+      aqDiscomfortRange: {min: 0, max: 0},
+      energyRange: {min: 0, max: 0},
     }
-  }, { 
-    costRange: { min: 0, max: 0 },
-    thermalDiscomfortRange: { min: 0, max: 0 },
-    aqDiscomfortRange: { min: 0, max: 0 },
-    energyRange: { min: 0, max: 0 } 
-  });
-}
+  );
+};
 
-export const setupFilters = (filterRanges: FilterRanges, scenarioKeys: string[]): FilterValues => {
-  let scenarioFilters: any = {};
-  scenarioKeys.forEach(key => { scenarioFilters[key] = '' });
+export const setupFilters = (
+  filterRanges: FilterRanges,
+  scenarioKeys: string[]
+): FilterValues => {
+  const scenarioFilters: any = {};
+  scenarioKeys.forEach(key => {
+    scenarioFilters[key] = '';
+  });
 
   return {
-    scenario: { ...scenarioFilters },
+    scenario: {...scenarioFilters},
     tags: [],
     cost: {
       min: 0,
-      max: filterRanges && filterRanges.costRange ? filterRanges.costRange.max : 0,
+      max:
+        filterRanges && filterRanges.costRange ? filterRanges.costRange.max : 0,
     },
     thermalDiscomfort: {
       min: 0,
-      max: filterRanges && filterRanges.thermalDiscomfortRange ? filterRanges.thermalDiscomfortRange.max : 0,
+      max:
+        filterRanges && filterRanges.thermalDiscomfortRange
+          ? filterRanges.thermalDiscomfortRange.max
+          : 0,
     },
     aqDiscomfort: {
       min: 0,
-      max: filterRanges && filterRanges.aqDiscomfortRange ? filterRanges.aqDiscomfortRange.max : 0,
+      max:
+        filterRanges && filterRanges.aqDiscomfortRange
+          ? filterRanges.aqDiscomfortRange.max
+          : 0,
     },
     energy: {
       min: 0,
-      max: filterRanges && filterRanges.energyRange ? filterRanges.energyRange.max : 0,
+      max:
+        filterRanges && filterRanges.energyRange
+          ? filterRanges.energyRange.max
+          : 0,
     },
   };
-}
+};
 
-export const filterRows = (rows: Data[], buildingTypeFilter: string, filters: FilterValues): Data[] => {
-  let filteredRows: Data[] = [];
-  let scenarioFilter: Scenario = filters.scenario;
-  let tagFilter: string[] = filters.tags;
+export const filterRows = (
+  rows: Data[],
+  buildingTypeFilter: string,
+  filters: FilterValues
+): Data[] => {
+  const filteredRows: Data[] = [];
+  const scenarioFilter: Scenario = filters.scenario;
+  const tagFilter: string[] = filters.tags;
   if (rows.length <= 0 || buildingTypeFilter === '') {
     return rows;
   }
   rows.forEach((row: any) => {
-    if (row.buildingTypeName !== buildingTypeFilter || (
-      row.cost < filters.cost.min || row.cost > filters.cost.max ||
-      row.energy < filters.energy.min || row.energy > filters.energy.max ||
-      row.thermalDiscomfort < filters.thermalDiscomfort.min || row.thermalDiscomfort > filters.thermalDiscomfort.max ||
-      row.aqDiscomfort < filters.aqDiscomfort.min || row.aqDiscomfort > filters.aqDiscomfort.max)
+    if (
+      row.buildingTypeName !== buildingTypeFilter ||
+      row.cost < filters.cost.min ||
+      row.cost > filters.cost.max ||
+      row.energy < filters.energy.min ||
+      row.energy > filters.energy.max ||
+      row.thermalDiscomfort < filters.thermalDiscomfort.min ||
+      row.thermalDiscomfort > filters.thermalDiscomfort.max ||
+      row.aqDiscomfort < filters.aqDiscomfort.min ||
+      row.aqDiscomfort > filters.aqDiscomfort.max
     ) {
       return;
     }
     for (const key in scenarioFilter) {
-      if (scenarioFilter[key] !== '' && row.scenario[key] !== scenarioFilter[key]) {
+      if (
+        scenarioFilter[key] !== '' &&
+        row.scenario[key] !== scenarioFilter[key]
+      ) {
         return;
       }
     }
@@ -191,20 +260,20 @@ export const filterRows = (rows: Data[], buildingTypeFilter: string, filters: Fi
       if (!row.tags.includes(tagFilter[tag])) {
         return;
       }
-    };
+    }
     filteredRows.push(row);
   });
   return filteredRows;
-}
+};
 
 export const createTagOptions = (rows: Data[]): string[] => {
-  let tagOptions: string[] = [];
+  const tagOptions: string[] = [];
   rows.forEach((row: any) => {
     row.tags.forEach((tag: any) => {
-      if(!tagOptions.includes(tag)) {
+      if (!tagOptions.includes(tag)) {
         tagOptions.push(tag);
       }
-    })
+    });
   });
   return tagOptions.sort();
-}
+};

@@ -1,7 +1,11 @@
 import React, {useEffect} from 'react';
 import axios from 'axios';
-import clsx from 'clsx';
-import {createStyles, makeStyles, Theme, withStyles} from '@material-ui/core/styles';
+import {
+  createStyles,
+  makeStyles,
+  Theme,
+  withStyles,
+} from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Switch from '@material-ui/core/Switch';
 import Table from '@material-ui/core/Table';
@@ -17,10 +21,6 @@ import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
-import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
-import FilterListIcon from '@material-ui/icons/FilterList';
 import {FilterMenu} from './FilterMenu';
 import {FilterRanges, FilterValues} from '../../common/interfaces';
 import {
@@ -34,7 +34,7 @@ import {
   HeadCell,
   Order,
   setupFilters,
-  stableSort
+  stableSort,
 } from '../Lib/TableHelpers';
 
 const headCells: HeadCell[] = [
@@ -103,8 +103,8 @@ interface EnhancedTableProps {
 }
 
 const toggleShared = (id: number, share: boolean) => {
-  return axios.patch('/api/results/share', {id, share})
-}
+  return axios.patch('/api/results/share', {id, share});
+};
 
 function EnhancedTableHead(props: EnhancedTableProps) {
   const {
@@ -116,11 +116,10 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     rowCount,
     onRequestSort,
   } = props;
-  const createSortHandler = (property: keyof Data) => (
-    event: React.MouseEvent<unknown>
-  ) => {
-    onRequestSort(event, property);
-  };
+  const createSortHandler =
+    (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
+      onRequestSort(event, property);
+    };
 
   return (
     <TableHead>
@@ -179,17 +178,17 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
     },
     selectIcon: {
       fill: '#078b75',
-    }
+    },
   })
 );
 
-const ColorButton = withStyles((theme) => ({
+const ColorButton = withStyles(theme => ({
   root: {
     color: '#078b75',
     borderColor: '#078b75',
     marginTop: theme.spacing(2),
     marginLeft: theme.spacing(2),
-  }
+  },
 }))(Button);
 
 const ColorSelect = withStyles({
@@ -214,7 +213,7 @@ const ColorSelect = withStyles({
         borderColor: '#078b75',
       },
     },
-  }
+  },
 })(TextField);
 
 interface EnhancedTableToolbarProps {
@@ -222,13 +221,10 @@ interface EnhancedTableToolbarProps {
     [index: number]: string;
   };
   displayClear: boolean;
-  filterRanges: FilterRanges;
   buildingFilterValue: string;
   numSelected: number;
   totalResults: number;
-  updateBuildingFilter: (
-    requestedBuilding: string
-  ) => void;
+  updateBuildingFilter: (requestedBuilding: string) => void;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
@@ -236,33 +232,34 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   const {
     buildingTypeFilterOptions,
     displayClear,
-    filterRanges,
     buildingFilterValue,
     numSelected,
     totalResults,
-    updateBuildingFilter
+    updateBuildingFilter,
   } = props;
 
   const selectProps = {
-    classes: { icon: classes.selectIcon },
+    classes: {icon: classes.selectIcon},
     MenuProps: {
       anchorOrigin: {
         vertical: 'bottom',
-        horizontal: 'left'
+        horizontal: 'left',
       },
-      getContentAnchorEl: null
-    }
+      getContentAnchorEl: null,
+    },
   };
 
-  const onBuildingTypeFilter = (clear: boolean = false) => (event: React.MouseEvent<EventTarget>) => {
-    updateBuildingFilter(clear ? '' : event.target.value);
-  };
+  const onBuildingTypeFilter =
+    (clear = false) =>
+    (event: React.MouseEvent<EventTarget>) => {
+      updateBuildingFilter(clear ? '' : event.target.value);
+    };
 
   return (
-    <Toolbar className={clsx(classes.root)}>
-      <div className={clsx(classes.filterContainer)}>
+    <Toolbar className={classes.root}>
+      <div className={classes.filterContainer}>
         <ColorSelect
-          className={clsx(classes.select)}
+          className={classes.select}
           label="Filter on Building Type"
           name="buildingType-filter"
           onChange={onBuildingTypeFilter()}
@@ -274,26 +271,24 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
         >
           {buildingTypeFilterOptions.map(option => {
             return (
-              <MenuItem key={`${option}-option`} value={option}>{option}</MenuItem>
+              <MenuItem key={`${option}-option`} value={option}>
+                {option}
+              </MenuItem>
             );
           })}
         </ColorSelect>
-        {displayClear && (<ColorButton variant="outlined" onClick={onBuildingTypeFilter(true)}>Clear</ColorButton>)}
+        {displayClear && (
+          <ColorButton variant="outlined" onClick={onBuildingTypeFilter(true)}>
+            Clear
+          </ColorButton>
+        )}
       </div>
       {numSelected > 0 ? (
-        <Typography
-          color="inherit"
-          variant="h6"
-          component="div"
-        >
+        <Typography color="inherit" variant="h6" component="div">
           {numSelected} Selected Results
         </Typography>
       ) : (
-        <Typography
-          variant="h6"
-          id="tableTitle"
-          component="div"
-        >
+        <Typography variant="h6" id="tableTitle" component="div">
           {totalResults} Total Results
         </Typography>
       )}
@@ -316,21 +311,25 @@ interface FilterToolbarProps {
   tagOptions: string[];
   filterRanges: FilterRanges;
   filterValues: FilterValues;
-  updateFilters: (
-    requestedFilters: FilterValues
-  ) => void;
+  updateFilters: (requestedFilters: FilterValues) => void;
 }
 
 const FilterToolbar = (props: FilterToolbarProps) => {
   const classes = useFilterToolbarStyles();
-  const {filterRanges, filterValues, scenarioOptions, tagOptions, updateFilters} = props;
+  const {
+    filterRanges,
+    filterValues,
+    scenarioOptions,
+    tagOptions,
+    updateFilters,
+  } = props;
 
-  const onRequestUpdateFilters = (requestedFilters) => {
+  const onRequestUpdateFilters = requestedFilters => {
     updateFilters(requestedFilters);
   };
 
   return (
-    <Toolbar className={clsx(classes.root)}>
+    <Toolbar className={classes.root}>
       <FilterMenu
         filterRanges={filterRanges}
         filterValues={filterValues}
@@ -412,15 +411,16 @@ export default function DashboardResultsTable(props) {
   const [checked, setChecked] = React.useState<boolean>(false);
 
   const [filteredRows, setFilteredRows] = React.useState<Data[]>([]);
-  const [buildingScenarios, setBuildingScenarios]  = React.useState({});
+  const [buildingScenarios, setBuildingScenarios] = React.useState({});
   const [filterRanges, setFilterRanges] = React.useState({});
   const [displayFilters, setDisplayFilters] = React.useState(false);
-  const [buildingTypeFilter, setBuildingTypeFilter] = React.useState<string>('');
+  const [buildingTypeFilter, setBuildingTypeFilter] =
+    React.useState<string>('');
   const [filters, setFilters] = React.useState({});
   const [tagOptions, setTagOptions] = React.useState<string[]>([]);
 
   useEffect(() => {
-    let allRows: Data[] = createRows(props.results);
+    const allRows: Data[] = createRows(props.results);
     setRows(allRows);
     setFilteredRows(allRows);
     setBuildingScenarios(getBuildingScenarios(props.buildingTypes));
@@ -444,7 +444,12 @@ export default function DashboardResultsTable(props) {
       setFilters(setupFilters(filterRanges, []));
     } else {
       setDisplayFilters(true);
-      setFilters(setupFilters(filterRanges, Object.keys(buildingScenarios[buildingTypeFilter])));
+      setFilters(
+        setupFilters(
+          filterRanges,
+          Object.keys(buildingScenarios[buildingTypeFilter])
+        )
+      );
     }
   }, [buildingTypeFilter]);
 
@@ -453,16 +458,17 @@ export default function DashboardResultsTable(props) {
   }, [filters]);
 
   useEffect(() => {
+    setSelected([]);
     setTagOptions(createTagOptions(filteredRows));
   }, [filteredRows]);
 
-  const handleUpdateFilters = (requestedFilters) => {
+  const handleUpdateFilters = requestedFilters => {
     setFilters(requestedFilters);
-  }
+  };
 
-  const handleUpdateBuildingFilter = (requestedBuilding) => {
+  const handleUpdateBuildingFilter = requestedBuilding => {
     setBuildingTypeFilter(requestedBuilding);
-  }
+  };
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -516,12 +522,13 @@ export default function DashboardResultsTable(props) {
     result: Data
   ) => {
     event.stopPropagation();
-    toggleShared(result.id, !result.isShared)
-      .then(() => props.updateResults())
+    toggleShared(result.id, !result.isShared).then(() => props.updateResults());
   };
 
   const downloadResultsToCSV = () => {
-    const rowsToDl = filteredRows.filter(row => selected.indexOf(row.id) !== -1);
+    const rowsToDl = filteredRows.filter(
+      row => selected.indexOf(row.id) !== -1
+    );
 
     const getFlatKeyValPairFromObj = obj => {
       const keys = [];
@@ -535,32 +542,34 @@ export default function DashboardResultsTable(props) {
             values.push(val);
           }
         }
-      }
+      };
       traverse(obj);
       return [keys, values];
-    }
+    };
 
     const headings = [getFlatKeyValPairFromObj(rowsToDl[0])[0]];
-    const values = rowsToDl.map(row => getFlatKeyValPairFromObj(row)[1])
+    const values = rowsToDl.map(row => getFlatKeyValPairFromObj(row)[1]);
     const allData = [...headings, ...values];
-  
-    let csvContent = "data:text/csv;charset=utf-8," + allData.map(e => e.join(",")).join("\n");
-    let encodedUri = encodeURI(csvContent);
-    let link = document.createElement("a");
-    
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "data.csv");
+
+    const csvContent =
+      'data:text/csv;charset=utf-8,' + allData.map(e => e.join(',')).join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'data.csv');
     document.body.appendChild(link);
     link.click();
-  }
+  };
 
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
         <EnhancedTableToolbar
-          buildingTypeFilterOptions={buildingScenarios && Object.keys(buildingScenarios)}
+          buildingTypeFilterOptions={
+            buildingScenarios && Object.keys(buildingScenarios)
+          }
           displayClear={displayFilters}
-          filterRanges={filterRanges}
           buildingFilterValue={buildingTypeFilter}
           totalResults={filteredRows.length}
           numSelected={selected.length}
@@ -576,7 +585,7 @@ export default function DashboardResultsTable(props) {
           />
         )}
         <div className={classes.downloadButtonContainer}>
-          <Button 
+          <Button
             disabled={selected.length === 0}
             className={classes.button}
             variant="contained"
@@ -608,7 +617,7 @@ export default function DashboardResultsTable(props) {
                   const isItemSelected = isSelected(row.id);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
-                  var dateString = new Date(row.dateRun).toLocaleString();
+                  const dateString = new Date(row.dateRun).toLocaleString();
 
                   return (
                     <TableRow
@@ -630,9 +639,7 @@ export default function DashboardResultsTable(props) {
                           style={{
                             color: '#078b75',
                           }}
-                          onClick={event =>
-                            handleCheckboxClick(event, row.id)
-                          }
+                          onClick={event => handleCheckboxClick(event, row.id)}
                         />
                       </TableCell>
                       <TableCell

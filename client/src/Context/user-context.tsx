@@ -16,11 +16,15 @@ type Props = {
 
 const assignGlobalShareSetting = (setter, value) => {
   let setting = '';
-  if (value === true) { setting = 'yes'}
-  else if (value === false) { setting = 'no'}
-  else { setting = 'default'}
+  if (value === true) {
+    setting = 'yes';
+  } else if (value === false) {
+    setting = 'no';
+  } else {
+    setting = 'default';
+  }
   setter(setting);
-}
+};
 
 const UserProvider = ({children}: Props) => {
   const [authedEmail, setAuthedEmail] = React.useState('');
@@ -38,7 +42,10 @@ const UserProvider = ({children}: Props) => {
         setAuthedEmail(result.data.email);
         setAuthedName(result.data.name);
         setAuthedId(result.data.userId);
-        assignGlobalShareSetting(setGlobalShareSetting, result.data.globalShare);
+        assignGlobalShareSetting(
+          setGlobalShareSetting,
+          result.data.globalShare
+        );
       })
       .catch(err => {
         console.log('couldnt get user info', err); // TODO
@@ -47,7 +54,15 @@ const UserProvider = ({children}: Props) => {
 
   return (
     <UserContext.Provider
-      value={{authedEmail, setAuthedEmail, authedName, setAuthedName, authedId, globalShareSetting, setGlobalShareSetting}}
+      value={{
+        authedEmail,
+        setAuthedEmail,
+        authedName,
+        setAuthedName,
+        authedId,
+        globalShareSetting,
+        setGlobalShareSetting,
+      }}
     >
       {children}
     </UserContext.Provider>
