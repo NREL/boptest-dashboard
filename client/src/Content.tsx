@@ -23,17 +23,11 @@ export const Content: React.FC = () => {
   return (
     <div className={classes.content}>
       <Switch>
-        <Route path={AppRoute.About}>
-          <About />
-        </Route>
         <Route path={AppRoute.ApiKey}>
           <ApiKey />
         </Route>
         <Route path={AppRoute.Dashboard}>
           <Dashboard />
-        </Route>
-        <Route path={AppRoute.Doc}>
-          <Doc />
         </Route>
         <Route path={AppRoute.Results}>
           <Results />

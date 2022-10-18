@@ -91,37 +91,6 @@ export const NavBarList: React.FC<NavBarListProps> = props => {
         <ListItemText primary="Home" />
       </ListItem>
 
-      <ListItem button onClick={handleDocsClick}>
-        <ListItemIcon>
-          <DocsIcon className={classes.icon} />
-        </ListItemIcon>
-        <ListItemText primary="Documentation" />
-        {openDocs ? <ExpandLess /> : <ExpandMore />}
-      </ListItem>
-
-      <Collapse in={openDocs && props.drawerOpen} timeout="auto" unmountOnExit>
-        <List component="div" disablePadding>
-          {buildingTypes.map((buildingType, index) => {
-            return (
-              <ListItem
-                key={index}
-                button
-                className={classes.nested}
-                component={Link}
-                to={{
-                  pathname: AppRoute.Doc,
-                  state: {
-                    buildingType: buildingType,
-                  },
-                }}
-              >
-                <ListItemText primary={buildingType.name} />
-              </ListItem>
-            );
-          })}
-        </List>
-      </Collapse>
-
       <ListItem button component={Link} to={AppRoute.Results}>
         <ListItemIcon>
           <ChartIcon className={classes.icon} />
@@ -168,12 +137,6 @@ export const NavBarList: React.FC<NavBarListProps> = props => {
           </Collapse>
         </div>
       ) : null}
-      <ListItem button component={Link} to={AppRoute.About}>
-        <ListItemIcon>
-          <InfoIcon className={classes.icon} />
-        </ListItemIcon>
-        <ListItemText primary="About" />
-      </ListItem>
     </List>
   );
 };

@@ -19,7 +19,7 @@ export enum Title {
   ApiKey = 'API Key',
   Dashboard = 'My Dashboard',
   Docs = 'Test Cases',
-  Home = 'Objectively and quantitatively evaluate building control algorithms',
+  Home = 'Evaluate your building control algorithm',
   Confirm = 'Confirm your email address',
   Login = 'Login',
   Register = 'Register',

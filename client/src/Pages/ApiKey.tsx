@@ -85,10 +85,6 @@ export const ApiKey: React.FC = () => {
           Your API key
         </Typography>
       </Box>
-      <Typography variant="body1">
-        This is a description for the api key, it can get quite long, but that's
-        honestly fine here.
-      </Typography>
       <div className={classes.apiKeyOps}>
         <TextField
           id={apiKeySelector}
