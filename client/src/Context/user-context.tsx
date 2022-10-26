@@ -32,7 +32,7 @@ const UserProvider = ({children}: Props) => {
   const [authedId, setAuthedId] = React.useState('');
   const [globalShareSetting, setGlobalShareSetting] = React.useState('');
 
-  const userInfoEndpoint = '/api/auth/info';
+  const userInfoEndpoint = '/api/accounts/info';
 
   useEffect(() => {
     // try to get the user info

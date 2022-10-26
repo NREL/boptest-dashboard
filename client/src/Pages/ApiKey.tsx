@@ -69,7 +69,7 @@ export const ApiKey: React.FC = () => {
   const [showSyncTestData, setShowSyncTestData] = React.useState(false);
 
   useEffect(() => {
-    axios.get('/api/auth/key').then(res => {
+    axios.get('/api/accounts/key').then(res => {
       setApiKey(res.data.apiKey);
     });
 
