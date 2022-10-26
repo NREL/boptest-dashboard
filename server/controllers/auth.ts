@@ -1,4 +1,4 @@
-import {CognitoUser, CognitoUserSession} from 'amazon-cognito-identity-js';
+import {CognitoUser, CognitoUserSession, ISignUpResult} from 'amazon-cognito-identity-js';
 import {confirmRegistration, loginUser, signupCognitoUser} from './../cognito';
 import {getUser, createAccountFromSignup} from './../controllers/account';
 import {ConfirmData, LoginData, SignupData} from '../../common/interfaces';
@@ -7,11 +7,11 @@ const TESTING: boolean = process.env.CONTEXT! === 'testing';
 
 export function signup(signupData: SignupData): Promise<any> {
   if (TESTING) {
-    return createAccountFromSignup(signupData);
+    return createAccountFromSignup(signupData, "testing");
   }
   else {
-    return signupCognitoUser(signupData).then((result: any) => {
-      return createAccountFromSignup(signupData);
+    return signupCognitoUser(signupData).then((signUpResult: ISignUpResult) => {
+      return createAccountFromSignup(signupData, signUpResult.userSub);
     });
   }
 }

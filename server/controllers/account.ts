@@ -35,13 +35,15 @@ export function getUser(email: string): Promise<Account> {
 }
 
 export function createAccountFromSignup(
-  signupData: SignupData
+  signupData: SignupData,
+  userSub: string
 ) {
   const repo = getRepository<Account>(AccountEntity);
 
   const apiKey = createApiKey();
 
   const accountData = {
+    sub: userSub,
     name: signupData.username,
     email: signupData.email,
     apiKey: apiKey,

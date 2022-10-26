@@ -71,6 +71,7 @@ export interface BuildingType {
 
 export interface Account {
   id: number;
+  sub: string;
   name: string;
   email: string;
   apiKey: string;

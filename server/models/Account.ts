@@ -11,6 +11,10 @@ export const AccountEntity = new EntitySchema<Account>({
       primary: true,
       generated: true,
     },
+    sub: {
+      type: String,
+      unique: true,
+    },
     name: {
       type: String,
     },

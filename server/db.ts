@@ -33,16 +33,19 @@ export async function seedTestData(apiKey: string) {
   const accounts = [
     {
       name: 'Jerry',
+      sub: 'jerry',
       email: 'jerbear@gmail.com',
       apiKey: 'jerrysapikey',
     },
     {
       name: 'Carl',
+      sub: 'carl',
       email: 'badcarl@gmail.com',
       apiKey: 'carlsapikey',
     },
     {
       name: 'Ted',
+      sub: 'ted',
       email: 'teddybare@gmail.com',
       apiKey: 'tedsapikey',
     },

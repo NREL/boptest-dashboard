@@ -11,6 +11,7 @@ import {
   CognitoUserAttribute,
   CognitoUser,
   CognitoUserSession,
+  ISignUpResult,
 } from 'amazon-cognito-identity-js';
 
 const userPoolId = process.env.COGNITO_USER_POOL_ID!;
@@ -25,7 +26,7 @@ const getUserPool = (): CognitoUserPool => {
   return new CognitoUserPool(poolData);
 };
 
-export function signupCognitoUser(signupData: SignupData) {
+export function signupCognitoUser(signupData: SignupData) : Promise<ISignUpResult> {
   return new Promise((promiseRes, promiseRej) => {
     var userPool = getUserPool();
 
