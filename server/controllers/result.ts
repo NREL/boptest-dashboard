@@ -1,7 +1,7 @@
 import {SignatureDetails} from './../../common/interfaces';
 import {getBuildingTypeByUid} from './../models/BuildingType';
 import {getRepository} from 'typeorm';
-import {getAccountByApiKey, getAccountByEmail} from '../models/Account';
+import {getAccountByAPIKey, getAccountByEmail} from './account';
 import {createResult, ResultEntity} from '../models/Result';
 import {Result, Scenario, Scenarios, Signature} from '../../common/interfaces';
 
@@ -66,7 +66,7 @@ export function getAllResultsForUser(email: string): Promise<Result[]> {
 
 // need to account for account misses
 function createResultAndAssociatedModels(result: any) {
-  const account = getAccountByApiKey(result.account.apiKey);
+  const account = getAccountByAPIKey(result.account.apiKey);
   const buildingType = getBuildingTypeByUid(result.buildingType.uid);
 
   return Promise.all([account, buildingType])

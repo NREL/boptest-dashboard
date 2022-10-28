@@ -12,7 +12,6 @@ export interface Data {
   uid: string;
   isShared: boolean;
   accountUsername: string;
-  accountEmail: string;
   buildingTypeName: string;
   dateRun: Date;
   totalEnergy: number;
@@ -39,7 +38,6 @@ export const createDataFromResult = (result: Result): Data => {
     uid: result.uid,
     isShared: result.isShared,
     accountUsername: result.account.name,
-    accountEmail: result.account.email,
     buildingTypeName: result.buildingType.name,
     dateRun: result.dateRun,
     totalEnergy: result.energyUse,

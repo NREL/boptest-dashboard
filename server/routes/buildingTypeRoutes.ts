@@ -1,5 +1,5 @@
 import express from 'express';
-import {getAccountByApiKey} from '../models/Account';
+import {getAccountByAPIKey} from '../controllers/account';
 import {createBuildingTypes} from '../controllers/buildingTypes';
 import {getBuildingTypes, getBuildingTypeByUid, updateBuildingType} from '../models/BuildingType';
 import { Account } from '../../common/interfaces';
@@ -10,7 +10,7 @@ const superUsers: string = process.env.SUPER_USERS!
 const suEmails: string[] = superUsers.split(',');
 
 buildingTypeRouter.post('/', (req: express.Request, res: express.Response) => {
-  getAccountByApiKey(req.body.apiKey)
+  getAccountByAPIKey(req.body.apiKey)
   .then((accout: Account) => {
     if (suEmails.includes(accout.email)) {
     createBuildingTypes(req.body.buildingTypes)
@@ -30,7 +30,7 @@ buildingTypeRouter.post('/', (req: express.Request, res: express.Response) => {
 });
 
 buildingTypeRouter.put('/', (req: express.Request, res: express.Response) => {
-  getAccountByApiKey(req.body.apiKey)
+  getAccountByAPIKey(req.body.apiKey)
   .then((accout: Account) => {
     if (suEmails.includes(accout.email)) {
       getBuildingTypeByUid(req.param('uid'))

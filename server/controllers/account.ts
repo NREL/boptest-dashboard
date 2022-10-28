@@ -8,7 +8,9 @@ import crypto from 'crypto';
 export function getAccountById(id: number): Promise<Account> {
   const repo = getRepository<Account>(AccountEntity);
 
-  return repo.findOneOrFail(id);
+  return repo.findOneOrFail(id, {
+    select: ['id', 'sub', 'name', 'email', 'shareAllResults']
+  });
 }
 
 // NOT Used
@@ -31,6 +33,8 @@ export function getAccountByEmail(email: string): Promise<Account> {
 
   return repo.findOneOrFail({
     email: email,
+  }, {
+    select: ['id', 'sub', 'name', 'email', 'shareAllResults']
   });
 }
 
@@ -49,6 +53,8 @@ export function getAccountByAPIKey(key: string): Promise<Account> {
 
   return repo.findOneOrFail({
     apiKey: key,
+  }, {
+    select: ['id', 'sub', 'name', 'email', 'shareAllResults']
   });
 }
 

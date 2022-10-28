@@ -1,5 +1,5 @@
 import express from 'express';
-import {getAccountByApiKey} from '../models/Account';
+import {getAccountByAPIKey} from '../controllers/account';
 import {Account} from '../../common/interfaces';
 import {seedTestData} from '../db';
 
@@ -12,10 +12,10 @@ const suEmails: string[] = superUsers.split(',');
 
 setupRouter.post('/db', (req: express.Request, res: express.Response) => {
   if (envType === 'development') {
-    getAccountByApiKey(req.body.apiKey)
-    .then((accout: Account) => {
-      console.log('Successfully got Account');
-      if (suEmails.includes(accout.email)) {
+    getAccountByAPIKey(req.body.apiKey)
+    .then((account: Account) => {
+      console.log('Successfully got Account', account.email);
+      if (suEmails.includes(account.email)) {
         seedTestData(req.body.apiKey)
         .then(() => res.sendStatus(200))
         .catch(err => res.json(err));

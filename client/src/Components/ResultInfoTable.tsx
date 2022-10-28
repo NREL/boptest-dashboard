@@ -245,11 +245,11 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
             </TableRow>
             <TableRow className={classes.grayed}>
               <TableCell>
-                <Typography variant="body2">Contact</Typography>
+                <Typography variant="body2">User Name</Typography>
               </TableCell>
               <TableCell>
                 <Typography variant="body1">
-                  {props.result.accountEmail}
+                  {props.result.accountUsername}
                 </Typography>
               </TableCell>
             </TableRow>
