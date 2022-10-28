@@ -11,7 +11,30 @@ import {
   ConfirmData,
 } from './../../common/interfaces';
 import {confirm, login, signup} from './../controllers/auth';
-import {getUser} from '../controllers/account';
+import {getAccountById, getAccountByAPIKey} from '../controllers/account';
+
+// Middleware to authorize a request using a key or a session
+export function authorizer(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const key = req.header('Authorization');
+
+  if (key) {
+    getAccountByAPIKey(key).then((account: Account) => {
+      req.user = account;
+      next();
+    }).catch(err => {
+      res.status(401).json({error: 'Not Authorized'});
+    });
+  } else if(req.session && req.session.userId) {
+    getAccountById(req.session.userId).then((account: Account) => {
+      req.user = account;
+      next();
+    }).catch(err => {
+      res.status(500).json(err);
+    });
+  } else {
+    res.status(401).json({error: 'Not Authorized'});
+  }
+};
 
 export const authRouter = express.Router();
 

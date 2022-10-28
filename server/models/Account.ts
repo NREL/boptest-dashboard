@@ -25,6 +25,12 @@ export const AccountEntity = new EntitySchema<Account>({
     apiKey: {
       type: String,
       unique: true,
+      select: false
+    },
+    apiKeySalt: {
+      type: String,
+      unique: true,
+      select: false
     },
     shareAllResults: {
       type: Boolean,

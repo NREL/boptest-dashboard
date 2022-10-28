@@ -5,7 +5,7 @@ import {AccountEntity, createAccount} from '../models/Account';
 
 import crypto from 'crypto';
 
-export function getAccount(id: number): Promise<Account> {
+export function getAccountById(id: number): Promise<Account> {
   const repo = getRepository<Account>(AccountEntity);
 
   return repo.findOneOrFail(id);
@@ -26,11 +26,29 @@ export function createAccounts(accounts: any): Promise<Account[]> {
   );
 }
 
-export function getUser(email: string): Promise<Account> {
+export function getAccountByEmail(email: string): Promise<Account> {
   const repo = getRepository<Account>(AccountEntity);
 
   return repo.findOneOrFail({
     email: email,
+  });
+}
+
+export function getAPIKeyByEmail(email: string): Promise<Account> {
+  const repo = getRepository<Account>(AccountEntity);
+
+  return repo.findOneOrFail({
+    email: email,
+  },{
+    select: ['apiKey']
+  });
+}
+
+export function getAccountByAPIKey(key: string): Promise<Account> {
+  const repo = getRepository<Account>(AccountEntity);
+
+  return repo.findOneOrFail({
+    apiKey: key,
   });
 }
 
@@ -41,17 +59,23 @@ export function createAccountFromSignup(
   const repo = getRepository<Account>(AccountEntity);
 
   const apiKey = createApiKey();
+  const salt = createSalt();
 
   const accountData = {
     sub: userSub,
     name: signupData.username,
     email: signupData.email,
     apiKey: apiKey,
+    apiKeySalt: salt,
   };
 
   return repo.save(accountData);
 }
 
 function createApiKey(): string {
+  return crypto.randomBytes(60).toString('hex');
+}
+
+function createSalt(): string {
   return crypto.randomBytes(60).toString('hex');
 }
