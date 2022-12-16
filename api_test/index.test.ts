@@ -29,6 +29,7 @@ import {
 } from './mockPayloads';
 
 const authRoute = `http://${process.env.SERVER_HOST}:8080/api/auth`;
+const accountRoute = `http://${process.env.SERVER_HOST}:8080/api/accounts`;
 const buildingRoute = `http://${process.env.SERVER_HOST}:8080/api/buildingTypes`;
 const updateBuildingRoute = `http://${process.env.SERVER_HOST}:8080/api/buildingTypes?uid=one`;
 const resultRoute = `http://${process.env.SERVER_HOST}:8080/api/results`;
@@ -81,12 +82,12 @@ describe('Main', () => {
       .then(res => {
         expect(res.status).toEqual(200);
       })
-      .then(() => session.get(authRoute + '/info'))
+      .then(() => session.get(accountRoute + '/info'))
       .then(res => {
         expect(res.status).toEqual(200);
         expect(res.data.email).toEqual('email1@email.com');
       })
-      .catch(() => {
+      .catch((err) => {
         // We should never hit the un-happy path.
         expect(false).toEqual(true);
       });
@@ -101,7 +102,7 @@ describe('Main', () => {
       .then(res => {
         expect(res.status).toEqual(200);
       })
-      .then(() => session.get(authRoute + '/info'))
+      .then(() => session.get(accountRoute + '/info'))
       .then(() => {
         // We should never hit the happy path.
         expect(false).toEqual(true);
@@ -116,7 +117,7 @@ describe('Main', () => {
       .then(res => {
         expect(res.status).toEqual(200);
       })
-      .then(() => session.get(authRoute + '/key'))
+      .then(() => session.get(accountRoute + '/key'))
       .then(res => {
         expect(res.status).toEqual(200);
         return res.data.apiKey;
@@ -136,7 +137,7 @@ describe('Main', () => {
       .then(res => {
         expect(res.status).toEqual(200);
       })
-      .then(() => session.get(authRoute + '/key'))
+      .then(() => session.get(accountRoute + '/key'))
       .then(res => {
         expect(res.status).toEqual(200);
         return res.data.apiKey;
@@ -176,7 +177,7 @@ describe('Main', () => {
       .then(res => {
         expect(res.status).toEqual(200);
       })
-      .then(() => session.get(authRoute + '/key'))
+      .then(() => session.get(accountRoute + '/key'))
       .then(res => {
         expect(res.status).toEqual(200);
         return res.data.apiKey;
@@ -196,7 +197,7 @@ describe('Main', () => {
       .then(res => {
         expect(res.status).toEqual(200);
       })
-      .then(() => session.get(authRoute + '/key'))
+      .then(() => session.get(accountRoute + '/key'))
       .then(res => {
         expect(res.status).toEqual(200);
         return res.data.apiKey;
@@ -217,7 +218,7 @@ describe('Main', () => {
       .then(res => {
         expect(res.status).toEqual(200);
       })
-      .then(() => session.get(authRoute + '/key'))
+      .then(() => session.get(accountRoute + '/key'))
       .then(res => {
         expect(res.status).toEqual(200);
         modifiedResult.account['apiKey'] = res.data.apiKey;
@@ -241,7 +242,7 @@ describe('Main', () => {
       .then(res => {
         expect(res.status).toEqual(200);
       })
-      .then(() => session.get(authRoute + '/key'))
+      .then(() => session.get(accountRoute + '/key'))
       .then(res => {
         expect(res.status).toEqual(200);
         modifiedResult.account['apiKey'] = res.data.apiKey;
@@ -267,7 +268,7 @@ describe('Main', () => {
       .then(res => {
         expect(res.status).toEqual(200);
       })
-      .then(() => session.get(authRoute + '/key'))
+      .then(() => session.get(accountRoute + '/key'))
       .then(res => {
         expect(res.status).toEqual(200);
         modifiedResult1.account['apiKey'] = res.data.apiKey;
@@ -295,7 +296,7 @@ describe('Main', () => {
       .then(res => {
         expect(res.status).toEqual(200);
       })
-      .then(() => session.get(authRoute + '/key'))
+      .then(() => session.get(accountRoute + '/key'))
       .then(res => {
         expect(res.status).toEqual(200);
         modifiedResult1.account['apiKey'] = res.data.apiKey;
@@ -323,7 +324,7 @@ describe('Main', () => {
       .then(res => {
         expect(res.status).toEqual(200);
       })
-      .then(() => session.get(authRoute + '/key'))
+      .then(() => session.get(accountRoute + '/key'))
       .then(res => {
         expect(res.status).toEqual(200);
         modifiedResult1.account['apiKey'] = res.data.apiKey;
@@ -352,7 +353,7 @@ describe('Main', () => {
       .then(res => {
         expect(res.status).toEqual(200);
       })
-      .then(() => session.get(authRoute + '/key'))
+      .then(() => session.get(accountRoute + '/key'))
       .then(res => {
         expect(res.status).toEqual(200);
         modifiedResult1.account['apiKey'] = res.data.apiKey;
@@ -380,7 +381,7 @@ describe('Main', () => {
       .then(res => {
         expect(res.status).toEqual(200);
       })
-      .then(() => session.get(authRoute + '/key'))
+      .then(() => session.get(accountRoute + '/key'))
       .then(res => {
         expect(res.status).toEqual(200);
         modifiedResult1.account['apiKey'] = res.data.apiKey;

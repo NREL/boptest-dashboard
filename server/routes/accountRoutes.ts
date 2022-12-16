@@ -37,6 +37,7 @@ accountRouter.get('/info', (req: express.Request, res: express.Response) => {
     name: req.user.name,
     sub: req.user.sub,
     email: req.user.email,
+    privileged: req.user.privileged,
     userId: Number(req.user.id),
     globalShare: req.user.globalShare 
   };

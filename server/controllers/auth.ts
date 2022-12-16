@@ -2,12 +2,13 @@ import {CognitoUser, CognitoUserSession, ISignUpResult} from 'amazon-cognito-ide
 import {confirmRegistration, loginUser, signupCognitoUser} from './../cognito';
 import {getAccountByEmail, createAccountFromSignup} from './../controllers/account';
 import {ConfirmData, LoginData, SignupData} from '../../common/interfaces';
+import { v4 as uuidv4 } from 'uuid';
 
 const TESTING: boolean = process.env.CONTEXT! === 'testing';
 
 export function signup(signupData: SignupData): Promise<any> {
   if (TESTING) {
-    return createAccountFromSignup(signupData, "testing");
+    return createAccountFromSignup(signupData, uuidv4());
   }
   else {
     return signupCognitoUser(signupData).then((signUpResult: ISignUpResult) => {

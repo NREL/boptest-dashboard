@@ -13,13 +13,6 @@ export function getAccountById(id: number): Promise<Account> {
   });
 }
 
-// NOT Used
-// export function getAccounts(): Promise<Account[]> {
-//   // request data
-//   const accountsRepository = getRepository<Account>(AccountEntity);
-//   return accountsRepository.find({relations: ['results']});
-// }
-
 export function createAccounts(accounts: any): Promise<Account[]> {
   return Promise.all(
     accounts.map((account: any) => {
