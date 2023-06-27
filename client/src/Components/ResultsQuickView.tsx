@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import {createStyles, makeStyles} from '@material-ui/core/styles';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -16,7 +16,7 @@ const useStyles = makeStyles(() =>
 );
 
 function createData(buildingType: string, energyUse: number) {
-  return {buildingType, energyUse};
+  return { buildingType, energyUse };
 }
 
 const endpoint = '/api/results';
@@ -30,7 +30,8 @@ export const ResultsQuickView: React.FC = () => {
   // build out simple data fetcher straight in the useEffect for now
   useEffect(() => {
     axios.get(endpoint).then(response => {
-      setResults(response.data);
+      const sortedData = response.data.sort((a, b) => { new Date(a.dateRun).getTime() - new Date(b.dateRun).getTime() });
+      setResults(sortedData);
     });
   }, []);
 
