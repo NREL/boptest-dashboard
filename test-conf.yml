@@ -35,13 +35,8 @@ services:
     build: ./api_test
     depends_on:
       - server_test
-      - postgres_test
     environment:
       SERVER_HOST: server_test
-      POSTGRES_HOST: postgres_test
-    links:
-      - server_test
-      - postgres_test
     volumes:
       - ./api_test:/usr/src/app/:z
       - /usr/src/app/node_modules #ignore node_modules (they are installed in the container)

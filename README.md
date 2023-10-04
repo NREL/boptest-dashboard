@@ -30,7 +30,7 @@ You will need to choose a username, a [strong password](https://www.random.org/p
 Copy the file `/server/.env.configure-me` to `/server/.env`
 
 ```bash
-cp /server/.env.configure-me /server.env
+cp /server/.env.configure-me /server/.env
 ```
 
 Open that file and fill in your credentials for Cognito from the User Pools General Settings page(for User Pool ID) and User Pools App Client Settings page (for App Client ID). Then choose a unique and memorable session name, and a secure [session secret](https://randomkeygen.com/).
