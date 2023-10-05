@@ -68,7 +68,7 @@ authRouter.post('/confirm', (req: express.Request, res: express.Response) => {
         req.session.email = user.email;
         req.session.name = user.name;
         req.session.userId = `${user.id}`;
-        req.session.globalShare = user.shareAllResults;
+        req.session.shareAllResults = user.shareAllResults;
       }
       const data = {
         email: user.email,
@@ -92,7 +92,7 @@ authRouter.post('/login', (req: express.Request, res: express.Response) => {
         req.session.email = user.email;
         req.session.name = user.name;
         req.session.userId = `${user.id}`;
-        req.session.globalShare = user.shareAllResults;
+        req.session.shareAllResults = user.shareAllResults;
       }
       const data = {
         email: user.email,

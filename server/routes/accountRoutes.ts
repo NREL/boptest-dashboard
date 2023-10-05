@@ -22,10 +22,10 @@ accountRouter.patch('/name', (req: express.Request, res: express.Response) => {
 });
 
 accountRouter.patch('/global-share', (req: express.Request, res: express.Response) => {
-  updateGlobalShare(req.user.id, req.body.globalShare)
+  updateGlobalShare(req.user.id, req.body.shareAllResults)
     .then(() => {
       if (req.session) {
-        req.session.globalShare = req.body.globalShare;
+        req.session.shareAllResults = req.body.shareAllResults;
       }
       res.sendStatus(200)
     })
@@ -39,7 +39,7 @@ accountRouter.get('/info', (req: express.Request, res: express.Response) => {
     email: req.user.email,
     privileged: req.user.privileged,
     userId: Number(req.user.id),
-    globalShare: req.user.globalShare 
+    shareAllResults: req.user.shareAllResults 
   };
   res.json(response);
 });

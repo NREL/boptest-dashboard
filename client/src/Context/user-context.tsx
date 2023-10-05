@@ -14,23 +14,11 @@ type Props = {
   children: React.ReactNode;
 };
 
-const assignGlobalShareSetting = (setter, value) => {
-  let setting = '';
-  if (value === true) {
-    setting = 'yes';
-  } else if (value === false) {
-    setting = 'no';
-  } else {
-    setting = 'default';
-  }
-  setter(setting);
-};
-
 const UserProvider = ({children}: Props) => {
   const [authedEmail, setAuthedEmail] = React.useState('');
   const [authedName, setAuthedName] = React.useState('');
   const [authedId, setAuthedId] = React.useState('');
-  const [globalShareSetting, setGlobalShareSetting] = React.useState('');
+  const [shareAllResults, setShareAllResults] = React.useState('');
 
   const userInfoEndpoint = '/api/accounts/info';
 
@@ -42,10 +30,7 @@ const UserProvider = ({children}: Props) => {
         setAuthedEmail(result.data.email);
         setAuthedName(result.data.name);
         setAuthedId(result.data.userId);
-        assignGlobalShareSetting(
-          setGlobalShareSetting,
-          result.data.globalShare
-        );
+        setShareAllResults(result.data.shareAllResults);
       })
       .catch(err => {
         console.log('couldnt get user info', err); // TODO
@@ -60,8 +45,8 @@ const UserProvider = ({children}: Props) => {
         authedName,
         setAuthedName,
         authedId,
-        globalShareSetting,
-        setGlobalShareSetting,
+        shareAllResults,
+        setShareAllResults,
       }}
     >
       {children}

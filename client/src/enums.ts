@@ -6,23 +6,21 @@ export enum AppRoute {
   Docs = '/documentation',
   ConfirmPassword = '/confirm-password',
   ForgotPassword = '/forgot-password',
-  Home = '/',
   Confirm = '/confirm/:username',
   Login = '/login',
   Register = '/register',
-  Results = '/results',
+  Results = '/',
   Settings = '/settings',
 }
 
 export enum Title {
   About = 'About',
   ApiKey = 'API Key',
-  Dashboard = 'My Dashboard',
+  Dashboard = 'My Test Results',
   Docs = 'Test Cases',
-  Home = 'Evaluate your building control algorithm',
   Confirm = 'Confirm your email address',
   Login = 'Login',
   Register = 'Register',
-  Results = 'Test Results',
+  Results = 'Shared Test Results',
   Settings = 'My Settings',
 }

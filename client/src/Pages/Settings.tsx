@@ -82,7 +82,7 @@ const changeUserNameEndpoint = '/api/accounts/name';
 const changeGlobalShareSettingsEndpoint = '/api/accounts/global-share';
 
 export const Settings: React.FC = () => {
-  const {authedEmail, authedName, authedId, globalShareSetting} = useUser();
+  const {authedEmail, authedName, authedId, shareAllResults} = useUser();
 
   const classes = useStyles();
 
@@ -126,7 +126,17 @@ export const Settings: React.FC = () => {
     });
   });
 
-  const shareResults = event => {
+  const getShareResults = () => {
+    if (shareAllResults === true) {
+      return 'yes';
+    } else if (shareAllResults === false) {
+      return 'no';
+    } else {
+      return 'default';
+    }
+  };
+
+  const setShareResults = event => {
     let shareValue: boolean | null;
     if (event.target.value === 'yes') {
       shareValue = true;
@@ -136,7 +146,7 @@ export const Settings: React.FC = () => {
       shareValue = null;
     }
     axios
-      .patch(changeGlobalShareSettingsEndpoint, {globalShare: shareValue})
+      .patch(changeGlobalShareSettingsEndpoint, {shareAllResults: shareValue})
       .then(() => location.reload());
   };
 
@@ -267,8 +277,8 @@ export const Settings: React.FC = () => {
         page.
       </Typography>
       <RadioGroup
-        value={globalShareSetting}
-        onChange={event => shareResults(event)}
+        value={getShareResults()}
+        onChange={event => setShareResults(event)}
       >
         <FormControlLabel
           value="default"
@@ -280,7 +290,7 @@ export const Settings: React.FC = () => {
               }}
             />
           }
-          label="Default, rusults are public/private on an individual basis"
+          label="Default, results are public/private on an individual basis"
         />
         <FormControlLabel
           value="yes"

@@ -64,12 +64,12 @@ export function updateName(id: number, newName: string): Promise<void> {
     .catch(err => console.log('could not update name for account', err));
 }
 
-export function updateGlobalShare(id: number, userShareSetting: boolean | null): Promise<void> {
+export function updateGlobalShare(id: number, shareAllResults: boolean | null): Promise<void> {
   const repo = getRepository<Account>(AccountEntity);
   return repo
     .findOneOrFail(id)
     .then((account: Account) => {
-      account.shareAllResults = userShareSetting;
+      account.shareAllResults = shareAllResults;
       repo.save(account);
     })
 }

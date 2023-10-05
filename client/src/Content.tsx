@@ -29,14 +29,11 @@ export const Content: React.FC = () => {
         <Route path={AppRoute.Dashboard}>
           <Dashboard />
         </Route>
-        <Route path={AppRoute.Results}>
-          <Results />
-        </Route>
         <Route path={AppRoute.Settings}>
           <Settings />
         </Route>
-        <Route path={AppRoute.Home}>
-          <Home />
+        <Route path={AppRoute.Results}>
+          <Results />
         </Route>
       </Switch>
     </div>

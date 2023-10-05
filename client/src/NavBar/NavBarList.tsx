@@ -84,18 +84,11 @@ export const NavBarList: React.FC<NavBarListProps> = props => {
       aria-labelledby="nested-list-subheader"
       className={classes.root}
     >
-      <ListItem button component={Link} to={AppRoute.Home}>
-        <ListItemIcon>
-          <HomeIcon className={classes.icon} />
-        </ListItemIcon>
-        <ListItemText primary="Home" />
-      </ListItem>
-
       <ListItem button component={Link} to={AppRoute.Results}>
         <ListItemIcon>
           <ChartIcon className={classes.icon} />
         </ListItemIcon>
-        <ListItemText primary="Test Results" />
+        <ListItemText primary="Shared Results" />
       </ListItem>
       {loggedIn ? (
         <div>
@@ -108,7 +101,7 @@ export const NavBarList: React.FC<NavBarListProps> = props => {
             <ListItemIcon>
               <PersonIcon className={classes.icon} />
             </ListItemIcon>
-            <ListItemText primary="Dashboard" />
+            <ListItemText primary="My Results" />
             {openDash ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
           <Collapse

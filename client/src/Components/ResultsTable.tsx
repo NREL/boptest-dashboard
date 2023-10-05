@@ -105,7 +105,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             key={headCell.id}
             //align={headCell.numeric ? 'right' : 'left'}
             align={'center'}
-            padding={headCell.disablePadding ? 'none' : 'default'}
+            padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}
             className={classes.headerCell}
           >
@@ -464,7 +464,7 @@ export default function ResultsTable(props) {
                         component="th"
                         id={labelId}
                         scope="row"
-                        padding="default"
+                        padding="normal"
                       >
                         <Typography variant="body1">
                           {row.buildingTypeName}

@@ -92,8 +92,6 @@ const getTitleFromPath = (path: string): string => {
       return Title.Dashboard;
     case AppRoute.Docs:
       return Title.Docs;
-    case AppRoute.Home:
-      return Title.Home;
     case AppRoute.Results:
       return Title.Results;
     case AppRoute.Settings:

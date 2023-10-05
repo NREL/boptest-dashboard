@@ -192,7 +192,7 @@ export const ConfirmPassword: React.FC = () => {
             />
           </div>
           <div className={classes.actionItems}>
-            <Link to={AppRoute.Home} className={classes.cancelLink}>
+            <Link to={AppRoute.Dashboard} className={classes.cancelLink}>
               Cancel
             </Link>
             <Button
