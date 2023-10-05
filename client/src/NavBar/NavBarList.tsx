@@ -13,6 +13,8 @@ import HomeIcon from '@material-ui/icons/Home';
 import InfoIcon from '@material-ui/icons/Info';
 import DocsIcon from '@material-ui/icons/LibraryBooks';
 import PersonIcon from '@material-ui/icons/Person';
+import SettingsIcon from '@material-ui/icons/Settings';
+import LockIcon from '@material-ui/icons/Lock';
 import ChartIcon from '@material-ui/icons/ShowChart';
 import {Link} from 'react-router-dom';
 
@@ -102,32 +104,27 @@ export const NavBarList: React.FC<NavBarListProps> = props => {
               <PersonIcon className={classes.icon} />
             </ListItemIcon>
             <ListItemText primary="My Results" />
-            {openDash ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
-          <Collapse
-            in={openDash && props.drawerOpen}
-            timeout="auto"
-            unmountOnExit
+          <ListItem
+            button
+            component={Link}
+            to={AppRoute.Settings}
           >
-            <List component="div" disablePadding>
-              <ListItem
-                button
-                className={classes.nested}
-                component={Link}
-                to={AppRoute.Settings}
-              >
-                <ListItemText primary="Settings" />
-              </ListItem>
-              <ListItem
-                button
-                className={classes.nested}
-                component={Link}
-                to={AppRoute.ApiKey}
-              >
-                <ListItemText primary="API Key" />
-              </ListItem>
-            </List>
-          </Collapse>
+            <ListItemIcon>
+              <SettingsIcon className={classes.icon} />
+            </ListItemIcon>
+            <ListItemText primary="Settings" />
+          </ListItem>
+          <ListItem
+            button
+            component={Link}
+            to={AppRoute.ApiKey}
+          >
+            <ListItemIcon>
+              <LockIcon className={classes.icon} />
+            </ListItemIcon>
+            <ListItemText primary="API Key" />
+          </ListItem>
         </div>
       ) : null}
     </List>
