@@ -14,7 +14,6 @@ setupRouter.post('/db', (req: express.Request, res: express.Response) => {
   if (envType === 'development') {
     getAccountByAPIKey(req.body.apiKey)
     .then((account: Account) => {
-      console.log('Successfully got Account', account.email);
       if (suEmails.includes(account.email)) {
         seedTestData(req.body.apiKey)
         .then(() => res.sendStatus(200))
