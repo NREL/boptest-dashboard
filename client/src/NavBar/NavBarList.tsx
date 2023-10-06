@@ -40,7 +40,6 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface NavBarListProps {
   drawerOpen: boolean;
-  toggleDrawer;
 }
 
 export const NavBarList: React.FC<NavBarListProps> = props => {
@@ -65,7 +64,6 @@ export const NavBarList: React.FC<NavBarListProps> = props => {
     if (props.drawerOpen) {
       setOpenDash(!openDash);
     } else {
-      props.toggleDrawer();
       setOpenDash(true);
     }
   };
@@ -75,7 +73,6 @@ export const NavBarList: React.FC<NavBarListProps> = props => {
     if (props.drawerOpen) {
       setOpenDocs(!openDocs);
     } else {
-      props.toggleDrawer();
       setOpenDocs(true);
     }
   };
