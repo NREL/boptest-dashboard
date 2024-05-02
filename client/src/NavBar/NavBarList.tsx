@@ -102,21 +102,13 @@ export const NavBarList: React.FC<NavBarListProps> = props => {
             </ListItemIcon>
             <ListItemText primary="My Results" />
           </ListItem>
-          <ListItem
-            button
-            component={Link}
-            to={AppRoute.Settings}
-          >
+          <ListItem button component={Link} to={AppRoute.Settings}>
             <ListItemIcon>
               <SettingsIcon className={classes.icon} />
             </ListItemIcon>
             <ListItemText primary="Settings" />
           </ListItem>
-          <ListItem
-            button
-            component={Link}
-            to={AppRoute.ApiKey}
-          >
+          <ListItem button component={Link} to={AppRoute.ApiKey}>
             <ListItemIcon>
               <LockIcon className={classes.icon} />
             </ListItemIcon>
