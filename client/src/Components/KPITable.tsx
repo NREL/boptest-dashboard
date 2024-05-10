@@ -65,7 +65,7 @@ export const KPITable: React.FC<KPITableProps> = props => {
             <TableBody>
               <TableRow>
                 <TableCell>
-                  <Typography variant="body2">Energy [kWh]</Typography>
+                  <Typography variant="body2">Total Energy [kWh/m^2]</Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
                 <TableCell>{props.result.energy}</TableCell>
@@ -82,7 +82,7 @@ export const KPITable: React.FC<KPITableProps> = props => {
               <TableRow>
                 <TableCell>
                   <Typography variant="body2">
-                    Thermal Discomfort [k-h]
+                    Thermal Discomfort [Kh/zone]
                   </Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
@@ -99,7 +99,7 @@ export const KPITable: React.FC<KPITableProps> = props => {
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <Typography variant="body2">Cost [USD]</Typography>
+                  <Typography variant="body2">Total Operations Cost [$ or Euro/m^2]</Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
                 <TableCell>{props.result.cost}</TableCell>
@@ -115,7 +115,7 @@ export const KPITable: React.FC<KPITableProps> = props => {
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <Typography variant="body2">Emissions [kgCO2]</Typography>
+                  <Typography variant="body2">Total CO2 emissions [kgCO2/m^2]</Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
                 <TableCell>{props.result.emissions}</TableCell>
@@ -131,7 +131,7 @@ export const KPITable: React.FC<KPITableProps> = props => {
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <Typography variant="body2">IAQ [ppmh]</Typography>
+                  <Typography variant="body2">Indoor Air Quality Discomfort [ppmh/zone]</Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
                 <TableCell>{props.result.aqDiscomfort}</TableCell>
