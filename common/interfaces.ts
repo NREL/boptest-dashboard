@@ -56,6 +56,18 @@ export interface SignatureDetails {
     min: number;
     max: number;
   };
+  peakElectricity: {
+    min: number;
+    max: number;
+  };
+  peakGas: {
+    min: number;
+    max: number;
+  };
+  peakDistrictHeating: {
+    min: number;
+    max: number;
+  };
 }
 
 export interface BuildingType {
@@ -102,6 +114,9 @@ export interface Result {
   emissions: number;
   iaq: number;
   timeRatio: number;
+  peakElectricity: number;
+  peakGas: number;
+  peakDistrictHeating: number;
 
   // Building Type stuff (formerly testcase stuff)
   timePeriod: string;

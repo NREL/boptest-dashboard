@@ -55,6 +55,18 @@ export const ResultEntity = new EntitySchema<Result>({
       type: 'float',
       scale: 5,
     },
+    peakElectricity: {
+      type: 'float',
+      scale: 5,
+    },
+    peakGas: {
+      type: 'float',
+      scale: 5,
+    },
+    peakDistrictHeating: {
+      type: 'float',
+      scale: 5,
+    },
     controlStep: {
       type: String,
     },

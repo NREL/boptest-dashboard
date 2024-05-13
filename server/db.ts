@@ -105,6 +105,9 @@ export async function seedTestData(apiKey: string) {
         idis_tot: 43,   // iaq
         tdis_tot: 6,    // thermalDiscomfort
         time_rat: 900,  // timeRatio
+        pele_tot: 10.0, // peakElectricity
+        pgas_tot: 5.0,  // peakGas
+        pdih_tot: 0.0   // peakDistrictHeating
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -140,6 +143,9 @@ export async function seedTestData(apiKey: string) {
         idis_tot: 49,
         tdis_tot: 10,
         time_rat: 855,
+        pele_tot: 10.0,
+        pgas_tot: 5.0,
+        pdih_tot: 0.0
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -175,6 +181,9 @@ export async function seedTestData(apiKey: string) {
         idis_tot: 37,
         tdis_tot: 3,
         time_rat: 915,
+        pele_tot: 10.0,
+        pgas_tot: 5.0,
+        pdih_tot: 0.0
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -210,6 +219,9 @@ export async function seedTestData(apiKey: string) {
         idis_tot: 50,
         tdis_tot: 7,
         time_rat: 925,
+        pele_tot: 10.0,
+        pgas_tot: 5.0,
+        pdih_tot: 0.0
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -245,6 +257,9 @@ export async function seedTestData(apiKey: string) {
         idis_tot: 454,
         tdis_tot: 78,
         time_rat: 1450,
+        pele_tot: 10.0,
+        pgas_tot: 5.0,
+        pdih_tot: 0.0
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -280,6 +295,9 @@ export async function seedTestData(apiKey: string) {
         idis_tot: 400,
         tdis_tot: 72,
         time_rat: 1350,
+        pele_tot: 10.0,
+        pgas_tot: 5.0,
+        pdih_tot: 0.0
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -315,6 +333,9 @@ export async function seedTestData(apiKey: string) {
         idis_tot: 434,
         tdis_tot: 65,
         time_rat: 1400,
+        pele_tot: 10.0,
+        pgas_tot: 5.0,
+        pdih_tot: 0.0
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -350,6 +371,9 @@ export async function seedTestData(apiKey: string) {
         idis_tot: 435,
         tdis_tot: 69,
         time_rat: 1250,
+        pele_tot: 10.0,
+        pgas_tot: 5.0,
+        pdih_tot: 0.0
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -385,6 +409,9 @@ export async function seedTestData(apiKey: string) {
         idis_tot: 400,
         tdis_tot: 60,
         time_rat: 1250,
+        pele_tot: 10.0,
+        pgas_tot: 5.0,
+        pdih_tot: 0.0
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -422,6 +449,9 @@ export async function seedTestData(apiKey: string) {
         idis_tot: 420,
         tdis_tot: 52,
         time_rat: 1100,
+        pele_tot: 10.0,
+        pgas_tot: 5.0,
+        pdih_tot: 0.0
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -457,6 +487,9 @@ export async function seedTestData(apiKey: string) {
         idis_tot: 330,
         tdis_tot: 55,
         time_rat: 1270,
+        pele_tot: 10.0,
+        pgas_tot: 5.0,
+        pdih_tot: 0.0
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -492,6 +525,9 @@ export async function seedTestData(apiKey: string) {
         idis_tot: 450,
         tdis_tot: 72,
         time_rat: 1250,
+        pele_tot: 10.0,
+        pgas_tot: 5.0,
+        pdih_tot: 0.0
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -527,6 +563,9 @@ export async function seedTestData(apiKey: string) {
         idis_tot: 410,
         tdis_tot: 78,
         time_rat: 1150,
+        pele_tot: 10.0,
+        pgas_tot: 5.0,
+        pdih_tot: 0.0
       },
       forecastParameters: {
         horizon: 21600.0,
@@ -562,6 +601,9 @@ export async function seedTestData(apiKey: string) {
         idis_tot: 110,
         tdis_tot: 11,
         time_rat: 1110,
+        pele_tot: 10.0,
+        pgas_tot: 5.0,
+        pdih_tot: 0.0
       },
       forecastParameters: {
         horizon: 21600.0,

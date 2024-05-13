@@ -86,6 +86,9 @@ function createResultAndAssociatedModels(result: any) {
         emissions: result.kpis.emis_tot,
         iaq: result.kpis.idis_tot,
         timeRatio: result.kpis.time_rat,
+        peakElectricity: result.kpis.pele_tot,
+        peakGas: result.kpis.pgas_tot,
+        peakDistrictHeating: result.kpis.pdih_tot,
 
         timePeriod: result.scenario.timePeriod,
         electricityPrice: result.scenario.electricityPrice,
@@ -197,6 +200,15 @@ function getKPIRanges(results: Result[], result: Result): SignatureDetails {
   var timeMin = result.timeRatio;
   var timeMax = result.timeRatio;
 
+  var peakElectricityMin = result.peakElectricity;
+  var peakElectricityMax = result.peakElectricity;
+
+  var peakGasMin = result.peakGas;
+  var peakGasMax = result.peakGas;
+
+  var peakDistrictHeatingMin = result.peakDistrictHeating;
+  var peakDistrictHeatingMax = result.peakDistrictHeating;
+
   results.forEach(res => {
     if (res.thermalDiscomfort < tdMin) {
       tdMin = res.thermalDiscomfort;
@@ -245,6 +257,30 @@ function getKPIRanges(results: Result[], result: Result): SignatureDetails {
     if (res.timeRatio > timeMax) {
       timeMax = res.timeRatio;
     }
+
+    if (res.peakElectricity < peakElectricityMin) {
+      peakElectricityMin = res.peakElectricity;
+    }
+
+    if (res.peakElectricity > peakElectricityMax) {
+      peakElectricityMax = res.peakElectricity;
+    }
+
+    if (res.peakGas < peakGasMin) {
+      peakGasMin = res.peakGas;
+    }
+
+    if (res.peakGas > peakGasMax) {
+      peakGasMax = res.peakGas;
+    }
+
+    if (res.peakDistrictHeating < peakDistrictHeatingMin) {
+      peakDistrictHeatingMin = res.peakDistrictHeating;
+    }
+
+    if (res.peakDistrictHeating > peakDistrictHeatingMax) {
+      peakDistrictHeatingMax = res.peakDistrictHeating;
+    }
   });
 
   return {
@@ -272,6 +308,18 @@ function getKPIRanges(results: Result[], result: Result): SignatureDetails {
     timeRatio: {
       min: timeMin,
       max: timeMax,
+    },
+    peakElectricity: {
+      min: peakElectricityMin,
+      max: peakElectricityMax,
+    },
+    peakGas: {
+      min: peakGasMin,
+      max: peakGasMax,
+    },
+    peakDistrictHeating: {
+      min: peakDistrictHeatingMin,
+      max: peakDistrictHeatingMax,
     },
   };
 }

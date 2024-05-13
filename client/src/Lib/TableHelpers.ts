@@ -22,6 +22,9 @@ export interface Data {
   timeRatio: number;
   emissions: number;
   compTimeRatio: number;
+  peakElectricity: number;
+  peakGas: number;
+  peakDistrictHeating: number;
   timePeriod: string;
   electricityPrice: string;
   weatherForecastUncertainty: string;
@@ -48,6 +51,9 @@ export const createDataFromResult = (result: Result): Data => {
     timeRatio: result.timeRatio,
     emissions: result.emissions,
     compTimeRatio: result.timeRatio,
+    peakElectricity: result.peakElectricity,
+    peakGas: result.peakGas,
+    peakDistrictHeating: result.peakDistrictHeating,
     timePeriod: result.timePeriod,
     electricityPrice: result.electricityPrice,
     weatherForecastUncertainty: result.weatherForecastUncertainty,

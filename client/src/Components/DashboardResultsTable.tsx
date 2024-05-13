@@ -82,6 +82,24 @@ const headCells: HeadCell[] = [
     label: 'Computational Time Ratio [-]',
   },
   {
+    id: 'peakElectricity',
+    numeric: true,
+    disablePadding: false,
+    label: 'Peak Electrical Demand [kW/m2]',
+  },
+  {
+    id: 'peakGas',
+    numeric: true,
+    disablePadding: false,
+    label: 'Peak Gas Demand [kW/m2]',
+  },
+  {
+    id: 'peakDistrictHeating',
+    numeric: true,
+    disablePadding: false,
+    label: 'Peak District Heating Demand [kW/m2]',
+  },
+  {
     id: 'isShared',
     numeric: false,
     disablePadding: false,
@@ -671,14 +689,33 @@ export default function DashboardResultsTable(props) {
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
-                        <Typography variant="body1">{row.cost.toFixed(2)}</Typography>
+                        <Typography variant="body1">
+                          {row.cost.toFixed(2)}
+                        </Typography>
                       </TableCell>
                       <TableCell align="center">
-                        <Typography variant="body1">{row.emissions.toFixed(4)}</Typography>
+                        <Typography variant="body1">
+                          {row.emissions.toFixed(4)}
+                        </Typography>
                       </TableCell>
                       <TableCell align="center">
                         <Typography variant="body1">
                           {row.compTimeRatio.toFixed(4)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body1">
+                          {row.peakElectricity.toFixed(4)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body1">
+                          {row.peakGas.toFixed(4)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body1">
+                          {row.peakDistrictHeating.toFixed(4)}
                         </Typography>
                       </TableCell>
                       <TableCell>
