@@ -70,7 +70,7 @@ export const KPITable: React.FC<KPITableProps> = props => {
                   </Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
-                <TableCell>{props.result.energy}</TableCell>
+                <TableCell>{props.result.energy.toFixed(4)}</TableCell>
                 {details.numResults >= numberOfResultsToShowChart && (
                   <TableCell>
                     <KPIBarChart
@@ -88,7 +88,7 @@ export const KPITable: React.FC<KPITableProps> = props => {
                   </Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
-                <TableCell>{props.result.thermalDiscomfort}</TableCell>
+                <TableCell>{props.result.thermalDiscomfort.toFixed(4)}</TableCell>
                 {details.numResults >= numberOfResultsToShowChart && (
                   <TableCell>
                     <KPIBarChart
@@ -106,7 +106,7 @@ export const KPITable: React.FC<KPITableProps> = props => {
                   </Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
-                <TableCell>{props.result.cost}</TableCell>
+                <TableCell>{props.result.cost.toFixed(2)}</TableCell>
                 {details.numResults >= numberOfResultsToShowChart && (
                   <TableCell>
                     <KPIBarChart
@@ -124,7 +124,7 @@ export const KPITable: React.FC<KPITableProps> = props => {
                   </Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
-                <TableCell>{props.result.emissions}</TableCell>
+                <TableCell>{props.result.emissions.toFixed(4)}</TableCell>
                 {details.numResults >= numberOfResultsToShowChart && (
                   <TableCell>
                     <KPIBarChart
@@ -142,7 +142,7 @@ export const KPITable: React.FC<KPITableProps> = props => {
                   </Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
-                <TableCell>{props.result.aqDiscomfort}</TableCell>
+                <TableCell>{props.result.aqDiscomfort.toFixed(4)}</TableCell>
                 {details.numResults >= numberOfResultsToShowChart && (
                   <TableCell>
                     <KPIBarChart
@@ -158,7 +158,7 @@ export const KPITable: React.FC<KPITableProps> = props => {
                   <Typography variant="body2">Time Ratio</Typography>
                 </TableCell>
                 {/* potentially use a data component here to house value and the chart */}
-                <TableCell>{props.result.compTimeRatio}</TableCell>
+                <TableCell>{props.result.compTimeRatio.toFixed(4)}</TableCell>
                 {details.numResults >= numberOfResultsToShowChart && (
                   <TableCell>
                     <KPIBarChart

@@ -475,28 +475,28 @@ export default function ResultsTable(props) {
                       </TableCell>
                       <TableCell align="center">
                         <Typography variant="body1">
-                          {row.totalEnergy}
+                          {row.totalEnergy.toFixed(4)}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
                         <Typography variant="body1">
-                          {row.thermalDiscomfort}
+                          {row.thermalDiscomfort.toFixed(4)}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
                         <Typography variant="body1">
-                          {row.aqDiscomfort}
+                          {row.aqDiscomfort.toFixed(4)}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
-                        <Typography variant="body1">{row.cost}</Typography>
+                        <Typography variant="body1">{row.cost.toFixed(2)}</Typography>
                       </TableCell>
                       <TableCell align="center">
-                        <Typography variant="body1">{row.emissions}</Typography>
+                        <Typography variant="body1">{row.emissions.toFixed(4)}</Typography>
                       </TableCell>
                       <TableCell align="center">
                         <Typography variant="body1">
-                          {row.compTimeRatio}
+                          {row.compTimeRatio.toFixed(4)}
                         </Typography>
                       </TableCell>
                     </TableRow>
