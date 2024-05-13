@@ -94,6 +94,9 @@ const baseValidResult = {
     idis_tot: 444,
     tdis_tot: 79,
     time_rat: 1460,
+    pele_tot: 10.0,
+    pgas_tot: 5.0,
+    pdih_tot: 0.0
   },
   forecastParameters: {
     horizon: 21600.0,
@@ -139,6 +142,9 @@ export const mockResult4 = {
     idis_tot: 444,
     tdis_tot: 79,
     time_rat: 1460,
+    pele_tot: 10.0,
+    pgas_tot: 5.0,
+    pdih_tot: 0.0
   },
   forecastParameters: {
     horizon: 21600.0,
@@ -169,6 +175,9 @@ export const mockResult5 = {
     idis_tot: 444,
     tdis_tot: 79,
     time_rat: 1460,
+    pele_tot: 10.0,
+    pgas_tot: 5.0,
+    pdih_tot: 0.0
   },
   forecastParameters: {
     horizon: 21600.0,
