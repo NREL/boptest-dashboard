@@ -1,3 +1,4 @@
+#!/bin/bash
 # load .env defines in root of repo
 export DASHBOARD_LOCAL_REGISTRY_URI=boptest-dashboard-server_test
 export DOCKER_HUB_WEB_REGISTRY_URI=boptest-dashboard-server
