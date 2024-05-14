@@ -203,11 +203,11 @@ function getKPIRanges(results: Result[], result: Result): SignatureDetails {
   var peakElectricityMin = result.peakElectricity;
   var peakElectricityMax = result.peakElectricity;
 
-  var peakGasMin = result.peakGas;
-  var peakGasMax = result.peakGas;
+  var peakGasMin = result.peakGas || 0.0;
+  var peakGasMax = result.peakGas || 0.0;
 
-  var peakDistrictHeatingMin = result.peakDistrictHeating;
-  var peakDistrictHeatingMax = result.peakDistrictHeating;
+  var peakDistrictHeatingMin = result.peakDistrictHeating || 0.0;
+  var peakDistrictHeatingMax = result.peakDistrictHeating || 0.0;
 
   results.forEach(res => {
     if (res.thermalDiscomfort < tdMin) {
@@ -266,19 +266,19 @@ function getKPIRanges(results: Result[], result: Result): SignatureDetails {
       peakElectricityMax = res.peakElectricity;
     }
 
-    if (res.peakGas < peakGasMin) {
+    if (res.peakGas && res.peakGas < peakGasMin) {
       peakGasMin = res.peakGas;
     }
 
-    if (res.peakGas > peakGasMax) {
+    if (res.peakGas && res.peakGas > peakGasMax) {
       peakGasMax = res.peakGas;
     }
 
-    if (res.peakDistrictHeating < peakDistrictHeatingMin) {
+    if (res.peakDistrictHeating && res.peakDistrictHeating < peakDistrictHeatingMin) {
       peakDistrictHeatingMin = res.peakDistrictHeating;
     }
 
-    if (res.peakDistrictHeating > peakDistrictHeatingMax) {
+    if (res.peakDistrictHeating && res.peakDistrictHeating > peakDistrictHeatingMax) {
       peakDistrictHeatingMax = res.peakDistrictHeating;
     }
   });

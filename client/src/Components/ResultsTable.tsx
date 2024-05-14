@@ -528,12 +528,16 @@ export default function ResultsTable(props) {
                       </TableCell>
                       <TableCell align="center">
                         <Typography variant="body1">
-                          {row.peakGas.toFixed(4)}
+                          {row.peakGas !== null
+                            ? row.peakGas.toFixed(4)
+                            : 'N/A'}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
                         <Typography variant="body1">
-                          {row.peakDistrictHeating.toFixed(4)}
+                          {row.peakDistrictHeating !== null
+                            ? row.peakDistrictHeating.toFixed(4)
+                            : 'N/A'}
                         </Typography>
                       </TableCell>
                     </TableRow>

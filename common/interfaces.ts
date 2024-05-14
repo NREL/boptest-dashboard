@@ -115,8 +115,8 @@ export interface Result {
   iaq: number;
   timeRatio: number;
   peakElectricity: number;
-  peakGas: number;
-  peakDistrictHeating: number;
+  peakGas?: number;
+  peakDistrictHeating?: number;
 
   // Building Type stuff (formerly testcase stuff)
   timePeriod: string;

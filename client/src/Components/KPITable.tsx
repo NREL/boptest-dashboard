@@ -189,44 +189,48 @@ export const KPITable: React.FC<KPITableProps> = props => {
                   </TableCell>
                 )}
               </TableRow>
-              <TableRow>
-                <TableCell>
-                  <Typography variant="body2">
-                    Peak Gas Demand [kW/m2]
-                  </Typography>
-                </TableCell>
-                {/* potentially use a data component here to house value and the chart */}
-                <TableCell>{props.result.peakGas.toFixed(4)}</TableCell>
-                {details.numResults >= numberOfResultsToShowChart && (
+              {props.result.peakGas !== null && (
+                <TableRow>
                   <TableCell>
-                    <KPIBarChart
-                      value={props.result.peakGas}
-                      min={details.peakGas.min}
-                      max={details.peakGas.max}
-                    />
+                    <Typography variant="body2">
+                      Peak Gas Demand [kW/m2]
+                    </Typography>
                   </TableCell>
-                )}
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <Typography variant="body2">
-                    Peak District Heating Demand [kW/m2]
-                  </Typography>
-                </TableCell>
-                {/* potentially use a data component here to house value and the chart */}
-                <TableCell>
-                  {props.result.peakDistrictHeating.toFixed(4)}
-                </TableCell>
-                {details.numResults >= numberOfResultsToShowChart && (
+                  {/* potentially use a data component here to house value and the chart */}
+                  <TableCell>{props.result.peakGas.toFixed(4)}</TableCell>
+                  {details.numResults >= numberOfResultsToShowChart && (
+                    <TableCell>
+                      <KPIBarChart
+                        value={props.result.peakGas}
+                        min={details.peakGas.min}
+                        max={details.peakGas.max}
+                      />
+                    </TableCell>
+                  )}
+                </TableRow>
+              )}
+              {props.result.peakDistrictHeating !== null && (
+                <TableRow>
                   <TableCell>
-                    <KPIBarChart
-                      value={props.result.peakDistrictHeating}
-                      min={details.peakDistrictHeating.min}
-                      max={details.peakDistrictHeating.max}
-                    />
+                    <Typography variant="body2">
+                      Peak District Heating Demand [kW/m2]
+                    </Typography>
                   </TableCell>
-                )}
-              </TableRow>
+                  {/* potentially use a data component here to house value and the chart */}
+                  <TableCell>
+                    {props.result.peakDistrictHeating.toFixed(4)}
+                  </TableCell>
+                  {details.numResults >= numberOfResultsToShowChart && (
+                    <TableCell>
+                      <KPIBarChart
+                        value={props.result.peakDistrictHeating}
+                        min={details.peakDistrictHeating.min}
+                        max={details.peakDistrictHeating.max}
+                      />
+                    </TableCell>
+                  )}
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>
