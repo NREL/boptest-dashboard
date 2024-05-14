@@ -1,7 +1,7 @@
 #!/bin/bash
 # load .env defines in root of repo
 export DASHBOARD_LOCAL_REGISTRY_URI=boptest-dashboard_server_test
-export DOCKER_HUB_WEB_REGISTRY_URI=boptest-dashboard-server
+export DOCKER_HUB_WEB_REGISTRY_URI=nrel/boptest-dashboard-server
 
 
 if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
