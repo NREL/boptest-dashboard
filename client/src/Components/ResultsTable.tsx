@@ -73,12 +73,6 @@ const headCells: HeadCell[] = [
     label: 'Total CO2 emissions [kgCO2/m^2]',
   },
   {
-    id: 'compTimeRatio',
-    numeric: true,
-    disablePadding: false,
-    label: 'Computational Time Ratio [-]',
-  },
-  {
     id: 'peakElectricity',
     numeric: true,
     disablePadding: false,
@@ -95,6 +89,12 @@ const headCells: HeadCell[] = [
     numeric: true,
     disablePadding: false,
     label: 'Peak District Heating Demand [kW/m2]',
+  },
+  {
+    id: 'compTimeRatio',
+    numeric: true,
+    disablePadding: false,
+    label: 'Computational Time Ratio [-]',
   },
 ];
 
@@ -518,22 +518,26 @@ export default function ResultsTable(props) {
                       </TableCell>
                       <TableCell align="center">
                         <Typography variant="body1">
-                          {row.compTimeRatio.toFixed(4)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body1">
                           {row.peakElectricity.toFixed(4)}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
                         <Typography variant="body1">
-                          {row.peakGas.toFixed(4)}
+                          {row.peakGas !== null
+                            ? row.peakGas.toFixed(4)
+                            : 'N/A'}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
                         <Typography variant="body1">
-                          {row.peakDistrictHeating.toFixed(4)}
+                          {row.peakDistrictHeating !== null
+                            ? row.peakDistrictHeating.toFixed(4)
+                            : 'N/A'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body1">
+                          {row.compTimeRatio.toFixed(4)}
                         </Typography>
                       </TableCell>
                     </TableRow>

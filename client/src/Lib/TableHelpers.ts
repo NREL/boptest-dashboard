@@ -23,8 +23,8 @@ export interface Data {
   emissions: number;
   compTimeRatio: number;
   peakElectricity: number;
-  peakGas: number;
-  peakDistrictHeating: number;
+  peakGas?: number;
+  peakDistrictHeating?: number;
   timePeriod: string;
   electricityPrice: string;
   weatherForecastUncertainty: string;

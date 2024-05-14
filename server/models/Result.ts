@@ -62,10 +62,12 @@ export const ResultEntity = new EntitySchema<Result>({
     peakGas: {
       type: 'float',
       scale: 5,
+      nullable: true,
     },
     peakDistrictHeating: {
       type: 'float',
       scale: 5,
+      nullable: true,
     },
     controlStep: {
       type: String,
