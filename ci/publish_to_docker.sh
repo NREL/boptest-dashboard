@@ -1,7 +1,7 @@
 #!/bin/bash
 # load .env defines in root of repo
-export DASHBOARD_LOCAL_REGISTRY_URI=boptest-dashboard_server_test
-export DOCKER_HUB_WEB_REGISTRY_URI=nrel/boptest-dashboard-server
+export DASHBOARD_SERVER_LOCAL_REGISTRY_URI=boptest-dashboard-server-k8s
+export DASHBOARD_SERVER_DOCKER_HUB_REGISTRY_URI=nrel/boptest-dashboard-server
 
 
 if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
@@ -18,10 +18,10 @@ fi
  if [[ "${VERSION_TAG}" == "develop" ]] || [[ "${VERSION_TAG}" =~ ^v[0-9].* ]] || [[ "${VERSION_TAG}" == "master" ]] ; then
 
     docker image ls
-    docker tag ${DASHBOARD_LOCAL_REGISTRY_URI}:latest ${DOCKER_HUB_WEB_REGISTRY_URI}:${VERSION_TAG}; (( exit_status = exit_status || $? ))
+    docker tag ${DASHBOARD_SERVER_LOCAL_REGISTRY_URI}:latest ${DASHBOARD_SERVER_DOCKER_HUB_REGISTRY_URI}:${VERSION_TAG}; (( exit_status = exit_status || $? ))
 
-    echo "pushing ${DOCKER_HUB_WEB_REGISTRY_URI}:${VERSION_TAG}"
-    docker push ${DOCKER_HUB_WEB_REGISTRY_URI}:${VERSION_TAG}; (( exit_status = exit_status || $? ))
+    echo "pushing ${DASHBOARD_SERVER_DOCKER_HUB_REGISTRY_URI}:${VERSION_TAG}"
+    docker push ${DASHBOARD_SERVER_DOCKER_HUB_REGISTRY_URI}:${VERSION_TAG}; (( exit_status = exit_status || $? ))
 fi
 
 exit $exit_status
