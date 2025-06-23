@@ -11,7 +11,8 @@
     "moduleResolution": "node",
     "outDir": "./build",
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "noImplicitReturns": false
   },
   "include": ["./**/*.ts", "tests/**/*.ts"]
 }

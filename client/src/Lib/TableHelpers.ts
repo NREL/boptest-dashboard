@@ -40,7 +40,7 @@ export const createDataFromResult = (result: Result): Data => {
     id: result.id,
     uid: result.uid,
     isShared: result.isShared,
-    accountUsername: result.account.name,
+    accountUsername: result.account.displayName,
     buildingTypeName: result.buildingType.name,
     dateRun: result.dateRun,
     totalEnergy: result.energyUse,

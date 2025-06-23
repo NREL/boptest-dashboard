@@ -21,17 +21,68 @@ resultRouter.get('/', (req: express.Request, res: express.Response) => {
 });
 
 resultRouter.get('/my-results', (req: express.Request, res: express.Response) => {
-  if (req.session) {
-    getAllResultsForUser(req.session.email)
-    .then(results => {
-      res.json(results);
-    })
-    .catch(err => console.log(`Unable to get results for user ${req.params.email}`, err));
+  console.log('Getting my-results, session info:', req.session ? 'exists' : 'missing');
+  console.log('Session user ID:', req.session?.userId);
+  console.log('Headers:', req.headers);
+  
+  // Try to get user ID from multiple sources
+  let userId: string | null = null;
+  
+  // 1. First priority: Session
+  if (req.session && req.session.userId) {
+    userId = req.session.userId;
+    console.log('Using user ID from session:', userId);
+  } 
+  // 2. Second priority: X-User-ID header
+  else if (req.headers['x-user-id']) {
+    userId = req.headers['x-user-id'] as string;
+    console.log('Using user ID from header:', userId);
+  }
+  // 3. Third priority: auth_user cookie via header
+  else if (req.headers.cookie) {
+    try {
+      const cookies = req.headers.cookie.split(';');
+      const authUserCookie = cookies.find(cookie => cookie.trim().startsWith('auth_user='));
+      
+      if (authUserCookie) {
+        const cookieValue = authUserCookie.split('=')[1];
+        if (cookieValue) {
+          const decodedValue = decodeURIComponent(cookieValue);
+          const authUserData = JSON.parse(decodedValue);
+          
+          if (authUserData && authUserData.userId) {
+            userId = String(authUserData.userId);
+            console.log('Using user ID from auth_user cookie:', userId);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error parsing auth_user cookie from header:', e);
+    }
+  }
+  
+  // If we have a user ID from any source, proceed
+  if (userId) {
+    console.log('Getting results for user ID:', userId);
+    
+    getAllResultsForUser(userId)
+      .then(results => {
+        console.log(`Found ${results.length} results for user ID ${userId}`);
+        res.json(results);
+      })
+      .catch(err => {
+        console.log(`Unable to get results for user ID ${userId}`, err);
+        res.status(500).json({ error: 'Failed to retrieve results' });
+      });
+  } else {
+    console.log('No user ID found in any source for /my-results endpoint');
+    res.status(401).json({ error: 'Not authenticated' });
   }
 });
-// this endpoint is going to be hit a lot if the user is cicking into
+
+// This endpoint is going to be hit a lot if the user is clicking into
 // the detail view of results in the results table.
-// I'd suggest a future optimization of memcached with the values of
+// A future optimization could be to use memcached with the values of
 // the signature so that we don't have to query the table as much.
 resultRouter.get(
   '/:id/signature',
@@ -67,12 +118,18 @@ Will be a DELETE request
 //     .catch(err => res.status(500).send('Unable to remove entities: ' + err));
 // });
 
-resultRouter.patch('/share',  (req: express.Request, res: express.Response) => {
-  toggleShared(req.body.id, req.body.share, Number(req!.session!.userId))
-    .then(() => {
-      res.send(200);
-    })
-    .catch(err => {
-      res.status(500).json(err);
-    });
+resultRouter.patch('/share', (req: express.Request, res: express.Response) => {
+  if (req.session && req.session.userId) {
+    const userId = Number(req.session.userId);
+    
+    toggleShared(req.body.id, req.body.share, userId)
+      .then(() => {
+        res.sendStatus(200);
+      })
+      .catch(err => {
+        res.status(500).json(err);
+      });
+  } else {
+    res.status(401).json({ error: 'Not authenticated' });
+  }
 });

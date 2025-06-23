@@ -1,34 +1,5 @@
-export interface SignupData {
-  username: string;
-  email: string;
-  password: string;
-}
-
-export interface ConfirmData {
-  username: string;
-  verificationCode: string;
-}
-
-export interface ConfirmNewPasswordData {
-  username: string;
-  verificationCode: string;
-  newPassword: string;
-}
-
-export interface ForgotPasswordData {
-  email: string;
-}
-
-export interface ChangePasswordData {
-  email: string;
-  oldPassword: string;
-  newPassword: string;
-}
-
-export interface LoginData {
-  email: string;
-  password: string;
-}
+// Removed SignupData, ChangePasswordData, and LoginData interfaces
+// as we're using OAuth-only authentication
 
 export interface SignatureDetails {
   numResults: number;
@@ -83,13 +54,13 @@ export interface BuildingType {
 
 export interface Account {
   id: number;
-  sub: string;
-  name: string;
-  email: string;
-  apiKey: string;
+  hashedIdentifier: string;  // Replaces sub/email/name with privacy-friendly identifier
+  displayName: string;       // Display name instead of real name
+  apiKey: string;            // Maintained for API access
   apiKeySalt: string;
   results: Result[];
   shareAllResults: boolean | null;
+  oauthProvider: string;     // "google" or "github" only
 }
 
 export type Signature = Pick<

@@ -1,9 +1,9 @@
 import {SignatureDetails} from './../../common/interfaces';
 import {getBuildingTypeByUid} from './../models/BuildingType';
 import {getRepository} from 'typeorm';
-import {getAccountByAPIKey, getAccountByEmail} from './account';
+import {getAccountByAPIKey, getAccountByHashedIdentifier, getAccountById} from './account';
 import {createResult, ResultEntity} from '../models/Result';
-import {Result, Scenario, Scenarios, Signature} from '../../common/interfaces';
+import {Result, Scenario, Scenarios, Signature, Account} from '../../common/interfaces';
 
 export function getResults(): Promise<Result[]> {
   // request data
@@ -47,11 +47,18 @@ export function getAllSharedResults(): Promise<Result[]> {
   })
 }
 
-export function getAllResultsForUser(email: string): Promise<Result[]> {
+export function getAllResultsForUser(userId: string): Promise<Result[]> {
   const repo = getRepository<Result>(ResultEntity);
-
-  return getAccountByEmail(email)
-    .then(targetAccount => {
+  const accountId = parseInt(userId, 10);
+  
+  if (isNaN(accountId)) {
+    console.error('Invalid user ID:', userId);
+    return Promise.reject(new Error('Invalid user ID'));
+  }
+  
+  return getAccountById(accountId)
+    .then((targetAccount: Account) => {
+      console.log('Found account for user ID:', accountId);
       return repo.find({
         relations: ['account', 'buildingType'],
         where: {
@@ -59,8 +66,13 @@ export function getAllResultsForUser(email: string): Promise<Result[]> {
           account: targetAccount,
         },
       }).then((data) => {
+        console.log(`Found ${data.length} results for user ID: ${accountId}`);
         return data;
       });
+    })
+    .catch(err => {
+      console.error(`Error finding account for user ID ${accountId}:`, err);
+      return Promise.reject(err);
     })
 }
 
@@ -126,20 +138,6 @@ export function createResults(results: any) {
     })
   );
 }
-
-/*Not implemented for the time being*/
-// export function removeResults(ids: number[]): Promise<void>[] {
-//   const repo = getRepository<Result>(ResultEntity);
-//   return ids.map((id: number) => {
-//     return repo
-//       .findOneOrFail(id)
-//       .then(result => {
-//         result.deleted = true;
-//         repo.save(result);
-//       })
-//       .catch(() => console.log('unable to remove result', id));
-//   });
-// }
 
 export function toggleShared(id: number, share:boolean, sessionId: number): Promise<any> {
   const repo = getRepository<Result>(ResultEntity);

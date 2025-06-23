@@ -65,13 +65,25 @@ const syncTestData = apiKey => {
 export const ApiKey: React.FC = () => {
   const classes = useStyles();
 
-  const [apiKey, setApiKey] = React.useState([]);
+  const [apiKey, setApiKey] = React.useState('');
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState('');
   const [showSyncTestData, setShowSyncTestData] = React.useState(false);
 
   useEffect(() => {
-    axios.get('/api/accounts/key').then(res => {
-      setApiKey(res.data.apiKey);
-    });
+    setLoading(true);
+    setError('');
+    
+    axios.get('/api/accounts/key', { withCredentials: true })
+      .then(res => {
+        setApiKey(res.data.apiKey);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching API key:', err);
+        setError('Could not retrieve your API key. Please try again later.');
+        setLoading(false);
+      });
 
     if (envType === 'development') {
       setShowSyncTestData(true);
@@ -85,33 +97,52 @@ export const ApiKey: React.FC = () => {
           Your API key
         </Typography>
       </Box>
-      <div className={classes.apiKeyOps}>
-        <TextField
-          id={apiKeySelector}
-          className={classes.apiKeyText}
-          value={apiKey}
-          variant="outlined"
-          inputProps={{maxLength: 128}}
-        />
-        <Button
-          onClick={() => copyApiKeyToClipboard()}
-          className={classes.apiKeyButton}
-          variant="contained"
-          size="small"
-        >
-          Copy to Clipboard
-        </Button>
-        {showSyncTestData && (
+      
+      {loading ? (
+        <Typography variant="body1" style={{ marginTop: '20px' }}>
+          Loading your API key...
+        </Typography>
+      ) : error ? (
+        <Typography variant="body1" style={{ marginTop: '20px', color: 'red' }}>
+          {error}
+        </Typography>
+      ) : (
+        <div className={classes.apiKeyOps}>
+          <TextField
+            id={apiKeySelector}
+            className={classes.apiKeyText}
+            value={apiKey}
+            variant="outlined"
+            inputProps={{maxLength: 128}}
+            disabled={!apiKey}
+          />
           <Button
-            onClick={() => syncTestData(apiKey)}
-            className={classes.syncTestDataButton}
+            onClick={() => copyApiKeyToClipboard()}
+            className={classes.apiKeyButton}
             variant="contained"
             size="small"
+            disabled={!apiKey}
           >
-            Sync Test Data
+            Copy to Clipboard
           </Button>
-        )}
-      </div>
+          {showSyncTestData && (
+            <Button
+              onClick={() => syncTestData(apiKey)}
+              className={classes.syncTestDataButton}
+              variant="contained"
+              size="small"
+              disabled={!apiKey}
+            >
+              Sync Test Data
+            </Button>
+          )}
+        </div>
+      )}
+      
+      <Typography variant="body2" style={{ marginTop: '20px' }}>
+        This API key can be used to interact with the BOPTEST Dashboard API programmatically.
+        Keep it secure - anyone with this key can access the API on your behalf.
+      </Typography>
     </div>
   );
 };

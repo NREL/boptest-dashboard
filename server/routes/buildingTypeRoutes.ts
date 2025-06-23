@@ -7,12 +7,12 @@ import { Account } from '../../common/interfaces';
 export const buildingTypeRouter = express.Router();
 
 const superUsers: string = process.env.SUPER_USERS!
-const suEmails: string[] = superUsers.split(',');
+const suIds: string[] = superUsers.split(',');
 
 buildingTypeRouter.post('/', (req: express.Request, res: express.Response) => {
   getAccountByAPIKey(req.body.apiKey)
-  .then((accout: Account) => {
-    if (suEmails.includes(accout.email)) {
+  .then((account: Account) => {
+    if (suIds.includes(account.hashedIdentifier)) {
     createBuildingTypes(req.body.buildingTypes)
       .then(buildingTypes => {
         res.json(buildingTypes);
@@ -31,8 +31,8 @@ buildingTypeRouter.post('/', (req: express.Request, res: express.Response) => {
 
 buildingTypeRouter.put('/', (req: express.Request, res: express.Response) => {
   getAccountByAPIKey(req.body.apiKey)
-  .then((accout: Account) => {
-    if (suEmails.includes(accout.email)) {
+  .then((account: Account) => {
+    if (suIds.includes(account.hashedIdentifier)) {
       getBuildingTypeByUid(req.param('uid'))
       .then(buildingType => {
         updateBuildingType(buildingType, req.body.buildingTypes[0]);

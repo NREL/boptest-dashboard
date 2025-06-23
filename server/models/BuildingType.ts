@@ -2,7 +2,6 @@ import {EntitySchema, getRepository} from 'typeorm';
 import axios from 'axios';
 
 import {BuildingType} from '../../common/interfaces';
-import { confirmPasswordChange } from 'cognito';
 
 export type BuildingTypeData = Omit<BuildingType, 'results'>;
 
