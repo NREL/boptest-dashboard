@@ -9,10 +9,11 @@ import {Result} from '../../common/interfaces';
 const useStyles = makeStyles(() =>
   createStyles({
     root: {
-      padding: '0 16px 0 0',
+      padding: 0,
     },
     divider: {
-      backgroundColor: 'black',
+      backgroundColor: 'rgba(0, 0, 0, 0.12)',
+      margin: '24px 0',
     },
     blocks: {
       display: 'flex',

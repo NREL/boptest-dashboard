@@ -1,21 +1,51 @@
 import axios from 'axios';
 import React, {useEffect, useState} from 'react';
+import { useHistory } from 'react-router-dom';
 import { useUser } from '../Context/user-context';
+import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import Paper from '@material-ui/core/Paper';
+import Button from '@material-ui/core/Button';
 
 import DashboardResultsTable from '../Components/DashboardResultsTable';
 import {Modal} from '../Components/Modal';
 import {ResultDetails} from '../Components/ResultDetails';
+import MainTableHeader from '../Components/MainTableHeader';
+import { AppRoute } from '../enums';
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      padding: theme.spacing(2),
+    },
+    paper: {
+      padding: theme.spacing(0),
+      overflow: 'hidden',
+    },
+    noResults: {
+      padding: theme.spacing(5),
+      textAlign: 'center',
+      backgroundColor: 'transparent',
+    },
+  })
+);
 
 // Configure axios to include credentials with all requests
 axios.defaults.withCredentials = true;
 
 export const Dashboard: React.FC = () => {
+  const classes = useStyles();
+  const history = useHistory();
   const { hashedIdentifier, authedId } = useUser();
   const [results, setResults] = useState([]);
   const [buildingTypes, setBuildingTypes] = useState([]);
   const [showResultModal, setShowResultModal] = useState(false);
   const [selectedResult, setSelectedResult] = useState(null);
   const [error, setError] = useState<string | null>(null);
+  const [viewMyResults, setViewMyResults] = useState(true);
+  
+  // Check if user is logged in
+  const isLoggedIn = Boolean(hashedIdentifier && hashedIdentifier.length > 0);
 
   const updateResults = () => {
     // Only attempt to fetch results if we have authentication
@@ -77,52 +107,62 @@ export const Dashboard: React.FC = () => {
 
   const closeModal = () => setShowResultModal(false);
 
+  // Handle toggle change
+  const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.checked;
+    setViewMyResults(newValue);
+    
+    // Navigate to appropriate page
+    if (!newValue) {
+      history.push(AppRoute.Results);
+    }
+  };
+
   return (
-    <div>
-      {error ? (
-        <div style={{ 
-          padding: '2rem', 
-          margin: '2rem auto', 
-          maxWidth: '600px', 
-          textAlign: 'center',
-          backgroundColor: '#f8d7da',
-          color: '#721c24',
-          borderRadius: '4px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-        }}>
-          <h3>Authentication Error</h3>
-          <p>{error}</p>
-          <button 
-            onClick={() => updateResults()} 
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#17a2b8',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginTop: '1rem'
-            }}
-          >
-            Try Again
-          </button>
-        </div>
-      ) : (
-        <>
-          <DashboardResultsTable
-            results={results}
-            buildingTypes={buildingTypes}
-            setSelectedResult={handleChange}
-            updateResults={updateResults}
-          />
-          {showResultModal && (
-            <Modal
-              closeModal={closeModal}
-              renderProp={<ResultDetails result={selectedResult} />}
+    <div className={classes.root}>
+      <Paper className={classes.paper}>
+        {error ? (
+          <Paper elevation={0} className={classes.noResults}>
+            <Typography variant="h6" color="error" gutterBottom>
+              Authentication Error
+            </Typography>
+            <Typography variant="body1" paragraph>
+              {error}
+            </Typography>
+            <Button 
+              variant="contained"
+              color="primary"
+              onClick={() => updateResults()} 
+            >
+              Try Again
+            </Button>
+          </Paper>
+        ) : results.length === 0 ? (
+          <Paper elevation={0} className={classes.noResults}>
+            <Typography variant="body1">
+              You don't have any test results yet.
+            </Typography>
+          </Paper>
+        ) : (
+          <>
+            <DashboardResultsTable
+              results={results}
+              buildingTypes={buildingTypes}
+              setSelectedResult={handleChange}
+              updateResults={updateResults}
+              viewMyResults={viewMyResults}
+              onToggleChange={handleToggleChange}
+              isLoggedIn={isLoggedIn}
             />
-          )}
-        </>
-      )}
+            {showResultModal && (
+              <Modal
+                closeModal={closeModal}
+                renderProp={<ResultDetails result={selectedResult} />}
+              />
+            )}
+          </>
+        )}
+      </Paper>
     </div>
   );
 };

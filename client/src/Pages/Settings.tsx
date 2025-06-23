@@ -9,9 +9,10 @@ import {
   Typography,
   IconButton,
   Tooltip,
+  Paper,
 } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
-import {createStyles, makeStyles} from '@material-ui/core/styles';
+import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import {useUser} from '../Context/user-context';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
@@ -19,15 +20,16 @@ import RefreshIcon from '@material-ui/icons/Refresh';
 
 const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;
 
-const useStyles = makeStyles(() =>
+const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      width: '70%',
-      margin: 'auto',
-      padding: '16px 0 0 16px',
+      padding: theme.spacing(3),
+    },
+    paper: {
+      padding: theme.spacing(3),
+      width: '100%',
+      maxWidth: 800,
+      margin: '0 auto',
     },
     bold: {
       fontWeight: 'inherit',
@@ -364,11 +366,16 @@ export const Settings: React.FC = () => {
   
   return (
     <div className={classes.root}>
-      <Box fontWeight="fontWeightBold">
-        <Typography variant="h6" className={classes.bold}>
-          Display Name
+      <Paper className={classes.paper}>
+        <Typography variant="h5" gutterBottom>
+          Account Settings
         </Typography>
-      </Box>
+        
+        <Box fontWeight="fontWeightBold" mt={3}>
+          <Typography variant="h6" className={classes.bold}>
+            Display Name
+          </Typography>
+        </Box>
       <Typography variant="subtitle2">
         This will be displayed with your results if you choose to share them.
         Your display name doesn't need to be your real name - feel free to use a fun pseudonym!
@@ -554,6 +561,7 @@ export const Settings: React.FC = () => {
           {snackMessage[0]}
         </Alert>
       </Snackbar>
+      </Paper>
     </div>
   );
 };

@@ -5,6 +5,7 @@ import {
   makeStyles,
   Theme,
   withStyles,
+  useTheme,
 } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Switch from '@material-ui/core/Switch';
@@ -21,6 +22,7 @@ import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import {FilterMenu} from './FilterMenu';
 import {FilterRanges, FilterValues} from '../../common/interfaces';
 import {
@@ -124,6 +126,18 @@ const toggleShared = (id: number, share: boolean) => {
   return axios.patch('/api/results/share', {id, share});
 };
 
+// Helper function to split the label into main text and units
+const parseHeaderLabel = (label: string): { main: string; unit: string | null } => {
+  const matches = label.match(/^(.*?)\s*(\[.*?\])?$/);
+  if (matches && matches[2]) {
+    return { 
+      main: matches[1].trim(), 
+      unit: matches[2].trim() 
+    };
+  }
+  return { main: label, unit: null };
+};
+
 function EnhancedTableHead(props: EnhancedTableProps) {
   const {
     classes,
@@ -134,6 +148,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     rowCount,
     onRequestSort,
   } = props;
+  const theme = useTheme();
   const createSortHandler =
     (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
@@ -147,34 +162,38 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
             inputProps={{'aria-label': 'select all results'}}
-            color="default"
-            style={{
-              color: '#078b75',
-            }}
+            color="primary"
           />
         </TableCell>
-        {headCells.map(headCell => (
-          <TableCell
-            key={headCell.id}
-            align={'center'}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-            sortDirection={orderBy === headCell.id ? order : false}
-            className={classes.headerCell}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
+        {headCells.map(headCell => {
+          const { main, unit } = parseHeaderLabel(headCell.label);
+          
+          return (
+            <TableCell
+              key={headCell.id}
+              align={'center'}
+              padding={'none'}
+              sortDirection={orderBy === headCell.id ? order : false}
+              className={classes.headerCell}
             >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <span className={classes.visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </span>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
+              <TableSortLabel
+                active={orderBy === headCell.id}
+                direction={orderBy === headCell.id ? order : 'asc'}
+                onClick={createSortHandler(headCell.id)}
+              >
+                <div>
+                  <span className={classes.headerLabel}>{main}</span>
+                  {unit && <span className={classes.headerUnit}>{unit}</span>}
+                </div>
+                {orderBy === headCell.id ? (
+                  <span className={classes.visuallyHidden}>
+                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                  </span>
+                ) : null}
+              </TableSortLabel>
+            </TableCell>
+          );
+        })}
       </TableRow>
     </TableHead>
   );
@@ -183,56 +202,94 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 const useToolbarStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
+      display: 'flex',
       justifyContent: 'space-between',
-      paddingLeft: theme.spacing(2),
-      paddingRight: theme.spacing(2),
+      padding: theme.spacing(0, 3),
+      borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+      backgroundColor: 'rgba(0, 0, 0, 0.02)',
     },
     filterContainer: {
       display: 'flex',
+      alignItems: 'center',
     },
     select: {
-      marginTop: theme.spacing(2),
+      margin: theme.spacing(2, 2, 2, 0),
       minWidth: '225px',
     },
     selectIcon: {
-      fill: '#078b75',
+      fill: theme.palette.primary.main,
     },
+    toggleContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      minWidth: '300px',
+    },
+    headerTitle: {
+      fontWeight: 600,
+      color: theme.palette.primary.main,
+      letterSpacing: '0.02em',
+    },
+    switch: {
+      '& .MuiSwitch-track': {
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+      },
+      '& .MuiSwitch-thumb': {
+        backgroundColor: '#ffffff',
+      },
+      '& .Mui-checked + .MuiSwitch-track': {
+        backgroundColor: `${theme.palette.primary.main} !important`,
+        opacity: 0.5,
+      },
+      '& .Mui-checked .MuiSwitch-thumb': {
+        backgroundColor: theme.palette.primary.main,
+      },
+    },
+    switchLabel: {
+      fontSize: '0.875rem',
+      fontWeight: 500,
+    },
+    titleAndFilterContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      flex: 1
+    }
   })
 );
 
 const ColorButton = withStyles(theme => ({
   root: {
-    color: '#078b75',
-    borderColor: '#078b75',
+    color: theme.palette.primary.main,
+    borderColor: theme.palette.primary.main,
     marginTop: theme.spacing(2),
     marginLeft: theme.spacing(2),
   },
 }))(Button);
 
-const ColorSelect = withStyles({
+const ColorSelect = withStyles(theme => ({
   root: {
     '& label': {
-      color: '#078b75',
+      color: theme.palette.primary.main,
     },
     '& label.Mui-focused': {
-      color: '#078b75',
+      color: theme.palette.primary.main,
     },
     '& .MuiInput-underline:after': {
-      borderBottomColor: '#078b75',
+      borderBottomColor: theme.palette.primary.main,
     },
     '& .MuiOutlinedInput-root': {
       '& fieldset': {
-        borderColor: '#078b75',
+        borderColor: theme.palette.primary.main,
       },
       '&:hover fieldset': {
-        borderColor: '#078b75',
+        borderColor: theme.palette.primary.main,
       },
       '&.Mui-focused fieldset': {
-        borderColor: '#078b75',
+        borderColor: theme.palette.primary.main,
       },
     },
   },
-})(TextField);
+}))(TextField);
 
 interface EnhancedTableToolbarProps {
   buildingTypeFilterOptions: {
@@ -243,6 +300,9 @@ interface EnhancedTableToolbarProps {
   numSelected: number;
   totalResults: number;
   updateBuildingFilter: (requestedBuilding: string) => void;
+  viewMyResults?: boolean;
+  onToggleChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  isLoggedIn?: boolean;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
@@ -254,6 +314,9 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     numSelected,
     totalResults,
     updateBuildingFilter,
+    viewMyResults = true,
+    onToggleChange,
+    isLoggedIn = false
   } = props;
 
   const selectProps = {
@@ -275,41 +338,54 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
 
   return (
     <Toolbar className={classes.root}>
-      <div className={classes.filterContainer}>
-        <ColorSelect
-          className={classes.select}
-          label="Filter on Building Type"
-          name="buildingType-filter"
-          onChange={onBuildingTypeFilter()}
-          select
-          value={buildingFilterValue}
-          variant="outlined"
-          SelectProps={selectProps}
-          size="small"
-        >
-          {buildingTypeFilterOptions.map(option => {
-            return (
-              <MenuItem key={`${option}-option`} value={option}>
-                {option}
-              </MenuItem>
-            );
-          })}
-        </ColorSelect>
-        {displayClear && (
-          <ColorButton variant="outlined" onClick={onBuildingTypeFilter(true)}>
-            Clear
-          </ColorButton>
-        )}
+      <div className={classes.titleAndFilterContainer}>
+        <div className={classes.filterContainer}>
+          <ColorSelect
+            className={classes.select}
+            label="Filter on Building Type"
+            name="buildingType-filter"
+            onChange={onBuildingTypeFilter()}
+            select
+            value={buildingFilterValue}
+            variant="outlined"
+            SelectProps={selectProps}
+            size="small"
+          >
+            {buildingTypeFilterOptions.map(option => {
+              return (
+                <MenuItem key={`${option}-option`} value={option}>
+                  {option}
+                </MenuItem>
+              );
+            })}
+          </ColorSelect>
+          {displayClear && (
+            <ColorButton variant="outlined" onClick={onBuildingTypeFilter(true)}>
+              Clear
+            </ColorButton>
+          )}
+        </div>
       </div>
-      {numSelected > 0 ? (
-        <Typography color="inherit" variant="h6" component="div">
-          {numSelected} Selected Results
+      
+      <div className={classes.toggleContainer}>
+        {isLoggedIn && onToggleChange && (
+          <FormControlLabel
+            control={
+              <Switch
+                checked={viewMyResults}
+                onChange={onToggleChange}
+                color="primary"
+                className={classes.switch}
+              />
+            }
+            label="Show My Results Only"
+            className={classes.switchLabel}
+          />
+        )}
+        <Typography variant="body2" style={{ marginLeft: '16px' }}>
+          {numSelected > 0 ? `${numSelected} Selected` : `${totalResults} Total Results`}
         </Typography>
-      ) : (
-        <Typography variant="h6" id="tableTitle" component="div">
-          {totalResults} Total Results
-        </Typography>
-      )}
+      </div>
     </Toolbar>
   );
 };
@@ -366,21 +442,37 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     paper: {
       width: '100%',
-      marginBottom: theme.spacing(2),
     },
     button: {
       justifyContent: 'center',
-      backgroundColor: 'rgb(0, 150, 136)',
-      color: 'white',
+      backgroundColor: theme.palette.primary.main,
+      color: theme.palette.primary.contrastText,
+      '&:hover': {
+        backgroundColor: theme.palette.primary.dark,
+      },
     },
     downloadButtonContainer: {
       display: 'flex',
       flexDirection: 'row-reverse',
-      paddingRight: theme.spacing(2),
-      paddingTop: theme.spacing(1),
+      padding: theme.spacing(2),
+      borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
     },
     headerCell: {
-      fontWeight: 'bold',
+      fontWeight: 600,
+      padding: theme.spacing(1.5),
+    },
+    headerLabel: {
+      display: 'block',
+      fontWeight: 600,
+      fontSize: '0.875rem',
+      lineHeight: 1.2,
+    },
+    headerUnit: {
+      display: 'block',
+      fontSize: '0.75rem',
+      fontWeight: 400,
+      color: 'rgba(0, 0, 0, 0.6)',
+      marginTop: theme.spacing(0.5),
     },
     table: {
       minWidth: 750,
@@ -398,19 +490,19 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     tableRow: {
       '&$selected, &$selected:hover': {
-        backgroundColor: 'rgb(146, 203, 197)',
+        backgroundColor: theme.palette.primary.light,
       },
     },
     selected: {},
     checked: {},
     track: {},
     switchBase: {
-      color: '#078b75',
+      color: theme.palette.primary.main,
       '&$checked': {
-        color: '#078b75',
+        color: theme.palette.primary.main,
       },
       '&$checked + $track': {
-        backgroundColor: '#078b75',
+        backgroundColor: theme.palette.primary.main,
       },
     },
   })
@@ -419,7 +511,15 @@ const useStyles = makeStyles((theme: Theme) =>
 // type the props here.
 // results - list of results from the server
 // displayResult() - method to show the result detail modal
-export default function DashboardResultsTable(props) {
+export default function DashboardResultsTable(props: {
+  results: any[];
+  buildingTypes: any[];
+  setSelectedResult: (result: any) => void;
+  updateResults: () => void;
+  viewMyResults?: boolean;
+  onToggleChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  isLoggedIn?: boolean;
+}) {
   const classes = useStyles();
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Data>('dateRun');
@@ -592,6 +692,9 @@ export default function DashboardResultsTable(props) {
           totalResults={filteredRows.length}
           numSelected={selected.length}
           updateBuildingFilter={handleUpdateBuildingFilter}
+          viewMyResults={props.viewMyResults}
+          onToggleChange={props.onToggleChange}
+          isLoggedIn={props.isLoggedIn}
         />
         {displayFilters && (
           <FilterToolbar
@@ -653,10 +756,7 @@ export default function DashboardResultsTable(props) {
                         <Checkbox
                           checked={isItemSelected}
                           inputProps={{'aria-labelledby': labelId}}
-                          color="default"
-                          style={{
-                            color: '#078b75',
-                          }}
+                          color="primary"
                           onClick={event => handleCheckboxClick(event, row.id)}
                         />
                       </TableCell>
@@ -728,12 +828,7 @@ export default function DashboardResultsTable(props) {
                           onClick={event => handleShareToggleClick(event, row)}
                           name="share switch"
                           inputProps={{'aria-label': 'secondary checkbox'}}
-                          color="default"
-                          classes={{
-                            switchBase: classes.switchBase,
-                            track: classes.track,
-                            checked: classes.checked,
-                          }}
+                          color="primary"
                         />
                       </TableCell>
                     </TableRow>

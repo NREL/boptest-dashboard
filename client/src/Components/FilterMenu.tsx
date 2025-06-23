@@ -1,5 +1,5 @@
 import React from 'react';
-import {createStyles, makeStyles, withStyles} from '@material-ui/core/styles';
+import {createStyles, makeStyles, withStyles, useTheme, Theme} from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
@@ -33,44 +33,44 @@ const useMenuStyles = makeStyles((theme: Theme) =>
       textTransform: 'capitalize',
     },
     selectIcon: {
-      fill: '#078b75',
+      fill: theme.palette.primary.main,
     },
   })
 );
 
 const ColorButton = withStyles(theme => ({
   root: {
-    color: '#078b75',
-    borderColor: '#078b75',
+    color: theme.palette.primary.main,
+    borderColor: theme.palette.primary.main,
     marginTop: theme.spacing(2),
     marginLeft: theme.spacing(2),
   },
 }))(Button);
 
-const ColorTextField = withStyles({
+const ColorTextField = withStyles(theme => ({
   root: {
     '& label': {
-      color: '#078b75',
+      color: theme.palette.primary.main,
     },
     '& label.Mui-focused': {
-      color: '#078b75',
+      color: theme.palette.primary.main,
     },
     '& .MuiInput-underline:after': {
-      borderBottomColor: '#078b75',
+      borderBottomColor: theme.palette.primary.main,
     },
     '& .MuiOutlinedInput-root': {
       '& fieldset': {
-        borderColor: '#078b75',
+        borderColor: theme.palette.primary.main,
       },
       '&:hover fieldset': {
-        borderColor: '#078b75',
+        borderColor: theme.palette.primary.main,
       },
       '&.Mui-focused fieldset': {
-        borderColor: '#078b75',
+        borderColor: theme.palette.primary.main,
       },
     },
   },
-})(TextField);
+}))(TextField);
 
 const usePopperStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -122,6 +122,7 @@ interface FilterMenuProps {
 export const FilterMenu: React.FC<FilterMenuProps> = props => {
   const menuClasses = useMenuStyles();
   const popperClasses = usePopperStyles();
+  const theme = useTheme();
   const {
     filterRanges,
     filterValues,
@@ -387,7 +388,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                           }
                           onChange={onTagFilterChange}
                           name={tag}
-                          style={{color: '#078b75'}}
+                          color="primary"
                         />
                       }
                       label={tag}

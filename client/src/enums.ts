@@ -16,11 +16,11 @@ export enum AppRoute {
 export enum Title {
   About = 'About',
   ApiKey = 'API Key',
-  Dashboard = 'My Test Results',
+  Dashboard = 'My Results',
   Docs = 'Test Cases',
   Confirm = 'Confirm your email address',
   Login = 'Login',
   Register = 'Register',
-  Results = 'Shared Test Results',
-  Settings = 'My Settings',
+  Results = 'Results',
+  Settings = 'Account Settings',
 }
