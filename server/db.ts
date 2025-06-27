@@ -29,27 +29,15 @@ export function connectToDb(withSync: boolean = false) {
 }
 
 export async function seedTestData(apiKey: string) {
-  // create accounts
-  const accounts = [
-    {
-      name: 'Jerry',
-      sub: 'jerry',
-      email: 'jerbear@gmail.com',
-      apiKey: 'jerrysapikey',
-    },
-    {
-      name: 'Carl',
-      sub: 'carl',
-      email: 'badcarl@gmail.com',
-      apiKey: 'carlsapikey',
-    },
-    {
-      name: 'Ted',
-      sub: 'ted',
-      email: 'teddybare@gmail.com',
-      apiKey: 'tedsapikey',
-    },
-  ];
+  console.log('Starting seedTestData with API key:', apiKey);
+  
+  // Make sure the apiKey parameter is actually used
+  if (!apiKey) {
+    return Promise.reject(new Error('API key is required'));
+  }
+  
+  // We won't create test accounts anymore
+  const accounts: any[] = [];
 
   const readmeUrl =
     'https://raw.githubusercontent.com/NREL/project1-boptest/master/README.md';
@@ -613,7 +601,32 @@ export async function seedTestData(apiKey: string) {
     },
   ];
 
-  return createAccounts(accounts)
-    .finally(() => createBuildingTypes(buildingTypes))
-    .finally(() => createResults(results));
+  // First check if building types already exist
+  const conn = getConnection();
+  return conn.query('SELECT COUNT(*) FROM buildingtypes')
+    .then((count) => {
+      if (parseInt(count[0].count) > 0) {
+        console.log('Building types already exist, skipping creation');
+        return Promise.resolve([]);
+      } else {
+        return createBuildingTypes(buildingTypes);
+      }
+    })
+    .then(() => {
+      console.log('Creating results with user API key:', apiKey);
+      
+      // Update all results to use the provided API key and ensure they're shared
+      results.forEach(result => {
+        result.account.apiKey = apiKey;
+        result.isShared = true;  // Explicitly set all results to be shared
+      });
+      
+      // Also update account sharing settings
+      const conn = getConnection();
+      return conn.query('UPDATE accounts SET "shareAllResults" = true WHERE "apiKey" = $1', [apiKey])
+        .then(() => {
+          console.log('Updated account to share all results');
+          return createResults(results);
+        });
+    });
 }

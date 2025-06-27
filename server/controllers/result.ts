@@ -78,8 +78,17 @@ export function getAllResultsForUser(userId: string): Promise<Result[]> {
 
 // need to account for account misses
 function createResultAndAssociatedModels(result: any) {
-  const account = getAccountByAPIKey(result.account.apiKey);
-  const buildingType = getBuildingTypeByUid(result.buildingType.uid);
+  console.log('Creating result with account API key:', result.account.apiKey);
+  const account = getAccountByAPIKey(result.account.apiKey)
+    .catch(err => {
+      console.error(`Failed to find account with API key ${result.account.apiKey}:`, err);
+      throw err;
+    });
+  const buildingType = getBuildingTypeByUid(result.buildingType.uid)
+    .catch(err => {
+      console.error(`Failed to find building type with UID ${result.buildingType.uid}:`, err);
+      throw err;
+    });
 
   return Promise.all([account, buildingType])
     .then(data => {
@@ -132,9 +141,20 @@ function createResultAndAssociatedModels(result: any) {
 }
 
 export function createResults(results: any) {
+  console.log(`Creating ${results.length} results`);
+  
   return Promise.allSettled(
     results.map((result: any) => {
-      return createResultAndAssociatedModels(result);
+      console.log(`Processing result ${result.uid}`);
+      return createResultAndAssociatedModels(result)
+        .then(created => {
+          console.log(`Successfully created result ${result.uid}`);
+          return created;
+        })
+        .catch(err => {
+          console.error(`Failed to create result ${result.uid}:`, err);
+          throw err;
+        });
     })
   );
 }

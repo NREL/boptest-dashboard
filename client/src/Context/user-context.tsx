@@ -10,6 +10,7 @@ export const UserContext = React.createContext({
   setShareAllResults: (share: string) => {},
   loading: true,
   refreshAuthStatus: () => {},
+  isAdmin: false,
 });
 
 const useUser = () => React.useContext(UserContext);
@@ -24,6 +25,7 @@ const UserProvider = ({children}: Props) => {
   const [hashedIdentifier, setHashedIdentifier] = React.useState('');
   const [shareAllResults, setShareAllResults] = React.useState('');
   const [loading, setLoading] = React.useState(true);
+  const [isAdmin, setIsAdmin] = React.useState(false);
 
   // Use the new direct auth status endpoint
   const authStatusEndpoint = '/api/auth/status';
@@ -117,12 +119,14 @@ const UserProvider = ({children}: Props) => {
           setAuthedId(result.data.user.userId || '');
           setHashedIdentifier(result.data.user.hashedIdentifier || '');
           setShareAllResults(result.data.user.shareAllResults || '');
+          setIsAdmin(result.data.user.isAdmin || false);
         } else {
           // Clear state if server says we're not authenticated
           setDisplayName('');
           setAuthedId('');
           setHashedIdentifier('');
           setShareAllResults('');
+          setIsAdmin(false);
         }
       })
       .catch(err => {
@@ -165,6 +169,7 @@ const UserProvider = ({children}: Props) => {
         setShareAllResults,
         loading,
         refreshAuthStatus: fetchAuthStatus,
+        isAdmin,
       }}
     >
       {children}

@@ -231,13 +231,17 @@ authRouter.get('/status', (req: express.Request, res: express.Response) => {
   
   // Return authenticated response if we found a user
   if (userId) {
+    // Check if user is an admin (super user)
+    const isAdmin = hashedIdentifier ? superUserIds.includes(hashedIdentifier) : false;
+    
     return res.json({
       authenticated: true,
       user: {
         displayName: displayName || '',
         hashedIdentifier: hashedIdentifier || '',
         userId: userId.toString(),
-        shareAllResults: shareAllResults || false
+        shareAllResults: shareAllResults || false,
+        isAdmin: isAdmin
       }
     });
   }

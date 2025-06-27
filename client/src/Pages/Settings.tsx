@@ -106,7 +106,7 @@ const generateQuirkyName = (): string => {
 };
 
 export const Settings: React.FC = () => {
-  const { displayName, hashedIdentifier, authedId, shareAllResults, setDisplayName, refreshAuthStatus } = useUser();
+  const { displayName, hashedIdentifier, authedId, shareAllResults, setDisplayName, refreshAuthStatus, isAdmin } = useUser();
 
   const classes = useStyles();
 
@@ -541,7 +541,7 @@ export const Settings: React.FC = () => {
       
       <Box fontWeight="fontWeightBold" style={{ marginTop: '32px' }}>
         <Typography variant="h6" className={classes.item}>
-          Authentication
+          Account Information
         </Typography>
       </Box>
       <Typography variant="body1">
@@ -551,6 +551,53 @@ export const Settings: React.FC = () => {
         We don't store your personal information like email or name. Your account is securely
         linked to your OAuth provider with a private identifier.
       </Typography>
+      
+      <div style={{ marginTop: '16px', padding: '16px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+        <Typography variant="subtitle2" style={{ fontWeight: 600, marginBottom: '8px' }}>
+          Your Hashed Identifier:
+        </Typography>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <TextField
+            value={hashedIdentifier}
+            variant="outlined"
+            size="small"
+            fullWidth
+            InputProps={{
+              readOnly: true,
+              style: { fontFamily: 'monospace', fontSize: '0.9rem' }
+            }}
+          />
+          <Button
+            variant="outlined"
+            color="primary"
+            style={{ marginLeft: '16px', whiteSpace: 'nowrap' }}
+            onClick={() => {
+              navigator.clipboard.writeText(hashedIdentifier);
+              setSnackMessage(['Hashed identifier copied to clipboard', 'success']);
+              setSnackMessageOpen(true);
+            }}
+          >
+            Copy
+          </Button>
+        </div>
+        <Typography variant="caption" style={{ display: 'block', marginTop: '8px' }}>
+          This is your unique identifier in the system. Administrators may need this to grant you special permissions.
+        </Typography>
+        
+        {isAdmin && (
+          <div style={{ 
+            marginTop: '16px', 
+            padding: '8px 16px', 
+            backgroundColor: '#e3f2fd', 
+            borderRadius: '4px',
+            border: '1px solid #90caf9'
+          }}>
+            <Typography variant="subtitle2" style={{ fontWeight: 600, color: '#0d47a1' }}>
+              Admin Status: You have administrator privileges
+            </Typography>
+          </div>
+        )}
+      </div>
       
       <Snackbar
         open={snackMessageOpen}

@@ -155,8 +155,8 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     };
 
   return (
-    <TableHead>
-      <TableRow>
+    <TableHead style={{ borderSpacing: '0 !important' }}>
+      <TableRow style={{ borderCollapse: 'collapse' }}>
         <TableCell padding="checkbox">
           <Checkbox
             checked={rowCount > 0 && numSelected === rowCount}
@@ -174,7 +174,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
               align={'center'}
               padding={'none'}
               sortDirection={orderBy === headCell.id ? order : false}
-              className={classes.headerCell}
+              className={`${classes.headerCell} ${classes.stickyHeader}`}
             >
               <TableSortLabel
                 active={orderBy === headCell.id}
@@ -207,15 +207,35 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(0, 3),
       borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
       backgroundColor: 'rgba(0, 0, 0, 0.02)',
+      minHeight: '56px', /* Fixed minimum height for the toolbar */
+    },
+    /* Special styling for filter placeholder label */
+    filterPlaceholder: {
+      color: theme.palette.text.secondary,
+      paddingLeft: '14px',
+      paddingRight: '60px', /* Extra padding to prevent overlap */
+      display: 'inline-block',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      width: 'calc(100% - 80px)', /* Reduced width to make room for arrow */
+      position: 'absolute',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      left: 0,
+      pointerEvents: 'none'
     },
     filterContainer: {
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'center', /* Center items vertically */
+      height: '56px', /* Fixed height for container */
     },
     select: {
-      margin: theme.spacing(2, 2, 2, 0),
-      minWidth: '225px',
+      margin: theme.spacing(0, 2, 0, 0),
+      minWidth: '320px', /* Match width with filter row dropdowns */
+      position: 'relative',
     },
+    /* Use standard Material-UI icon */
     selectIcon: {
       fill: theme.palette.primary.main,
     },
@@ -261,8 +281,9 @@ const ColorButton = withStyles(theme => ({
   root: {
     color: theme.palette.primary.main,
     borderColor: theme.palette.primary.main,
-    marginTop: theme.spacing(2),
-    marginLeft: theme.spacing(2),
+    margin: theme.spacing(2, 0, 1, 2),
+    height: '40px',
+    alignSelf: 'flex-start',
   },
 }))(Button);
 
@@ -288,6 +309,26 @@ const ColorSelect = withStyles(theme => ({
         borderColor: theme.palette.primary.main,
       },
     },
+    '& .MuiSelect-select': {
+      display: 'flex',
+      alignItems: 'center',
+      paddingRight: '50px !important', // More space for the dropdown arrow
+    },
+    '& .MuiInputLabel-outlined': {
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      maxWidth: '90%'
+    },
+    // Position the select icon farther right
+    '& .MuiSelect-icon': {
+      right: '12px',
+      position: 'absolute',
+    },
+    // Make sure the label doesn't overlap with dropdown icon
+    '& .MuiInputLabel-outlined': {
+      maxWidth: 'calc(100% - 60px)',
+    }
   },
 }))(TextField);
 
@@ -327,13 +368,19 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
         horizontal: 'left',
       },
       getContentAnchorEl: null,
+      PaperProps: {
+        style: { 
+          maxWidth: '350px' 
+        }
+      }
     },
+    // Use Material-UI's default icon positioning but with custom styles
+    displayEmpty: true
   };
 
-  const onBuildingTypeFilter =
-    (clear = false) =>
-    (event: React.MouseEvent<EventTarget>) => {
-      updateBuildingFilter(clear ? '' : event.target.value);
+  const onBuildingTypeFilter = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value;
+      updateBuildingFilter(value === 'all' ? '' : value);
     };
 
   return (
@@ -342,16 +389,24 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
         <div className={classes.filterContainer}>
           <ColorSelect
             className={classes.select}
-            label="Filter on Building Type"
+            label=""
+            placeholder="Building Type"
             name="buildingType-filter"
-            onChange={onBuildingTypeFilter()}
+            onChange={onBuildingTypeFilter}
             select
-            value={buildingFilterValue}
+            value={buildingFilterValue || 'all'}
+            defaultValue="all" /* Always show "All Building Types" by default */
             variant="outlined"
-            SelectProps={selectProps}
+            SelectProps={{
+              ...selectProps,
+              renderValue: (value) => value === 'all' ? 'All Building Types' : value
+            }}
             size="small"
           >
+            {/* Use a single option for "All Building Types" */}
+            <MenuItem value="all">All Building Types</MenuItem>
             {buildingTypeFilterOptions.map(option => {
+              if (option === "All Building Types") return null; // Skip duplicate
               return (
                 <MenuItem key={`${option}-option`} value={option}>
                   {option}
@@ -359,11 +414,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
               );
             })}
           </ColorSelect>
-          {displayClear && (
-            <ColorButton variant="outlined" onClick={onBuildingTypeFilter(true)}>
-              Clear
-            </ColorButton>
-          )}
+          {/* Clear button no longer needed with "All" option */}
         </div>
       </div>
       
@@ -394,8 +445,7 @@ const useFilterToolbarStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       justifyContent: 'space-between',
-      paddingLeft: theme.spacing(2),
-      paddingRight: theme.spacing(2),
+      padding: theme.spacing(0, 3), /* Match padding with other toolbars */
     },
   })
 );
@@ -460,6 +510,8 @@ const useStyles = makeStyles((theme: Theme) =>
     headerCell: {
       fontWeight: 600,
       padding: theme.spacing(1.5),
+      border: 'none',
+      borderBottom: '1px solid rgba(224, 224, 224, 1)',
     },
     headerLabel: {
       display: 'block',
@@ -476,6 +528,31 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     table: {
       minWidth: 750,
+      '& .MuiTableCell-root': {
+        borderLeft: 'none',
+        borderRight: 'none',
+      },
+    },
+    tableContainer: {
+      maxHeight: 'calc(100vh - 250px)', /* Adjust based on your layout */
+      overflow: 'auto',
+    },
+    stickyHeader: {
+      position: 'sticky',
+      top: 0,
+      backgroundColor: '#fff',
+      zIndex: 10,
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      borderRight: 'none',
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        height: '1px',
+        bottom: 0,
+        backgroundColor: 'rgba(224, 224, 224, 1)',
+      }
     },
     visuallyHidden: {
       border: 0,
@@ -487,6 +564,22 @@ const useStyles = makeStyles((theme: Theme) =>
       position: 'absolute',
       top: 20,
       width: 1,
+    },
+    footer: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: theme.spacing(3),
+      borderTop: '1px solid rgba(0, 0, 0, 0.08)',
+      marginTop: 'auto',
+    },
+    link: {
+      color: theme.palette.primary.main,
+      textDecoration: 'none',
+      fontWeight: 500,
+      '&:hover': {
+        textDecoration: 'underline',
+      },
     },
     tableRow: {
       '&$selected, &$selected:hover': {
@@ -716,11 +809,17 @@ export default function DashboardResultsTable(props: {
             Download Selected (CSV)
           </Button>
         </div>
-        <TableContainer>
+        <TableContainer className={classes.tableContainer}>
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
             size={'medium'}
+            stickyHeader
+            style={{ borderCollapse: 'collapse' }}
+            /* Override with a direct CSS rule to remove vertical lines in header */
+            classes={{
+              root: classes.table
+            }}
           >
             <EnhancedTableHead
               classes={classes}
@@ -837,6 +936,20 @@ export default function DashboardResultsTable(props: {
             </TableBody>
           </Table>
         </TableContainer>
+        <div className={classes.footer}>
+          <Typography variant="body2">
+            All results are from BOPTEST. Please visit the{' '}
+            <a 
+              href="https://ibpsa.github.io/project1-boptest/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className={classes.link}
+            >
+              BOPTEST Homepage
+            </a>{' '}
+            to learn more.
+          </Typography>
+        </div>
       </Paper>
     </div>
   );

@@ -108,5 +108,20 @@ export const ResultEntity = new EntitySchema<Result>({
 
 export function createResult(data: ResultData): Promise<Result> {
   const resultRepo = getRepository<Result>(ResultEntity);
-  return resultRepo.save(data);
+  
+  // First check if a result with this UID already exists
+  return resultRepo.findOne({ where: { uid: data.uid } })
+    .then(existingResult => {
+      if (existingResult) {
+        console.log(`Result with UID ${data.uid} already exists, skipping creation`);
+        return existingResult;
+      } else {
+        console.log(`Creating new result with UID ${data.uid}`);
+        return resultRepo.save(data);
+      }
+    })
+    .catch(err => {
+      console.error(`Error checking/creating result with UID ${data.uid}:`, err);
+      throw err;
+    });
 }
