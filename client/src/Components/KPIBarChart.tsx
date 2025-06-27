@@ -1,10 +1,6 @@
 import React from 'react';
-import {createStyles, makeStyles} from '@material-ui/core/styles';
-
+import {createStyles, makeStyles, useTheme, Theme} from '@material-ui/core/styles';
 import {Bullet} from '@nivo/bullet';
-
-const backgroundColor = '#eceff0';
-const markerColor = '#078b75';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -22,6 +18,11 @@ interface BarChartProps {
 
 export const KPIBarChart: React.FC<BarChartProps> = props => {
   const classes = useStyles();
+  const theme = useTheme();
+  
+  // Use theme colors instead of hardcoded values
+  const backgroundColor = theme.palette.background.paper;
+  const markerColor = theme.palette.primary.main;
 
   const data = [
     {

@@ -2,7 +2,6 @@ import {EntitySchema, getRepository} from 'typeorm';
 import axios from 'axios';
 
 import {BuildingType} from '../../common/interfaces';
-import { confirmPasswordChange } from 'cognito';
 
 export type BuildingTypeData = Omit<BuildingType, 'results'>;
 
@@ -76,5 +75,14 @@ export function getBuildingTypes(): Promise<BuildingType[]> {
 
 export function getBuildingTypeByUid(uid: string): Promise<BuildingType> {
   const buildingTypeRepo = getRepository<BuildingType>(BuildingTypeEntity);
-  return buildingTypeRepo.findOneOrFail({ uid: uid });
+  console.log(`Looking up building type with UID: ${uid}`);
+  return buildingTypeRepo.findOneOrFail({ uid: uid })
+    .then(buildingType => {
+      console.log(`Found building type: ${buildingType.name} (${buildingType.uid})`);
+      return buildingType;
+    })
+    .catch(err => {
+      console.error(`Failed to find building type with UID ${uid}:`, err);
+      throw err;
+    });
 }

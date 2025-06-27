@@ -4,6 +4,7 @@ import {
   makeStyles,
   Theme,
   withStyles,
+  useTheme,
 } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Table from '@material-ui/core/Table';
@@ -18,6 +19,8 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
+import Switch from '@material-ui/core/Switch';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import {FilterMenu} from './FilterMenu';
 import {FilterRanges, FilterValues} from '../common/interfaces';
 import {
@@ -108,39 +111,58 @@ interface EnhancedTableProps {
   orderBy: string;
 }
 
+// Helper function to split the label into main text and units
+const parseHeaderLabel = (label: string): { main: string; unit: string | null } => {
+  const matches = label.match(/^(.*?)\s*(\[.*?\])?$/);
+  if (matches && matches[2]) {
+    return { 
+      main: matches[1].trim(), 
+      unit: matches[2].trim() 
+    };
+  }
+  return { main: label, unit: null };
+};
+
 function EnhancedTableHead(props: EnhancedTableProps) {
   const {classes, order, orderBy, onRequestSort} = props;
+  const theme = useTheme();
   const createSortHandler =
     (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
     };
 
   return (
-    <TableHead>
-      <TableRow>
-        {headCells.map(headCell => (
-          <TableCell
-            key={headCell.id}
-            //align={headCell.numeric ? 'right' : 'left'}
-            align={'center'}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-            sortDirection={orderBy === headCell.id ? order : false}
-            className={classes.headerCell}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
+    <TableHead style={{ borderSpacing: '0 !important' }}>
+      <TableRow style={{ borderCollapse: 'collapse' }}>
+        {headCells.map(headCell => {
+          const { main, unit } = parseHeaderLabel(headCell.label);
+          
+          return (
+            <TableCell
+              key={headCell.id}
+              align={'center'}
+              padding={'none'}
+              sortDirection={orderBy === headCell.id ? order : false}
+              className={`${classes.headerCell} ${classes.stickyHeader}`}
             >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <span className={classes.visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </span>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
+              <TableSortLabel
+                active={orderBy === headCell.id}
+                direction={orderBy === headCell.id ? order : 'asc'}
+                onClick={createSortHandler(headCell.id)}
+              >
+                <div>
+                  <span className={classes.headerLabel}>{main}</span>
+                  {unit && <span className={classes.headerUnit}>{unit}</span>}
+                </div>
+                {orderBy === headCell.id ? (
+                  <span className={classes.visuallyHidden}>
+                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                  </span>
+                ) : null}
+              </TableSortLabel>
+            </TableCell>
+          );
+        })}
       </TableRow>
     </TableHead>
   );
@@ -149,56 +171,120 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 const useToolbarStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
+      display: 'flex',
       justifyContent: 'space-between',
-      paddingLeft: theme.spacing(2),
-      paddingRight: theme.spacing(2),
+      padding: theme.spacing(0, 3),
+      borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+      backgroundColor: 'rgba(0, 0, 0, 0.02)',
+      flexWrap: 'wrap',
+      minHeight: '56px', /* Fixed minimum height for the toolbar */
     },
     filterContainer: {
       display: 'flex',
+      alignItems: 'center', /* Center items vertically */
+      flexWrap: 'wrap',
+      height: '56px', /* Fixed height for container */
     },
     select: {
-      marginTop: theme.spacing(2),
-      minWidth: '225px',
+      margin: theme.spacing(0, 2, 0, 0),
+      width: '320px', /* Match width with filter row dropdowns */
+      maxWidth: '100%',
+      '& .MuiInputLabel-outlined': {
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        maxWidth: 'calc(100% - 60px)' /* Space for dropdown arrow */
+      },
+      '& .MuiSelect-select': {
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
+      }
     },
+    /* Use standard Material-UI icon */
     selectIcon: {
-      fill: '#078b75',
+      fill: theme.palette.primary.main,
     },
+    toggleContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      flexWrap: 'wrap',
+      minWidth: '200px',
+      margin: theme.spacing(1, 0),
+    },
+    headerTitle: {
+      fontWeight: 600,
+      color: theme.palette.primary.main,
+      letterSpacing: '0.02em',
+    },
+    switch: {
+      '& .MuiSwitch-track': {
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+      },
+      '& .MuiSwitch-thumb': {
+        backgroundColor: '#ffffff',
+      },
+      '& .Mui-checked + .MuiSwitch-track': {
+        backgroundColor: `${theme.palette.primary.main} !important`,
+        opacity: 0.5,
+      },
+      '& .Mui-checked .MuiSwitch-thumb': {
+        backgroundColor: theme.palette.primary.main,
+      },
+    },
+    switchLabel: {
+      fontSize: '0.875rem',
+      fontWeight: 500,
+    },
+    titleAndFilterContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      flex: 1
+    }
   })
 );
 
 const ColorButton = withStyles(theme => ({
   root: {
-    color: '#078b75',
-    borderColor: '#078b75',
-    marginTop: theme.spacing(2),
-    marginLeft: theme.spacing(2),
+    color: theme.palette.primary.main,
+    borderColor: theme.palette.primary.main,
+    margin: theme.spacing(0, 0, 0, 2), /* Adjusted margin for vertical alignment */
+    height: '40px', /* Fixed height to match dropdown */
   },
 }))(Button);
 
-const ColorSelect = withStyles({
+const ColorSelect = withStyles(theme => ({
   root: {
     '& label': {
-      color: '#078b75',
+      color: theme.palette.primary.main,
     },
     '& label.Mui-focused': {
-      color: '#078b75',
+      color: theme.palette.primary.main,
     },
     '& .MuiInput-underline:after': {
-      borderBottomColor: '#078b75',
+      borderBottomColor: theme.palette.primary.main,
     },
     '& .MuiOutlinedInput-root': {
       '& fieldset': {
-        borderColor: '#078b75',
+        borderColor: theme.palette.primary.main,
       },
       '&:hover fieldset': {
-        borderColor: '#078b75',
+        borderColor: theme.palette.primary.main,
       },
       '&.Mui-focused fieldset': {
-        borderColor: '#078b75',
+        borderColor: theme.palette.primary.main,
       },
     },
+    '& .MuiSelect-icon': {
+      right: '12px', /* Position the select icon farther right */
+      position: 'absolute',
+    },
+    '& .MuiSelect-select': {
+      paddingRight: '60px !important', /* More space for the dropdown arrow */
+    },
   },
-})(TextField);
+}))(TextField);
 
 interface EnhancedTableToolbarProps {
   buildingTypeFilterOptions: {
@@ -208,6 +294,9 @@ interface EnhancedTableToolbarProps {
   buildingFilterValue: string;
   totalResults: number;
   updateBuildingFilter: (requestedBuilding: string) => void;
+  viewMyResults?: boolean;
+  onToggleChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  isLoggedIn?: boolean;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
@@ -218,6 +307,9 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     buildingFilterValue,
     totalResults,
     updateBuildingFilter,
+    viewMyResults = false,
+    onToggleChange,
+    isLoggedIn = false
   } = props;
 
   const selectProps = {
@@ -228,46 +320,91 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
         horizontal: 'left',
       },
       getContentAnchorEl: null,
+      PaperProps: {
+        style: { 
+          maxWidth: '400px' 
+        }
+      }
     },
+    // Use standard Material-UI icon positioning with custom styles
+    displayEmpty: true
   };
 
   const onBuildingTypeFilter =
     (clear = false) =>
     (event: React.MouseEvent<EventTarget>) => {
-      updateBuildingFilter(clear ? '' : event.target.value);
+      // If clear is true or the selected value is empty, clear the filter
+      // This handles both the Clear button and selecting "All Building Types"
+      updateBuildingFilter(clear || event.target.value === '' ? '' : event.target.value);
     };
 
   return (
     <Toolbar className={classes.root}>
-      <div className={classes.filterContainer}>
-        <ColorSelect
-          className={classes.select}
-          label="Filter on Building Type"
-          name="buildingType-filter"
-          onChange={onBuildingTypeFilter()}
-          select
-          value={buildingFilterValue}
-          variant="outlined"
-          SelectProps={selectProps}
-          size="small"
-        >
-          {buildingTypeFilterOptions.map(option => {
-            return (
-              <MenuItem key={`${option}-option`} value={option}>
-                {option}
-              </MenuItem>
-            );
-          })}
-        </ColorSelect>
-        {displayClear && (
-          <ColorButton variant="outlined" onClick={onBuildingTypeFilter(true)}>
-            Clear
-          </ColorButton>
-        )}
+      <div className={classes.titleAndFilterContainer}>
+        <div className={classes.filterContainer}>
+          <ColorSelect
+            className={classes.select}
+            label=""
+            placeholder="Building Type"
+            name="buildingType-filter"
+            onChange={onBuildingTypeFilter()}
+            select
+            value={buildingFilterValue || ''}
+            defaultValue="" /* Always show "All Building Types" by default */
+            variant="outlined"
+            SelectProps={{
+              ...selectProps,
+              displayEmpty: true,
+              renderValue: (value) => value ? value : "All Building Types"
+            }}
+            size="small"
+            InputProps={{
+              style: { 
+                height: '40px'
+              }
+            }}
+          >
+            {/* Use a single empty option for "All Building Types" */}
+            <MenuItem value="">All Building Types</MenuItem>
+            {buildingTypeFilterOptions.map(option => {
+              if (option === "All Building Types") return null; // Skip duplicate
+              return (
+                <MenuItem key={`${option}-option`} value={option}>
+                  {option}
+                </MenuItem>
+              );
+            })}
+          </ColorSelect>
+          {displayClear && (
+            <ColorButton 
+              variant="outlined" 
+              onClick={onBuildingTypeFilter(true)}
+            >
+              Clear
+            </ColorButton>
+          )}
+        </div>
       </div>
-      <Typography variant="h6" id="tableTitle" component="div">
-        {totalResults} Total Results
-      </Typography>
+      
+      <div className={classes.toggleContainer}>
+        {isLoggedIn && onToggleChange && (
+          <FormControlLabel
+            control={
+              <Switch
+                checked={viewMyResults}
+                onChange={onToggleChange}
+                color="primary"
+                className={classes.switch}
+              />
+            }
+            label="Show My Results Only"
+            className={classes.switchLabel}
+          />
+        )}
+        <Typography variant="body2" style={{ marginLeft: '16px' }}>
+          {totalResults} Total Results
+        </Typography>
+      </div>
     </Toolbar>
   );
 };
@@ -276,8 +413,7 @@ const useFilterToolbarStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       justifyContent: 'space-between',
-      paddingLeft: theme.spacing(2),
-      paddingRight: theme.spacing(2),
+      padding: theme.spacing(0, 3), /* Match padding with other toolbars */
     },
   })
 );
@@ -324,14 +460,60 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     paper: {
       width: '100%',
-      marginBottom: theme.spacing(2),
     },
     headerCell: {
-      fontWeight: 'bold',
+      fontWeight: 600,
+      padding: theme.spacing(1.5),
+      minWidth: '100px',
+      maxWidth: '180px',
+      border: 'none',
+      borderBottom: '1px solid rgba(224, 224, 224, 1)',
+    },
+    headerLabel: {
+      display: 'block',
+      fontWeight: 600,
+      fontSize: '0.875rem',
+      lineHeight: 1.2,
+      whiteSpace: 'normal',
+      wordWrap: 'break-word',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+    },
+    headerUnit: {
+      display: 'block',
+      fontSize: '0.75rem',
+      fontWeight: 400,
+      color: 'rgba(0, 0, 0, 0.6)',
+      marginTop: theme.spacing(0.5),
+      whiteSpace: 'nowrap',
     },
     table: {
       minWidth: 750,
-      padding: '0 0 0 16px',
+      '& .MuiTableCell-root': {
+        borderLeft: 'none',
+        borderRight: 'none',
+      },
+    },
+    tableContainer: {
+      maxHeight: 'calc(100vh - 250px)', /* Adjust based on your layout */
+      overflow: 'auto',
+    },
+    stickyHeader: {
+      position: 'sticky',
+      top: 0,
+      backgroundColor: '#fff',
+      zIndex: 10,
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      borderRight: 'none',
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        height: '1px',
+        bottom: 0,
+        backgroundColor: 'rgba(224, 224, 224, 1)',
+      }
     },
     visuallyHidden: {
       border: 0,
@@ -344,13 +526,36 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 20,
       width: 1,
     },
+    footer: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: theme.spacing(3),
+      borderTop: '1px solid rgba(0, 0, 0, 0.08)',
+      marginTop: 'auto',
+    },
+    link: {
+      color: theme.palette.primary.main,
+      textDecoration: 'none',
+      fontWeight: 500,
+      '&:hover': {
+        textDecoration: 'underline',
+      },
+    },
   })
 );
 
 // type the props here.
 // results - list of results from the server
 // displayResult() - method to show the result detail modal
-export default function ResultsTable(props) {
+export default function ResultsTable(props: {
+  results: any[];
+  buildingTypes: any[];
+  setSelectedResult: (result: any) => void;
+  viewMyResults?: boolean;
+  onToggleChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  isLoggedIn?: boolean;
+}) {
   const classes = useStyles();
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Data>('dateRun');
@@ -438,6 +643,9 @@ export default function ResultsTable(props) {
           buildingFilterValue={buildingTypeFilter}
           totalResults={filteredRows.length}
           updateBuildingFilter={handleUpdateBuildingFilter}
+          viewMyResults={props.viewMyResults}
+          onToggleChange={props.onToggleChange}
+          isLoggedIn={props.isLoggedIn}
         />
         {displayFilters && (
           <FilterToolbar
@@ -448,13 +656,21 @@ export default function ResultsTable(props) {
             updateFilters={handleUpdateFilters}
           />
         )}
-        <TableContainer>
+        <TableContainer className={classes.tableContainer}>
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
             //size={dense ? 'small' : 'medium'}
             size={'medium'}
+            stickyHeader
             // aria-label="enhanced table"
+            style={{ 
+              borderCollapse: 'collapse',
+            }}
+            /* Override with a direct CSS rule to remove vertical lines in header */
+            classes={{
+              root: classes.table
+            }}
           >
             <EnhancedTableHead
               classes={classes}
@@ -483,13 +699,34 @@ export default function ResultsTable(props) {
                         id={labelId}
                         scope="row"
                         padding="normal"
+                        style={{ maxWidth: '180px' }}
                       >
-                        <Typography variant="body1">
+                        <Typography
+                          variant="body1"
+                          noWrap
+                          style={{ 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis',
+                            display: 'block'
+                          }}
+                          title={row.buildingTypeName}
+                        >
                           {row.buildingTypeName}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
-                        <Typography variant="body1">{dateString}</Typography>
+                        <Typography
+                          variant="body1"
+                          noWrap
+                          style={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: 'block'
+                          }}
+                          title={dateString}
+                        >
+                          {dateString}
+                        </Typography>
                       </TableCell>
                       <TableCell align="center">
                         <Typography variant="body1">
@@ -546,6 +783,20 @@ export default function ResultsTable(props) {
             </TableBody>
           </Table>
         </TableContainer>
+        <div className={classes.footer}>
+          <Typography variant="body2">
+            All results are from BOPTEST. Please visit the{' '}
+            <a 
+              href="https://ibpsa.github.io/project1-boptest/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className={classes.link}
+            >
+              BOPTEST Homepage
+            </a>{' '}
+            to learn more.
+          </Typography>
+        </div>
       </Paper>
     </div>
   );

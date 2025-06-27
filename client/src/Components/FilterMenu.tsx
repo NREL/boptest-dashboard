@@ -1,5 +1,5 @@
 import React from 'react';
-import {createStyles, makeStyles, withStyles} from '@material-ui/core/styles';
+import {createStyles, makeStyles, withStyles, useTheme, Theme} from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
@@ -15,62 +15,105 @@ const useMenuStyles = makeStyles((theme: Theme) =>
     menuContainer: {
       display: 'flex',
       justifyContent: 'space-between',
-      height: '50px',
+      minHeight: '56px', /* Match toolbar height */
       width: '100%',
+      flexWrap: 'wrap',
+      padding: theme.spacing(0),
+      alignItems: 'center', /* Center items vertically */
     },
     selectContainer: {
       display: 'flex',
-      justifyContent: 'space-evenly',
+      justifyContent: 'flex-start',
+      flexWrap: 'wrap',
+      flex: '1 1 auto',
+      marginRight: theme.spacing(2),
+      gap: theme.spacing(2), /* Match spacing with Building Type row */
+      alignItems: 'center', /* Center items vertically */
+      height: '56px', /* Fixed height */
+      [theme.breakpoints.down('sm')]: {
+        width: '100%'
+      },
     },
     buttonContainer: {
       display: 'flex',
-      justifyContent: 'space-evenly',
+      justifyContent: 'flex-end',
+      flexWrap: 'nowrap', /* Prevent wrapping */
+      flex: '0 0 auto',
+      alignItems: 'center', /* Align with other elements */
     },
     select: {
-      marginTop: theme.spacing(2),
-      marginRight: theme.spacing(2),
-      width: '275px',
+      margin: theme.spacing(0, 2, 0, 0), /* Match margin with Building Type row */
+      width: '320px', /* Slightly smaller to fit with wider gaps */
+      maxWidth: '100%',
       textTransform: 'capitalize',
+      '& .MuiInputLabel-outlined': {
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        maxWidth: 'calc(100% - 60px)' /* Give more space for arrow */
+      },
+      '& .MuiSelect-select': {
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        display: 'flex',
+        alignItems: 'center',
+        paddingRight: '60px' /* Increased space for the dropdown arrow */
+      },
+      /* Use standard Material-UI padding */
     },
     selectIcon: {
-      fill: '#078b75',
+      fill: theme.palette.primary.main,
+      right: '12px', // Match Building Type dropdown
     },
   })
 );
 
 const ColorButton = withStyles(theme => ({
   root: {
-    color: '#078b75',
-    borderColor: '#078b75',
-    marginTop: theme.spacing(2),
-    marginLeft: theme.spacing(2),
+    color: theme.palette.primary.main,
+    borderColor: theme.palette.primary.main,
+    margin: theme.spacing(2, 0, 1, 2),
+    height: '40px',
+    alignSelf: 'flex-start',
   },
 }))(Button);
 
-const ColorTextField = withStyles({
+const ColorTextField = withStyles(theme => ({
   root: {
     '& label': {
-      color: '#078b75',
+      color: theme.palette.primary.main,
     },
     '& label.Mui-focused': {
-      color: '#078b75',
+      color: theme.palette.primary.main,
     },
     '& .MuiInput-underline:after': {
-      borderBottomColor: '#078b75',
+      borderBottomColor: theme.palette.primary.main,
     },
     '& .MuiOutlinedInput-root': {
       '& fieldset': {
-        borderColor: '#078b75',
+        borderColor: theme.palette.primary.main,
       },
       '&:hover fieldset': {
-        borderColor: '#078b75',
+        borderColor: theme.palette.primary.main,
       },
       '&.Mui-focused fieldset': {
-        borderColor: '#078b75',
+        borderColor: theme.palette.primary.main,
       },
     },
+    '& .MuiSelect-select': {
+      display: 'flex',
+      alignItems: 'center',
+    },
+    '& .MuiInputLabel-outlined': {
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      maxWidth: 'calc(100% - 60px)' /* Match Building Type dropdown */
+    },
+    /* Remove custom icon positioning to use standard Material-UI dropdown arrow */
   },
-})(TextField);
+}))(TextField);
 
 const usePopperStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -78,22 +121,25 @@ const usePopperStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       justifyContent: 'center',
       flexDirection: 'column',
-      paddingTop: theme.spacing(2),
-      paddingLeft: theme.spacing(2),
-      paddingRight: theme.spacing(2),
+      padding: theme.spacing(2),
       minWidth: '250px',
+      maxWidth: '400px',
     },
     label: {
       alignSelf: 'center',
       fontWeight: 'bold',
       paddingBottom: theme.spacing(2),
+      textAlign: 'center',
     },
     rangeContainer: {
       display: 'flex',
       justifyContent: 'space-between',
+      alignItems: 'center',
       alignSelf: 'center',
       width: '100%',
       paddingBottom: theme.spacing(2),
+      gap: theme.spacing(2),
+      flexWrap: 'wrap',
     },
     tagsMsgContainer: {
       paddingBottom: theme.spacing(2),
@@ -107,6 +153,7 @@ const usePopperStyles = makeStyles((theme: Theme) =>
     },
     textInput: {
       minWidth: '100px',
+      flex: '1 1 auto',
     },
   })
 );
@@ -122,6 +169,7 @@ interface FilterMenuProps {
 export const FilterMenu: React.FC<FilterMenuProps> = props => {
   const menuClasses = useMenuStyles();
   const popperClasses = usePopperStyles();
+  const theme = useTheme();
   const {
     filterRanges,
     filterValues,
@@ -387,7 +435,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                           }
                           onChange={onTagFilterChange}
                           name={tag}
-                          style={{color: '#078b75'}}
+                          color="primary"
                         />
                       }
                       label={tag}
@@ -438,7 +486,12 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
           horizontal: 'left',
         },
         getContentAnchorEl: null,
-      },
+        PaperProps: {
+          style: { 
+            maxWidth: '400px' 
+          }
+        }
+      }
     };
 
     return (
@@ -448,7 +501,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
             <React.Fragment key={key}>
               <ColorTextField
                 className={menuClasses.select}
-                label={key.split(/(?=[A-Z])/).join(' ')}
+                label={key === 'weatherForecastUncertainty' ? 'Weather Forecast' : key.split(/(?=[A-Z])/).join(' ')}
                 name={key}
                 onChange={onScenarioFilterChange}
                 select
@@ -459,12 +512,42 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                     ? filterValues.scenario[key]
                     : ''
                 }
+                defaultValue="" /* Always show "All" option by default */
                 variant="outlined"
-                SelectProps={selectProps}
+                SelectProps={{
+                  ...selectProps,
+                  displayEmpty: true,
+                  renderValue: (value) => {
+                    if (!value || value === '') {
+                      if (key === 'weatherForecastUncertainty') return 'All Weather Forecasts';
+                      return `All ${key.split(/(?=[A-Z])/).join(' ')}s`;
+                    }
+                    return value;
+                  }
+                }}
                 size="small"
+                InputProps={{
+                  style: { 
+                    whiteSpace: 'normal', 
+                    overflow: 'hidden', 
+                    textOverflow: 'ellipsis',
+                    display: 'flex',
+                    alignItems: 'center',
+                    height: '40px' /* Match height with Building Type */
+                  }
+                }}
+                InputLabelProps={{
+                  style: { 
+                    whiteSpace: 'nowrap',
+                    display: 'block',
+                    width: '100%',
+                    transform: 'translate(14px, -6px) scale(0.75)' /* Match label positioning with Building Type */
+                  },
+                  shrink: true /* Keep label shrunk like Building Type */
+                }}
               >
                 <MenuItem key="buildingType-none-option" value="">
-                  none
+                  {key === 'weatherForecastUncertainty' ? 'All Weather Forecasts' : `All ${key.split(/(?=[A-Z])/).join(' ')}s`}
                 </MenuItem>
                 {scenarioOptions[key].map(option => {
                   return (

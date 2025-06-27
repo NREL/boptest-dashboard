@@ -45,8 +45,8 @@ interface NavBarListProps {
 export const NavBarList: React.FC<NavBarListProps> = props => {
   const classes = useStyles();
 
-  const {authedEmail} = useUser();
-  const loggedIn = authedEmail && authedEmail !== '';
+  const { hashedIdentifier } = useUser();
+  const loggedIn = hashedIdentifier && hashedIdentifier !== '';
 
   const [openDash, setOpenDash] = React.useState(false);
   const [openDocs, setOpenDocs] = React.useState(false);
@@ -106,13 +106,7 @@ export const NavBarList: React.FC<NavBarListProps> = props => {
             <ListItemIcon>
               <SettingsIcon className={classes.icon} />
             </ListItemIcon>
-            <ListItemText primary="Settings" />
-          </ListItem>
-          <ListItem button component={Link} to={AppRoute.ApiKey}>
-            <ListItemIcon>
-              <LockIcon className={classes.icon} />
-            </ListItemIcon>
-            <ListItemText primary="API Key" />
+            <ListItemText primary="Account Settings" />
           </ListItem>
         </div>
       ) : null}

@@ -11,17 +11,12 @@ export const AccountEntity = new EntitySchema<Account>({
       primary: true,
       generated: true,
     },
-    sub: {
+    hashedIdentifier: {
       type: String,
       unique: true,
     },
-    name: {
+    displayName: {
       type: String,
-    },
-    email: {
-      type: String,
-      unique: true,
-      select: false
     },
     apiKey: {
       type: String,
@@ -36,6 +31,9 @@ export const AccountEntity = new EntitySchema<Account>({
     shareAllResults: {
       type: Boolean,
       nullable: true,
+    },
+    oauthProvider: {
+      type: String,
     }
   },
   relations: {
@@ -53,23 +51,26 @@ export function createAccount(data: AccountData): Promise<Account> {
   return accountRepo.save(data);
 }
 
-export function updateName(id: number, newName: string): Promise<void> {
-  const repo = getRepository<Account>(AccountEntity);
-  return repo
-    .findOneOrFail(id)
-    .then(account => {
-      account.name = newName;
-      repo.save(account);
-    })
-    .catch(err => console.log('could not update name for account', err));
+export function updateDisplayName(id: number, newDisplayName: string): Promise<any> {
+  try {
+    const repo = getRepository<Account>(AccountEntity);
+    
+    // Use the update method directly
+    return repo.update(id, { displayName: newDisplayName });
+  } catch (err) {
+    console.error('Could not update display name for account', err);
+    throw err;
+  }
 }
 
-export function updateGlobalShare(id: number, shareAllResults: boolean | null): Promise<void> {
-  const repo = getRepository<Account>(AccountEntity);
-  return repo
-    .findOneOrFail(id)
-    .then((account: Account) => {
-      account.shareAllResults = shareAllResults;
-      repo.save(account);
-    })
+export function updateGlobalShare(id: number, shareAllResults: boolean | null): Promise<any> {
+  try {
+    const repo = getRepository<Account>(AccountEntity);
+    
+    // Use the update method directly
+    return repo.update(id, { shareAllResults });
+  } catch (err) {
+    console.error('Could not update share settings for account', err);
+    throw err;
+  }
 }

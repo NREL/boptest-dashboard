@@ -10,9 +10,48 @@ This site is developed and deployed using [Docker](https://www.docker.com/). To 
 
 ### Auth
 
-The Auth source of truth for this application resides within [Amazon Cognito](https://aws.amazon.com/cognito/). Sessions are managed within our own backend server, but all password related information and operations lies within and flows through cognito via the [Amazon Cognito Identity SDK](https://github.com/aws-amplify/amplify-js/tree/master/packages/amazon-cognito-identity-js). They have a comprehensive README with examples for common operations.
+This application uses OAuth authentication with Google and GitHub. This approach provides secure authentication without storing personally identifiable information (PII). Instead, we store a hashed identifier derived from the OAuth provider's user ID.
 
-# Auth Note:
+#### OAuth Setup
+
+To set up OAuth authentication:
+
+1. **Google OAuth Setup**:
+   - Go to the [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select an existing one
+   - Navigate to "APIs & Services" → "Credentials"
+   - Click "Create Credentials" and select "OAuth client ID"
+   - Select "Web application" as the application type
+   - Add a name for your OAuth client
+   - Add authorized JavaScript origins: `http://localhost:8080` (or your production URL)
+   - Add authorized redirect URIs: `http://localhost:8080/api/auth/google/callback` (or your production URL)
+   - Click "Create" to get your client ID and client secret
+   - Update the `.env` file with these credentials
+
+2. **GitHub OAuth Setup**:
+   - Go to your [GitHub account settings](https://github.com/settings/profile)
+   - Navigate to "Developer settings" → "OAuth Apps"
+   - Click "New OAuth App"
+   - Add an application name
+   - Add a homepage URL (e.g., `http://localhost:8080`)
+   - Add an authorization callback URL: `http://localhost:8080/api/auth/github/callback`
+   - Click "Register application" to get your client ID and client secret
+   - Update the `.env` file with these credentials
+
+3. **Update Environment Variables**:
+   - Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` with your Google OAuth credentials
+   - Set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` with your GitHub OAuth credentials
+   - Set `CALLBACK_URL_BASE` to your application's base URL (default is `http://localhost:8080`)
+   - Set `IDENTIFIER_SALT` to a secure random string (used for hashing identifiers)
+
+#### Privacy Note
+
+This authentication system is designed with privacy in mind:
+- No emails or personal information are stored in the database
+- User identifiers are hashed with a salt to prevent tracking
+- Only display names (which users can customize) are stored
+
+#### Auth Scaling Note
 
 If it is ever needed to scale and deploy in multiple instances with load balancers then we will need to tweak the way that we handle sessions since we're currently storing them in memory.
 
@@ -33,12 +72,12 @@ Copy the file `/server/.env.configure-me` to `/server/.env`
 cp /server/.env.configure-me /server/.env
 ```
 
-Open that file and fill in your credentials for Cognito from the User Pools General Settings page(for User Pool ID) and User Pools App Client Settings page (for App Client ID). Then choose a unique and memorable session name, and a secure [session secret](https://randomkeygen.com/).
+Open that file and fill in your OAuth credentials for Google and GitHub as described in the Auth section. Then choose a unique and memorable session name, and a secure [session secret](https://randomkeygen.com/).
 
-The last two Environment Variables are comma separated lists of email addresses that gain certain permissions within the app.
+The `SUPER_USERS` environment variable is a comma-separated list of hashed identifiers that gain administrative permissions within the app. Since we no longer store email addresses, you'll need to get the hashed identifier for a user after they've logged in. You can find this in the database or server logs.
 
 Example:
-`SUPER_USERS=anemail@gmail.com,anotheremail@gmail.com,finalemail@gmail.com`
+`SUPER_USERS=abcdef1234567890,0987654321fedcba`
 
 The `SUPER_USERS` have access to all routes in the app including ones that create/update building types, can post new results to the dashboard, etc.
 

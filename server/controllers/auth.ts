@@ -1,36 +1,19 @@
-import {CognitoUser, CognitoUserSession, ISignUpResult} from 'amazon-cognito-identity-js';
-import {confirmRegistration, loginUser, signupCognitoUser} from './../cognito';
-import {getAccountByEmail, createAccountFromSignup} from './../controllers/account';
-import {ConfirmData, LoginData, SignupData} from '../../common/interfaces';
-import { v4 as uuidv4 } from 'uuid';
+import { Account } from '../../common/interfaces';
+import { updateDisplayName } from '../models/Account';
 
+// Keep testing mode flag
 const TESTING: boolean = process.env.CONTEXT! === 'testing';
 
-export function signup(signupData: SignupData): Promise<any> {
-  if (TESTING) {
-    return createAccountFromSignup(signupData, uuidv4());
-  }
-  else {
-    return signupCognitoUser(signupData).then((signUpResult: ISignUpResult) => {
-      return createAccountFromSignup(signupData, signUpResult.userSub);
-    });
-  }
+/**
+ * Update a user's display name
+ * Now using OAuth-only authentication
+ */
+export function updateUserDisplayName(userId: number, newDisplayName: string): Promise<void> {
+  return updateDisplayName(userId, newDisplayName);
 }
 
-export function confirm(confirmData: ConfirmData): Promise<any> {
-  return confirmRegistration(confirmData).then((result: CognitoUser) => {
-    // username of a CognitoUser is the email
-    return getAccountByEmail(result.getUsername());
-  });
-}
-
-export function login(loginData: LoginData): Promise<any> {
-  if (TESTING) {
-    return getAccountByEmail(loginData.email);
-  }
-  else {
-    return loginUser(loginData).then((result: CognitoUserSession) => {
-      return getAccountByEmail(result.getIdToken().payload.email);
-    });
-  }
-}
+/**
+ * This file has been simplified to only support OAuth authentication.
+ * The previous email/password authentication methods have been removed.
+ * See the oauth.ts file for the implementation of OAuth authentication.
+ */
