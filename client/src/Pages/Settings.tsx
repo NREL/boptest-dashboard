@@ -106,7 +106,7 @@ const generateQuirkyName = (): string => {
 };
 
 export const Settings: React.FC = () => {
-  const { displayName, hashedIdentifier, authedId, shareAllResults, setDisplayName, refreshAuthStatus, isAdmin } = useUser();
+  const { displayName, hashedIdentifier, authedId, shareAllResults, setDisplayName, setShareAllResults, refreshAuthStatus, isAdmin, csrfToken } = useUser();
 
   const classes = useStyles();
 
@@ -121,6 +121,10 @@ export const Settings: React.FC = () => {
   const [apiKeyLoading, setApiKeyLoading] = React.useState(true);
   const [apiKeyError, setApiKeyError] = React.useState('');
 
+  const sessionHeaders = React.useMemo(() => (
+    csrfToken ? {'X-CSRF-Token': csrfToken} : {}
+  ), [csrfToken]);
+
   // Initialize username field with current display name
   useEffect(() => {
     if (displayName) {
@@ -132,14 +136,21 @@ export const Settings: React.FC = () => {
   const fetchApiKey = (retryCount = 0) => {
     setApiKeyLoading(true);
     setApiKeyError('');
+
+    if (!csrfToken) {
+      setApiKeyLoading(false);
+      setApiKeyError('Authentication token unavailable. Please refresh and try again.');
+      return;
+    }
     
-    axios.get('/api/accounts/key', { 
+    axios.get('/api/accounts/key', {
       withCredentials: true,
       headers: {
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache',
-        'Expires': '0'
-      }
+        'Expires': '0',
+        ...sessionHeaders,
+      },
     })
       .then(res => {
         if (res.data && res.data.apiKey) {
@@ -167,10 +178,10 @@ export const Settings: React.FC = () => {
   
   // Fetch API key when component loads
   useEffect(() => {
-    if (hashedIdentifier) {
+    if (hashedIdentifier && csrfToken) {
       fetchApiKey();
     }
-  }, [hashedIdentifier]);
+  }, [hashedIdentifier, csrfToken]);
 
   const handleUserNameChange = event => {
     setUsername(event.target.value);
@@ -205,7 +216,7 @@ export const Settings: React.FC = () => {
     }
     
     axios
-      .patch(changeGlobalShareSettingsEndpoint, {shareAllResults: shareValue}, { withCredentials: true })
+      .patch(changeGlobalShareSettingsEndpoint, {shareAllResults: shareValue}, { withCredentials: true, headers: { ...sessionHeaders } })
       .then(() => {
         // Update UI state
         if (setShareAllResults) {
@@ -259,39 +270,20 @@ export const Settings: React.FC = () => {
     
     try {
       // Send the update request
-      const response = await axios.patch('/api/accounts/display-name', 
-        { newDisplayName: username }, 
-        { 
+      const response = await axios.patch('/api/accounts/display-name',
+        { newDisplayName: username },
+        {
           withCredentials: true,
           headers: {
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+            ...sessionHeaders,
+          },
         }
       );
       
       if (response.data && response.data.success) {
         // Update the local state
         setDisplayName(username);
-        
-        // Update auth_user cookie directly as well
-        try {
-          const cookieStr = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('auth_user='));
-            
-          if (cookieStr) {
-            const cookieValue = decodeURIComponent(cookieStr.split('=')[1]);
-            const userData = JSON.parse(cookieValue);
-            
-            // Update the display name in the cookie
-            userData.displayName = username;
-            
-            // Set the updated cookie with same expiration time as the original
-            document.cookie = `auth_user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=${8*60*60}`;
-          }
-        } catch (e) {
-          // Silent fail on cookie update - server-side update still worked
-        }
         
         // Refresh the user context to ensure all UI components are updated
         refreshAuthStatus();
@@ -335,11 +327,12 @@ export const Settings: React.FC = () => {
     setApiKeyLoading(true);
     setApiKeyError('');
     
-    axios.post('/api/accounts/regenerate-key', {}, { 
+    axios.post('/api/accounts/regenerate-key', {}, {
       withCredentials: true,
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+        ...sessionHeaders,
+      },
     })
       .then(res => {
         if (res.data && res.data.apiKey) {

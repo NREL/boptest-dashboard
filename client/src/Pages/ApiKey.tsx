@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, {useEffect} from 'react';
 import {Box, Button, TextField, Typography} from '@material-ui/core';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
+import {useUser} from '../Context/user-context';
 
 const envType = process.env.NODE_ENV;
 
@@ -56,25 +57,42 @@ const copyApiKeyToClipboard = () => {
   document.execCommand('copy');
 };
 
-const syncTestData = apiKey => {
-  axios
-    .post('/api/setup/db', {apiKey: apiKey})
-    .then(res => console.log('Status:', res.status));
 };
 
 export const ApiKey: React.FC = () => {
   const classes = useStyles();
 
   const [apiKey, setApiKey] = React.useState('');
+  const {csrfToken} = useUser();
+  const sessionHeaders = React.useMemo(() => (
+    csrfToken ? {'X-CSRF-Token': csrfToken} : {}
+  ), [csrfToken]);
+
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
   const [showSyncTestData, setShowSyncTestData] = React.useState(false);
 
+  const syncTestData = (key: string) => {
+    axios
+      .post('/api/setup/db', {apiKey: key}, {
+        withCredentials: true,
+        headers: {
+          ...sessionHeaders,
+        },
+      })
+      .then(res => console.log('Status:', res.status))
+      .catch(err => console.error('Error syncing test data:', err));
+  };
+
   useEffect(() => {
+    if (!csrfToken) {
+      return;
+    }
+
     setLoading(true);
     setError('');
-    
-    axios.get('/api/accounts/key', { withCredentials: true })
+
+    axios.get('/api/accounts/key', { withCredentials: true, headers: { ...sessionHeaders } })
       .then(res => {
         setApiKey(res.data.apiKey);
         setLoading(false);
@@ -88,7 +106,7 @@ export const ApiKey: React.FC = () => {
     if (envType === 'development') {
       setShowSyncTestData(true);
     }
-  }, []);
+  }, [csrfToken]);
 
   return (
     <div className={classes.root}>

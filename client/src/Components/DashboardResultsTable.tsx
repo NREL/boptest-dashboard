@@ -24,6 +24,7 @@ import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import {FilterMenu} from './FilterMenu';
+import {useUser} from '../Context/user-context';
 import {FilterRanges, FilterValues} from '../../common/interfaces';
 import {
   createRows,
@@ -121,10 +122,6 @@ interface EnhancedTableProps {
   orderBy: string;
   rowCount: number;
 }
-
-const toggleShared = (id: number, share: boolean) => {
-  return axios.patch('/api/results/share', {id, share});
-};
 
 // Helper function to split the label into main text and units
 const parseHeaderLabel = (label: string): { main: string; unit: string | null } => {
@@ -613,6 +610,11 @@ export default function DashboardResultsTable(props: {
   onToggleChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   isLoggedIn?: boolean;
 }) {
+  const {csrfToken} = useUser();
+  const sessionHeaders = React.useMemo(() => (
+    csrfToken ? {'X-CSRF-Token': csrfToken} : {}
+  ), [csrfToken]);
+
   const classes = useStyles();
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Data>('dateRun');
@@ -733,7 +735,15 @@ export default function DashboardResultsTable(props: {
     result: Data
   ) => {
     event.stopPropagation();
-    toggleShared(result.id, !result.isShared).then(() => props.updateResults());
+    axios
+      .patch('/api/results/share', {id: result.id, share: !result.isShared}, {
+        withCredentials: true,
+        headers: {
+          ...sessionHeaders,
+        },
+      })
+      .then(() => props.updateResults())
+      .catch(err => console.error('Error toggling result sharing:', err));
   };
 
   const downloadResultsToCSV = () => {

@@ -55,9 +55,6 @@ export const Dashboard: React.FC = () => {
       
       axios.get('/api/results/my-results', {
         withCredentials: true, // Include cookies in the request
-        headers: {
-          'X-User-ID': authedId, // Add user ID in header as backup
-        }
       })
       .then(response => {
         console.log('Results received:', response.data.length);

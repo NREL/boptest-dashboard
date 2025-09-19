@@ -18,9 +18,56 @@ import {getAccountById} from './controllers/account';
 const app: express.Application = express();
 
 // Configure CORS to allow credentials
+const rawOrigins = process.env.CORS_ORIGINS || '';
+const parsedOrigins = rawOrigins
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(origin => origin.length > 0);
+
+const defaultOrigins = new Set<string>();
+const callbackBase = process.env.CALLBACK_URL_BASE;
+
+const parseOrigin = (value: string): string | null => {
+  if (!value) {
+    return null;
+  }
+  try {
+    const url = new URL(value);
+    return `${url.protocol}//${url.host}`;
+  } catch (err) {
+    return value;
+  }
+};
+
+if (callbackBase) {
+  const parsed = parseOrigin(callbackBase);
+  if (parsed) {
+    defaultOrigins.add(parsed);
+  }
+}
+
+['http://localhost:3000', 'http://127.0.0.1:3000'].forEach(origin => defaultOrigins.add(origin));
+parsedOrigins.forEach(origin => {
+  const parsed = parseOrigin(origin);
+  if (parsed) {
+    defaultOrigins.add(parsed);
+  }
+});
+
+const allowedOrigins = Array.from(defaultOrigins).filter(origin => origin.length > 0);
+
 app.use(cors({
-  origin: true, // Allow all origins that include credentials
-  credentials: true // Allow cookies to be sent with requests
+  origin: (origin, callback) => {
+    if (!origin) {
+      return callback(null, true);
+    }
+    if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    console.warn(`Blocked CORS request from origin ${origin}`);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true, // Allow cookies to be sent with requests
 }));
 
 // Parse request body

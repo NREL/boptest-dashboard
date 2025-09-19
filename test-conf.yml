@@ -3,8 +3,6 @@ services:
   server_test:
     build: ./server
     environment:
-      - COGNITO_USER_POOL_ID=asdf
-      - COGNITO_APP_CLIENT_ID=asdf
       - SESSION_NAME=asdf
       - SESSION_SECRET=asdf
       - DATABASE_URL=postgres://admin:pass@postgres_test:5432/boptestdb
