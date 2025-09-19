@@ -1,88 +1,105 @@
-import {EntitySchema, getRepository} from 'typeorm';
 import axios from 'axios';
 
 import {BuildingType} from '../../common/interfaces';
+import {DocumentRecord, JsonObject, getDocumentStore} from '../datastore/documentStore';
 
-export type BuildingTypeData = Omit<BuildingType, 'results'>;
+export type BuildingTypeData = Omit<BuildingType, 'id' | 'results'>;
 
-export const BuildingTypeEntity = new EntitySchema<BuildingType>({
-  name: 'buildingtypes',
-  columns: {
-    id: {
-      type: Number,
-      primary: true,
-      generated: true,
-    },
-    uid: {
-      type: String,
-      unique: true,
-    },
-    name: {
-      type: String,
-    },
-    markdown: {
-      type: String,
-      nullable: true,
-    },
-    markdownURL: {
-      type: String,
-    },
-    pdfURL: {
-      type: String,
-    },
-    scenarios: {
-      type: 'jsonb',
-    },
-  },
-  relations: {
-    results: {
-      type: 'one-to-many',
-      target: 'results',
-      cascade: true,
-      inverseSide: 'buildingType',
-    },
-  },
-});
+const COLLECTION = 'buildingTypes';
 
-export function createBuildingType(
-  data: BuildingTypeData
-): Promise<BuildingType> {
-  const buildingTypeRepo = getRepository<BuildingType>(BuildingTypeEntity);
-  return axios.get(data.markdownURL).then(res => {
-    data.markdown = res.data;
-    return buildingTypeRepo.save(data);
+function mapRecordToBuildingType(record: DocumentRecord<JsonObject>): BuildingType {
+  const data = record.data as BuildingTypeData;
+  return {
+    id: record.numericId,
+    uid: data.uid,
+    name: data.name,
+    markdown: data.markdown ?? null,
+    markdownURL: data.markdownURL,
+    pdfURL: data.pdfURL,
+    scenarios: data.scenarios,
+    results: [],
+  };
+}
+
+async function fetchMarkdown(markdownURL: string): Promise<string | null> {
+  try {
+    const response = await axios.get(markdownURL);
+    return response.data;
+  } catch (error) {
+    console.error(`Failed to fetch markdown from ${markdownURL}`, error);
+    return null;
+  }
+}
+
+export async function createBuildingType(data: BuildingTypeData): Promise<BuildingType> {
+  const store = await getDocumentStore();
+  const existing = await store.findOneByField<JsonObject>(COLLECTION, 'uid', data.uid);
+  if (existing) {
+    throw new Error(`Building type already exists for uid ${data.uid}`);
+  }
+
+  const markdown = await fetchMarkdown(data.markdownURL);
+
+  const record = await store.insert<JsonObject>(COLLECTION, {
+    ...data,
+    markdown,
   });
+
+  return mapRecordToBuildingType(record);
 }
 
-export function updateBuildingType(
-  building: BuildingType, newData: BuildingTypeData, 
+export async function updateBuildingType(
+  building: BuildingType,
+  newData: BuildingTypeData
 ): Promise<BuildingType> {
-  const buildingTypeRepo = getRepository<BuildingType>(BuildingTypeEntity);
-  return axios.get(newData.markdownURL).then(res => {
-    building.markdown = res.data;
-    building.markdownURL = newData.markdownURL;
-    building.name = newData.name;
-    building.pdfURL = newData.pdfURL;
-    building.scenarios = newData.scenarios;
-    return buildingTypeRepo.save(building);
-  });
+  const store = await getDocumentStore();
+  const record = await store.findByNumericId<JsonObject>(COLLECTION, building.id);
+  if (!record) {
+    throw new Error(`Building type with id ${building.id} not found`);
+  }
+
+  const markdown = await fetchMarkdown(newData.markdownURL);
+  record.data = {
+    ...record.data,
+    name: newData.name,
+    pdfURL: newData.pdfURL,
+    markdownURL: newData.markdownURL,
+    markdown,
+    scenarios: newData.scenarios,
+    uid: newData.uid,
+  };
+
+  const updated = await store.replace<JsonObject>(COLLECTION, record.docId, record.data);
+  if (!updated) {
+    throw new Error(`Failed to update building type with id ${building.id}`);
+  }
+
+  return mapRecordToBuildingType(updated);
 }
 
-export function getBuildingTypes(): Promise<BuildingType[]> {
-  const repo = getRepository<BuildingType>(BuildingTypeEntity);
-  return repo.find();
+export async function getBuildingTypes(): Promise<BuildingType[]> {
+  const store = await getDocumentStore();
+  const records = await store.findAll<JsonObject>(COLLECTION);
+  return records.map(mapRecordToBuildingType);
 }
 
-export function getBuildingTypeByUid(uid: string): Promise<BuildingType> {
-  const buildingTypeRepo = getRepository<BuildingType>(BuildingTypeEntity);
-  console.log(`Looking up building type with UID: ${uid}`);
-  return buildingTypeRepo.findOneOrFail({ uid: uid })
-    .then(buildingType => {
-      console.log(`Found building type: ${buildingType.name} (${buildingType.uid})`);
-      return buildingType;
-    })
-    .catch(err => {
-      console.error(`Failed to find building type with UID ${uid}:`, err);
-      throw err;
-    });
+export async function getBuildingTypeByUid(uid: string): Promise<BuildingType> {
+  const store = await getDocumentStore();
+  const record = await store.findOneByField<JsonObject>(COLLECTION, 'uid', uid);
+  if (!record) {
+    throw new Error(`Building type with uid ${uid} not found`);
+  }
+  return mapRecordToBuildingType(record);
+}
+
+export async function findBuildingTypeById(id: number): Promise<BuildingType | null> {
+  const store = await getDocumentStore();
+  const record = await store.findByNumericId<JsonObject>(COLLECTION, id);
+  return record ? mapRecordToBuildingType(record) : null;
+}
+
+export async function findBuildingTypesByIds(ids: number[]): Promise<BuildingType[]> {
+  const store = await getDocumentStore();
+  const records = await store.findByNumericIds<JsonObject>(COLLECTION, ids);
+  return records.map(mapRecordToBuildingType);
 }

@@ -1,231 +1,317 @@
-import {SignatureDetails} from './../../common/interfaces';
-import {getBuildingTypeByUid} from './../models/BuildingType';
-import {getRepository} from 'typeorm';
-import {getAccountByAPIKey, getAccountByHashedIdentifier, getAccountById} from './account';
-import {createResult, ResultEntity} from '../models/Result';
-import {Result, Scenario, Scenarios, Signature, Account} from '../../common/interfaces';
+import {
+  SignatureDetails,
+  Result,
+  Scenario,
+  Scenarios,
+  Account,
+  BuildingType,
+} from '../../common/interfaces';
+import {
+  getBuildingTypeByUid,
+  findBuildingTypesByIds,
+} from '../models/BuildingType';
+import {
+  findAccountById,
+  findAccountsByIds,
+} from '../models/Account';
+import {getAccountByAPIKey} from './account';
+import {
+  createResult,
+  listResults,
+  findResultsByAccountId,
+  findResultById,
+  findResultByUid,
+  replaceResult,
+  ResultDocument,
+} from '../models/Result';
+import {DocumentRecord} from '../datastore/documentStore';
 
-export function getResults(): Promise<Result[]> {
-  // request data
-  const resultsRepository = getRepository<Result>(ResultEntity);
-  return resultsRepository.find({
-    relations: ['account', 'buildingType'],
+function sanitizeAccountForResult(account: Account): Account {
+  return {
+    ...account,
+    apiKey: '',
+    apiKeySalt: '',
+    results: [],
+  };
+}
+
+function sanitizeBuildingType(buildingType: BuildingType): BuildingType {
+  return {
+    ...buildingType,
+    results: [],
+  };
+}
+
+function toResult(
+  record: DocumentRecord<ResultDocument>,
+  account: Account,
+  buildingType: BuildingType
+): Result {
+  const data = record.data;
+  return {
+    id: record.numericId,
+    uid: data.uid,
+    deleted: data.deleted,
+    dateRun: new Date(data.dateRun),
+    boptestVersion: data.boptestVersion,
+    isShared: data.isShared,
+    tags: data.tags,
+    thermalDiscomfort: data.thermalDiscomfort,
+    energyUse: data.energyUse,
+    cost: data.cost,
+    emissions: data.emissions,
+    iaq: data.iaq,
+    timeRatio: data.timeRatio,
+    peakElectricity: data.peakElectricity,
+    peakGas: data.peakGas,
+    peakDistrictHeating: data.peakDistrictHeating,
+    timePeriod: data.timePeriod,
+    controlStep: data.controlStep,
+    electricityPrice: data.electricityPrice,
+    weatherForecastUncertainty: data.weatherForecastUncertainty,
+    forecastParameters: data.forecastParameters,
+    scenario: data.scenario,
+    account: sanitizeAccountForResult(account),
+    buildingType: sanitizeBuildingType(buildingType),
+  };
+}
+
+async function hydrateResults(
+  records: Array<DocumentRecord<ResultDocument>>
+): Promise<Result[]> {
+  if (records.length === 0) {
+    return [];
+  }
+
+  const accountIds = Array.from(new Set(records.map(r => r.data.accountId)));
+  const buildingIds = Array.from(new Set(records.map(r => r.data.buildingTypeId)));
+
+  const [accounts, buildingTypes] = await Promise.all([
+    findAccountsByIds(accountIds),
+    findBuildingTypesByIds(buildingIds),
+  ]);
+
+  const accountMap = new Map(accounts.map(account => [account.id, account]));
+  const buildingMap = new Map(buildingTypes.map(bt => [bt.id, bt]));
+
+  return records.map(record => {
+    const account = accountMap.get(record.data.accountId);
+    const buildingType = buildingMap.get(record.data.buildingTypeId);
+
+    if (!account) {
+      throw new Error(`Account ${record.data.accountId} missing for result ${record.data.uid}`);
+    }
+
+    if (!buildingType) {
+      throw new Error(`Building type ${record.data.buildingTypeId} missing for result ${record.data.uid}`);
+    }
+
+    return toResult(record, account, buildingType);
   });
 }
 
-// this fetches all results that are shared to be shown on
-// both the home page and the results table
-// we DO NOT want to show nonshared results for the current user
-export function getAllSharedResults(): Promise<Result[]> {
-  const resultsRepository = getRepository<Result>(ResultEntity);
-  return resultsRepository.find({
-    relations: ['account', 'buildingType'],
-    where: (qb:any) => {
-      qb.where(`
-        ("results"."deleted" = false)
-        AND
-        ("results__account"."shareAllResults" is not false)
-        AND
-        (
-          ("results__account"."shareAllResults" is true)
-          OR
-          ("results"."isShared") = true
-        )
-      `)
+function sanitizeSharedResult(result: Result): Result {
+  const account: any = {...result.account};
+  delete account.apiKey;
+  delete account.apiKeySalt;
+  delete account.shareAllResults;
+  delete account.results;
+  delete account.id;
+
+  const buildingType: any = {...result.buildingType};
+  delete buildingType.results;
+  delete buildingType.markdown;
+  delete buildingType.markdownURL;
+  delete buildingType.pdfURL;
+
+  return {
+    ...result,
+    account: account as Account,
+    buildingType: buildingType as BuildingType,
+  };
+}
+
+export async function getResults(): Promise<Result[]> {
+  const records = await listResults();
+  const active = records.filter(record => !record.data.deleted);
+  return hydrateResults(active);
+}
+
+export async function getAllSharedResults(): Promise<Result[]> {
+  const records = await listResults();
+  const active = records.filter(record => !record.data.deleted);
+  const hydrated = await hydrateResults(active);
+
+  const filtered = hydrated.filter(result => {
+    const shareAll = result.account.shareAllResults;
+    if (shareAll === false) {
+      return false;
     }
-  })
-  .then(results => {
-    results.forEach(result => {
-      delete result.account.apiKey;
-      delete result.account.shareAllResults;
-      delete result.account.id
-      delete result.buildingType.markdown;
-      delete result.buildingType.markdownURL;
-      delete result.buildingType.pdfURL;
-    });
-    return results;
-  })
+    if (shareAll === true) {
+      return true;
+    }
+    return result.isShared;
+  });
+
+  return filtered.map(sanitizeSharedResult);
 }
 
-export function getAllResultsForUser(userId: string): Promise<Result[]> {
-  const repo = getRepository<Result>(ResultEntity);
+export async function getAllResultsForUser(userId: string): Promise<Result[]> {
   const accountId = parseInt(userId, 10);
-  
-  if (isNaN(accountId)) {
-    console.error('Invalid user ID:', userId);
-    return Promise.reject(new Error('Invalid user ID'));
+  if (Number.isNaN(accountId)) {
+    throw new Error('Invalid user ID');
   }
-  
-  return getAccountById(accountId)
-    .then((targetAccount: Account) => {
-      console.log('Found account for user ID:', accountId);
-      return repo.find({
-        relations: ['account', 'buildingType'],
-        where: {
-          deleted: false,
-          account: targetAccount,
-        },
-      }).then((data) => {
-        console.log(`Found ${data.length} results for user ID: ${accountId}`);
-        return data;
-      });
-    })
-    .catch(err => {
-      console.error(`Error finding account for user ID ${accountId}:`, err);
-      return Promise.reject(err);
-    })
+
+  const account = await findAccountById(accountId);
+  if (!account) {
+    throw new Error(`Account ${accountId} not found`);
+  }
+
+  const records = await findResultsByAccountId(accountId);
+  const active = records.filter(record => !record.data.deleted);
+
+  return hydrateResults(active);
 }
 
-// need to account for account misses
-function createResultAndAssociatedModels(result: any) {
-  console.log('Creating result with account API key:', result.account.apiKey);
-  const account = getAccountByAPIKey(result.account.apiKey)
-    .catch(err => {
-      console.error(`Failed to find account with API key ${result.account.apiKey}:`, err);
-      throw err;
-    });
-  const buildingType = getBuildingTypeByUid(result.buildingType.uid)
-    .catch(err => {
-      console.error(`Failed to find building type with UID ${result.buildingType.uid}:`, err);
-      throw err;
-    });
+function validateScenario(
+  buildingType: BuildingType,
+  scenario: Scenario,
+  resultUid: string
+): void {
+  const buildingScenarios: Scenarios = {...(buildingType.scenarios as any)};
+  const scenarioCopy: Scenario = {...scenario};
 
-  return Promise.all([account, buildingType])
-    .then(data => {
-      const resultData = {
-        deleted: false,
-        uid: result.uid,
-        dateRun: result.dateRun,
-        boptestVersion: result.boptestVersion,
-        isShared: result.isShared,
-
-        tags: result.tags,
-
-        thermalDiscomfort: result.kpis.tdis_tot,
-        energyUse: result.kpis.ener_tot,
-        cost: result.kpis.cost_tot,
-        emissions: result.kpis.emis_tot,
-        iaq: result.kpis.idis_tot,
-        timeRatio: result.kpis.time_rat,
-        peakElectricity: result.kpis.pele_tot,
-        peakGas: result.kpis.pgas_tot,
-        peakDistrictHeating: result.kpis.pdih_tot,
-
-        timePeriod: result.scenario.timePeriod,
-        electricityPrice: result.scenario.electricityPrice,
-        weatherForecastUncertainty: result.scenario.weatherForecastUncertainty,
-        controlStep: result.controlStep,
-        forecastParameters: result.forecastParameters,
-        scenario: result.scenario,
-
-        account: data[0],
-        buildingType: data[1],
+  for (const key in scenarioCopy) {
+    if (!buildingScenarios[key] || !buildingScenarios[key].includes(scenarioCopy[key])) {
+      throw {
+        message: `Invalid Data: Result (${resultUid}) tried to use scenario type: "${key}" with value: "${scenarioCopy[key]}" for building type: "${buildingType.name}"`,
+        data: scenario,
       };
-
-      const buildingScenarios: Scenarios = { ...data[1].scenarios };
-      const scenario: Scenario = { ...result.scenario };
-
-      for(const key in scenario) {
-        if (
-          !buildingScenarios[key] ||
-          !buildingScenarios[key].includes(scenario[key])
-        ) {
-          return Promise.reject({
-            message: `Invalid Data: Result (${result.uid}) tried to use scenario type: "${key}" with value: "${scenario[key]}" for building type: "${data[1].name}"`,
-            data: result
-          });
-        }
-      }
-      return createResult(resultData);
-    });
+    }
+  }
 }
 
-export function createResults(results: any) {
-  console.log(`Creating ${results.length} results`);
-  
+function buildResultDocument(result: any, account: Account, buildingType: BuildingType): ResultDocument {
+  return {
+    uid: result.uid,
+    deleted: false,
+    dateRun: new Date(result.dateRun).toISOString(),
+    boptestVersion: result.boptestVersion,
+    isShared: result.isShared,
+    tags: result.tags || [],
+    thermalDiscomfort: result.kpis.tdis_tot,
+    energyUse: result.kpis.ener_tot,
+    cost: result.kpis.cost_tot,
+    emissions: result.kpis.emis_tot,
+    iaq: result.kpis.idis_tot,
+    timeRatio: result.kpis.time_rat,
+    peakElectricity: result.kpis.pele_tot,
+    peakGas: result.kpis.pgas_tot,
+    peakDistrictHeating: result.kpis.pdih_tot,
+    timePeriod: result.scenario.timePeriod,
+    controlStep: result.controlStep,
+    electricityPrice: result.scenario.electricityPrice,
+    weatherForecastUncertainty: result.scenario.weatherForecastUncertainty,
+    forecastParameters: result.forecastParameters,
+    scenario: result.scenario,
+    accountId: account.id,
+    buildingTypeId: buildingType.id,
+  };
+}
+
+async function createResultAndAssociatedModels(result: any) {
+  const account = await getAccountByAPIKey(result.account.apiKey);
+  const buildingType = await getBuildingTypeByUid(result.buildingType.uid);
+
+  validateScenario(buildingType, result.scenario, result.uid);
+
+  const document = buildResultDocument(result, account, buildingType);
+  await createResult(document);
+}
+
+export async function createResults(results: any) {
   return Promise.allSettled(
-    results.map((result: any) => {
-      console.log(`Processing result ${result.uid}`);
-      return createResultAndAssociatedModels(result)
-        .then(created => {
-          console.log(`Successfully created result ${result.uid}`);
-          return created;
-        })
-        .catch(err => {
-          console.error(`Failed to create result ${result.uid}:`, err);
-          throw err;
-        });
+    results.map(async (result: any) => {
+      await createResultAndAssociatedModels(result);
     })
   );
 }
 
-export function toggleShared(id: number, share:boolean, sessionId: number): Promise<any> {
-  const repo = getRepository<Result>(ResultEntity);
-  return repo.findOneOrFail({
-    relations: ['account'],
-    where: {
-      id,
-    }
-  })
-    .then((result: Result) => {
-      if (result.account.id === sessionId) {
-        result.isShared = share;
-        repo.save(result);
-      } else {
-        throw('Not authorized')
-      }
-    });
+export async function toggleShared(id: number, share: boolean, sessionId: number): Promise<void> {
+  const record = await findResultById(id);
+  if (!record) {
+    throw new Error('Result not found');
+  }
+
+  if (record.data.accountId !== sessionId) {
+    throw new Error('Not authorized');
+  }
+
+  record.data.isShared = share;
+  await replaceResult(record);
 }
 
-export function getSignatureDetailsForResult(
-  id: string
-): Promise<SignatureDetails> {
-  const repo = getRepository<Result>(ResultEntity);
-  return repo
-    .findOneOrFail({
-      uid: id,
-    })
-    .then(result => {
-      const targetSignature: Signature = {
-        scenario: result.scenario,
-      };
-      return repo
-        .find({
-          where: {...targetSignature},
-        })
-        .then(results => {
-          return getKPIRanges(results, result);
-        });
-    });
+function stableStringify(value: any): string {
+  if (value === null || typeof value !== 'object') {
+    return JSON.stringify(value);
+  }
+
+  if (Array.isArray(value)) {
+    return `[${value.map(stableStringify).join(',')}]`;
+  }
+
+  const keys = Object.keys(value).sort();
+  const entries = keys.map(key => `"${key}":${stableStringify(value[key])}`);
+  return `{${entries.join(',')}}`;
+}
+
+export async function getSignatureDetailsForResult(id: string): Promise<SignatureDetails> {
+  const targetRecord = await findResultByUid(id);
+  if (!targetRecord) {
+    throw new Error(`Result with uid ${id} not found`);
+  }
+
+  const records = await listResults();
+  const targetSignature = stableStringify(targetRecord.data.scenario);
+  const matching = records.filter(record => stableStringify(record.data.scenario) === targetSignature);
+
+  const hydratedResults = await hydrateResults(matching);
+  const targetResult = hydratedResults.find(result => result.uid === id);
+
+  if (!targetResult) {
+    throw new Error(`Hydrated result with uid ${id} not found`);
+  }
+
+  return getKPIRanges(hydratedResults, targetResult);
 }
 
 function getKPIRanges(results: Result[], result: Result): SignatureDetails {
-  var tdMin = result.thermalDiscomfort;
-  var tdMax = result.thermalDiscomfort;
+  let tdMin = result.thermalDiscomfort;
+  let tdMax = result.thermalDiscomfort;
 
-  var energyMin = result.energyUse;
-  var energyMax = result.energyUse;
+  let energyMin = result.energyUse;
+  let energyMax = result.energyUse;
 
-  var costMin = result.cost;
-  var costMax = result.cost;
+  let costMin = result.cost;
+  let costMax = result.cost;
 
-  var emissionsMin = result.emissions;
-  var emissionsMax = result.emissions;
+  let emissionsMin = result.emissions;
+  let emissionsMax = result.emissions;
 
-  var iaqMin = result.iaq;
-  var iaqMax = result.iaq;
+  let iaqMin = result.iaq;
+  let iaqMax = result.iaq;
 
-  var timeMin = result.timeRatio;
-  var timeMax = result.timeRatio;
+  let timeMin = result.timeRatio;
+  let timeMax = result.timeRatio;
 
-  var peakElectricityMin = result.peakElectricity;
-  var peakElectricityMax = result.peakElectricity;
+  let peakElectricityMin = result.peakElectricity;
+  let peakElectricityMax = result.peakElectricity;
 
-  var peakGasMin = result.peakGas || 0.0;
-  var peakGasMax = result.peakGas || 0.0;
+  let peakGasMin = result.peakGas || 0.0;
+  let peakGasMax = result.peakGas || 0.0;
 
-  var peakDistrictHeatingMin = result.peakDistrictHeating || 0.0;
-  var peakDistrictHeatingMax = result.peakDistrictHeating || 0.0;
+  let peakDistrictHeatingMin = result.peakDistrictHeating || 0.0;
+  let peakDistrictHeatingMax = result.peakDistrictHeating || 0.0;
 
   results.forEach(res => {
     if (res.thermalDiscomfort < tdMin) {

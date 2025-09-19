@@ -63,11 +63,6 @@ export interface Account {
   oauthProvider: string;     // "google" or "github" only
 }
 
-export type Signature = Pick<
-  Result,
-  | "scenario"
->;
-
 export interface Result {
   id: number;
   uid: string;
