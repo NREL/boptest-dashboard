@@ -1,6 +1,6 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
-import {Divider} from '@material-ui/core';
+import {Divider, Button} from '@material-ui/core';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
 import {KPITable} from './KPITable';
 import {ResultInfoTable} from './ResultInfoTable';
@@ -10,6 +10,12 @@ const useStyles = makeStyles(() =>
   createStyles({
     root: {
       padding: 0,
+    },
+    headerRow: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16,
     },
     divider: {
       backgroundColor: 'rgba(0, 0, 0, 0.12)',
@@ -27,10 +33,26 @@ interface ResultDetailsProps {
 
 export const ResultDetails: React.FC<ResultDetailsProps> = props => {
   const classes = useStyles();
+  const canShare = props.result.isShared === true;
+
+  const copyLinkToClipboard = () => {
+    const {origin} = window.location;
+    const shareUrl = `${origin}/result/${props.result.uid}`;
+    navigator.clipboard.writeText(shareUrl).catch(() => {
+      // absorb copy errors silently
+    });
+  };
 
   return (
     <div className={classes.root}>
-      <Typography variant="subtitle1">TEST CASE</Typography>
+      <div className={classes.headerRow}>
+        <Typography variant="subtitle1">TEST CASE</Typography>
+        {canShare && (
+          <Button size="small" variant="outlined" color="primary" onClick={copyLinkToClipboard}>
+            Copy Result Link
+          </Button>
+        )}
+      </div>
       <div className={classes.blocks}>
         <ResultInfoTable result={props.result} />
         <Divider

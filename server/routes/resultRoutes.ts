@@ -4,6 +4,7 @@ import express from 'express';
 import {
   getAllResultsForUser,
   getAllSharedResults,
+  getSharedResultByUid,
   getSignatureDetailsForResult,
   createResults,
   toggleShared,
@@ -49,6 +50,20 @@ resultRouter.get('/facets', (req: express.Request, res: express.Response) => {
       console.error('Unable to list result facets', err);
       res.status(500).json({error: 'Failed to load result facets'});
     });
+});
+
+resultRouter.get('/uid/:uid', async (req: express.Request, res: express.Response) => {
+  try {
+    const result = await getSharedResultByUid(req.params.uid);
+    if (!result) {
+      res.status(404).json({error: 'Result not found'});
+      return;
+    }
+    res.json(result);
+  } catch (err) {
+    console.error(`Unable to get result ${req.params.uid}`, err);
+    res.status(500).json({error: 'Failed to load result'});
+  }
 });
 
 resultRouter.get(

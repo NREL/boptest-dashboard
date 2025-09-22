@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import ReactModal from 'react-modal';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
 
@@ -33,17 +33,25 @@ const useStyles = makeStyles(() =>
 
 interface ModalProps {
   renderProp: React.ReactElement;
-  closeModal: boolean;
+  closeModal: () => void;
 }
 
 export const Modal: React.FC<ModalProps> = props => {
   const classes = useStyles();
+  const appElement =
+    typeof document !== 'undefined' ? document.getElementById('app') : null;
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      ReactModal.setAppElement('#app');
+    }
+  }, []);
 
   return (
     <ReactModal
       className={classes.modal}
       isOpen
-      appElement={document.getElementById('app')}
+      appElement={appElement || undefined}
       onRequestClose={props.closeModal}
       overlayClassName={classes.overlay}
     >

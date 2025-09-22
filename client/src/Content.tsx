@@ -37,6 +37,9 @@ export const Content: React.FC = () => {
         <Route path={AppRoute.Settings}>
           <Settings />
         </Route>
+        <Route path="/result/:resultUid">
+          <Results />
+        </Route>
         <Route path={AppRoute.Results}>
           <Results />
         </Route>

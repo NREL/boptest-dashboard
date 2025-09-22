@@ -132,6 +132,27 @@ async function hydrateResults(
   return hydrated;
 }
 
+export async function getSharedResultByUid(uid: string): Promise<Result | null> {
+  const record = await findResultByUid(uid);
+  if (!record || record.data.deleted) {
+    return null;
+  }
+
+  const hydrated = await hydrateResults([record]);
+  if (hydrated.length === 0) {
+    return null;
+  }
+
+  const result = hydrated[0];
+  const shareAll = result.account.shareAllResults;
+  const canShare = shareAll === true || (shareAll !== false && result.isShared);
+  if (!canShare) {
+    return null;
+  }
+
+  return sanitizeSharedResult(result);
+}
+
 function sanitizeSharedResult(result: Result): Result {
   const account: any = {...result.account};
   delete account.apiKey;

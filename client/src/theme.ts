@@ -1,7 +1,7 @@
-import { createMuiTheme } from '@material-ui/core/styles';
+import {createTheme} from '@material-ui/core/styles';
 
 // Create a theme matching the BOPTEST website
-const theme = createMuiTheme({
+const theme = createTheme({
   palette: {
     primary: {
       main: '#188eac', // BOPTEST primary teal/blue
