@@ -96,6 +96,15 @@ export interface Result {
   buildingType: BuildingType;
 }
 
+export interface ResultFacet {
+  buildingTypeUid: string;
+  buildingTypeName: string;
+  scenario: {
+    [key: string]: string[];
+  };
+  tags: string[];
+}
+
 // Filter Interfaces
 export interface FilterRanges {
   costRange: {
@@ -140,7 +149,9 @@ export interface FilterValues {
 }
 
 export interface BuildingScenarios {
-  [key: string]: string[];
+  [key: string]: {
+    [scenarioKey: string]: string[];
+  };
 }
 
 export interface Scenario {

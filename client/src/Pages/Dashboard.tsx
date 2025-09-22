@@ -10,8 +10,8 @@ import Button from '@material-ui/core/Button';
 import ResultsTable from '../Components/ResultsTable';
 import {Modal} from '../Components/Modal';
 import {ResultDetails} from '../Components/ResultDetails';
-import MainTableHeader from '../Components/MainTableHeader';
 import { AppRoute } from '../enums';
+import {ResultFacet} from '../../common/interfaces';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -38,7 +38,7 @@ export const Dashboard: React.FC = () => {
   const history = useHistory();
   const { hashedIdentifier, authedId } = useUser();
   const [results, setResults] = useState([]);
-  const [buildingTypes, setBuildingTypes] = useState([]);
+  const [buildingFacets, setBuildingFacets] = useState<ResultFacet[]>([]);
   const [showResultModal, setShowResultModal] = useState(false);
   const [selectedResult, setSelectedResult] = useState(null);
   const [error, setError] = useState<string | null>(null);
@@ -72,22 +72,22 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const updateBuildingTypes = () => {
-    axios.get('/api/buildingTypes', {
+  const updateBuildingFacets = () => {
+    axios.get('/api/results/facets', {
       withCredentials: true // Include cookies in the request
     })
     .then(response => {
-      setBuildingTypes(response.data);
+      setBuildingFacets(response.data);
     })
     .catch(err => {
-      console.error('Error fetching building types:', err);
+      console.error('Error fetching result facets:', err);
     });
   };
 
   // build out simple data fetcher straight in the useEffect for now
   useEffect(() => {
     updateResults();
-    updateBuildingTypes();
+    updateBuildingFacets();
   }, []);
 
   // when we get a selected result, show the result modal
@@ -143,7 +143,7 @@ export const Dashboard: React.FC = () => {
           <>
             <ResultsTable
               results={results}
-              buildingTypes={buildingTypes}
+              buildingFacets={buildingFacets}
               setSelectedResult={handleChange}
               viewMyResults={viewMyResults}
               onToggleChange={handleToggleChange}

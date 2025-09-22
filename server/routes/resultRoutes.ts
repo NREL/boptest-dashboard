@@ -8,6 +8,7 @@ import {
   createResults,
   toggleShared,
 } from '../controllers/result';
+import {listResultFacets} from '../models/ResultFacet';
 import {authorizer} from './authRoutes';
 import {validateSessionCsrf} from '../utils/security';
 
@@ -38,6 +39,15 @@ resultRouter.get('/my-results', authorizer, (req: express.Request, res: express.
     .catch(err => {
       console.error(`Unable to get results for user ID ${user.id}`, err);
       res.status(500).json({error: 'Failed to retrieve results'});
+    });
+});
+
+resultRouter.get('/facets', (req: express.Request, res: express.Response) => {
+  listResultFacets()
+    .then(facets => res.json(facets))
+    .catch(err => {
+      console.error('Unable to list result facets', err);
+      res.status(500).json({error: 'Failed to load result facets'});
     });
 });
 

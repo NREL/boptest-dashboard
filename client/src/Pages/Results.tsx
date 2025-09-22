@@ -4,11 +4,11 @@ import { useHistory } from 'react-router-dom';
 import ResultsTable from '../Components/ResultsTable';
 import {Modal} from '../Components/Modal';
 import {ResultDetails} from '../Components/ResultDetails';
-import MainTableHeader from '../Components/MainTableHeader';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import { useUser } from '../Context/user-context';
 import { AppRoute } from '../enums';
+import {ResultFacet} from '../../common/interfaces';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -23,14 +23,14 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const endpointResults = '/api/results';
-const endpointBuildingTypes = '/api/buildingTypes';
+const endpointFacets = '/api/results/facets';
 
 export const Results: React.FC = () => {
   const classes = useStyles();
   const history = useHistory();
   const { hashedIdentifier } = useUser();
   const [results, setResults] = useState([]);
-  const [buildingTypes, setBuildingTypes] = useState([]);
+  const [buildingFacets, setBuildingFacets] = useState<ResultFacet[]>([]);
   const [showResultModal, setShowResultModal] = useState(false);
   const [selectedResult, setSelectedResult] = useState(null);
   const [viewMyResults, setViewMyResults] = useState(false);
@@ -44,8 +44,8 @@ export const Results: React.FC = () => {
       setResults(response.data);
     });
 
-    axios.get(endpointBuildingTypes).then(response => {
-      setBuildingTypes(response.data);
+    axios.get(endpointFacets).then(response => {
+      setBuildingFacets(response.data);
     });
   }, []);
 
@@ -76,7 +76,7 @@ export const Results: React.FC = () => {
       <Paper className={classes.paper}>
         <ResultsTable
           results={results}
-          buildingTypes={buildingTypes}
+          buildingFacets={buildingFacets}
           setSelectedResult={handleChange}
           viewMyResults={viewMyResults}
           onToggleChange={handleToggleChange}

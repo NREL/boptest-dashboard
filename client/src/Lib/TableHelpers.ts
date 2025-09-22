@@ -2,8 +2,8 @@ import {
   FilterRanges,
   FilterValues,
   BuildingScenarios,
-  BuildingType,
   Result,
+  ResultFacet,
   Scenario,
 } from '../../common/interfaces';
 
@@ -118,11 +118,11 @@ export interface HeadCell {
 }
 
 export const getBuildingScenarios = (
-  buildingTypes: BuildingType[]
+  facets: ResultFacet[]
 ): BuildingScenarios => {
-  const buildingScenarios: any = {};
-  buildingTypes.forEach((building: BuildingType) => {
-    buildingScenarios[building.name] = building.scenarios;
+  const buildingScenarios: BuildingScenarios = {};
+  facets.forEach(facet => {
+    buildingScenarios[facet.buildingTypeName] = facet.scenario;
   });
   return buildingScenarios;
 };

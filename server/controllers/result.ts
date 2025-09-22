@@ -24,6 +24,7 @@ import {
   replaceResult,
   ResultDocument,
 } from '../models/Result';
+import {upsertResultFacet} from '../models/ResultFacet';
 import {DocumentRecord, JsonObject} from '../datastore/documentStore';
 
 function jsonObjectToPlain(value: JsonObject): Record<string, any> {
@@ -245,6 +246,29 @@ async function createResultAndAssociatedModels(result: any) {
 
   const document = buildResultDocument(result, account, buildingType);
   await createResult(document);
+
+  const scenarioValues: Record<string, string[]> = {};
+  if (result.scenario && typeof result.scenario === 'object') {
+    for (const key of Object.keys(result.scenario)) {
+      const value = result.scenario[key];
+      if (value !== undefined && value !== null) {
+        if (Array.isArray(value)) {
+          scenarioValues[key] = value
+            .filter(item => item !== undefined && item !== null)
+            .map(item => String(item));
+        } else {
+          scenarioValues[key] = [String(value)];
+        }
+      }
+    }
+  }
+
+  await upsertResultFacet(
+    buildingType.uid,
+    buildingType.name,
+    scenarioValues,
+    Array.isArray(result.tags) ? result.tags.map((tag: any) => String(tag)) : []
+  );
 }
 
 export async function createResults(results: any[]): Promise<PromiseSettledResult<void>[]> {

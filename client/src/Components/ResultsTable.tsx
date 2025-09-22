@@ -26,7 +26,12 @@ import Typography from '@material-ui/core/Typography';
 
 import {FilterMenu} from './FilterMenu';
 import {useUser} from '../Context/user-context';
-import {FilterRanges, FilterValues} from '../../common/interfaces';
+import {
+  FilterRanges,
+  FilterValues,
+  ResultFacet,
+  BuildingScenarios,
+} from '../../common/interfaces';
 import {
   createRows,
   createTagOptions,
@@ -595,7 +600,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface ResultsTableProps {
   results: any[];
-  buildingTypes: any[];
+  buildingFacets: ResultFacet[];
   setSelectedResult: (result: any) => void;
   viewMyResults?: boolean;
   onToggleChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -609,7 +614,7 @@ interface ResultsTableProps {
 export default function ResultsTable(props: ResultsTableProps) {
   const {
     results,
-    buildingTypes,
+    buildingFacets = [],
     setSelectedResult,
     viewMyResults = false,
     onToggleChange,
@@ -632,7 +637,7 @@ export default function ResultsTable(props: ResultsTableProps) {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [rows, setRows] = useState<Data[]>([]);
   const [filteredRows, setFilteredRows] = useState<Data[]>([]);
-  const [buildingScenarios, setBuildingScenarios] = useState<Record<string, any>>({});
+  const [buildingScenarios, setBuildingScenarios] = useState<BuildingScenarios>({});
   const [filterRanges, setFilterRanges] = useState<FilterRanges | any>({});
   const [displayFilters, setDisplayFilters] = useState(false);
   const [buildingTypeFilter, setBuildingTypeFilter] = useState<string>('');
@@ -643,9 +648,9 @@ export default function ResultsTable(props: ResultsTableProps) {
     const allRows = createRows(results);
     setRows(allRows);
     setFilteredRows(allRows);
-    setBuildingScenarios(getBuildingScenarios(buildingTypes));
+    setBuildingScenarios(getBuildingScenarios(buildingFacets));
     setSelectedIds([]);
-  }, [results, buildingTypes]);
+  }, [results, buildingFacets]);
 
   useEffect(() => {
     setFilterRanges(getFilterRanges(rows));

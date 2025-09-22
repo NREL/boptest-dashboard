@@ -52,7 +52,7 @@ export const NavBarList: React.FC<NavBarListProps> = props => {
   const [openDocs, setOpenDocs] = React.useState(false);
 
   const [buildingTypes, setBuildingTypes] = React.useState([]);
-  const buildingTypesEndpoint = '/api/buildingTypes';
+  const buildingTypesEndpoint = '/api/results/facets';
 
   useEffect(() => {
     axios.get(buildingTypesEndpoint).then(result => {
