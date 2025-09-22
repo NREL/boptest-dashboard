@@ -24,7 +24,19 @@ import {
   replaceResult,
   ResultDocument,
 } from '../models/Result';
-import {DocumentRecord} from '../datastore/documentStore';
+import {DocumentRecord, JsonObject} from '../datastore/documentStore';
+
+function jsonObjectToPlain(value: JsonObject): Record<string, any> {
+  return value as unknown as Record<string, any>;
+}
+
+function toJsonObject(value: any): JsonObject {
+  if (value && typeof value === 'object') {
+    return value as JsonObject;
+  }
+  return {};
+}
+
 
 function sanitizeAccountForResult(account: Account): Account {
   return {
@@ -69,8 +81,8 @@ function toResult(
     controlStep: data.controlStep,
     electricityPrice: data.electricityPrice,
     weatherForecastUncertainty: data.weatherForecastUncertainty,
-    forecastParameters: data.forecastParameters,
-    scenario: data.scenario,
+    forecastParameters: jsonObjectToPlain(data.forecastParameters),
+    scenario: jsonObjectToPlain(data.scenario),
     account: sanitizeAccountForResult(account),
     buildingType: sanitizeBuildingType(buildingType),
   };
@@ -94,20 +106,29 @@ async function hydrateResults(
   const accountMap = new Map(accounts.map(account => [account.id, account]));
   const buildingMap = new Map(buildingTypes.map(bt => [bt.id, bt]));
 
-  return records.map(record => {
+  const hydrated: Result[] = [];
+
+  records.forEach(record => {
     const account = accountMap.get(record.data.accountId);
-    const buildingType = buildingMap.get(record.data.buildingTypeId);
-
     if (!account) {
-      throw new Error(`Account ${record.data.accountId} missing for result ${record.data.uid}`);
+      console.warn(
+        `Skipping result ${record.data.uid}: missing account ${record.data.accountId}`
+      );
+      return;
     }
 
+    const buildingType = buildingMap.get(record.data.buildingTypeId);
     if (!buildingType) {
-      throw new Error(`Building type ${record.data.buildingTypeId} missing for result ${record.data.uid}`);
+      console.warn(
+        `Skipping result ${record.data.uid}: missing building type ${record.data.buildingTypeId}`
+      );
+      return;
     }
 
-    return toResult(record, account, buildingType);
+    hydrated.push(toResult(record, account, buildingType));
   });
+
+  return hydrated;
 }
 
 function sanitizeSharedResult(result: Result): Result {
@@ -144,9 +165,6 @@ export async function getAllSharedResults(): Promise<Result[]> {
 
   const filtered = hydrated.filter(result => {
     const shareAll = result.account.shareAllResults;
-    if (shareAll === false) {
-      return false;
-    }
     if (shareAll === true) {
       return true;
     }
@@ -212,8 +230,8 @@ function buildResultDocument(result: any, account: Account, buildingType: Buildi
     controlStep: result.controlStep,
     electricityPrice: result.scenario.electricityPrice,
     weatherForecastUncertainty: result.scenario.weatherForecastUncertainty,
-    forecastParameters: result.forecastParameters,
-    scenario: result.scenario,
+    forecastParameters: toJsonObject(result.forecastParameters),
+    scenario: toJsonObject(result.scenario),
     accountId: account.id,
     buildingTypeId: buildingType.id,
   };
@@ -229,7 +247,7 @@ async function createResultAndAssociatedModels(result: any) {
   await createResult(document);
 }
 
-export async function createResults(results: any) {
+export async function createResults(results: any[]): Promise<PromiseSettledResult<void>[]> {
   return Promise.allSettled(
     results.map(async (result: any) => {
       await createResultAndAssociatedModels(result);

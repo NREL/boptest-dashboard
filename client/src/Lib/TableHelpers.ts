@@ -28,8 +28,8 @@ export interface Data {
   timePeriod: string;
   electricityPrice: string;
   weatherForecastUncertainty: string;
-  forecastParameters: JSON;
-  scenario: JSON;
+  forecastParameters: Record<string, any>;
+  scenario: Record<string, any>;
   tags: string[];
   boptestVersion: string;
   controlStep: string;

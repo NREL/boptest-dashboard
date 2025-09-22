@@ -1,5 +1,5 @@
 import {getDocumentStore} from './datastore/documentStore';
-import {createAccounts} from './controllers/account';
+import {createAccounts, getAccountByAPIKey} from './controllers/account';
 import {createBuildingTypes} from './controllers/buildingTypes';
 import {createResults} from './controllers/result';
 
@@ -18,6 +18,13 @@ export async function seedTestData(apiKey: string): Promise<void> {
 
   if (!apiKey) {
     throw new Error('API key is required');
+  }
+
+  const userAccount = await getAccountByAPIKey(apiKey).catch(() => null);
+  if (!userAccount) {
+    throw new Error(
+      'Seed data requires a valid account for the provided API key. Log in once before calling /api/setup/db.'
+    );
   }
 
   const readmeUrl =
@@ -56,7 +63,7 @@ export async function seedTestData(apiKey: string): Promise<void> {
       isShared: true,
       controlStep: '360.0',
       account: {
-        apiKey: 'jerrysapikey',
+        apiKey: userAccount.apiKey,
       },
       tags: ['string1', 'string2', 'string3'],
       kpis: {
@@ -74,7 +81,7 @@ export async function seedTestData(apiKey: string): Promise<void> {
       },
       scenario: {
         timePeriod: 'cooling peak',
-        electricityPrice: 'constant',
+        electricityPrice: 'dynamic',
         weatherForecastUncertainty: 'deterministic',
       },
       buildingType: {
@@ -83,14 +90,14 @@ export async function seedTestData(apiKey: string): Promise<void> {
     },
     {
       uid: 'result2',
-      dateRun: '2020-08-04T23:00:00.000Z',
+      dateRun: '2020-08-05T12:00:00.000Z',
       boptestVersion: '0.1.0',
       isShared: true,
-      controlStep: '360.0',
+      controlStep: '180.0',
       account: {
-        apiKey: apiKey,
+        apiKey: userAccount.apiKey,
       },
-      tags: ['tags1', 'tags2', 'tags3'],
+      tags: ['demo', 'baseline'],
       kpis: {
         cost_tot: 110,
         emis_tot: 13,
@@ -98,19 +105,19 @@ export async function seedTestData(apiKey: string): Promise<void> {
         idis_tot: 49,
         tdis_tot: 10,
         time_rat: 855,
-        pele_tot: 10.0,
+        pele_tot: 12.5,
       },
       forecastParameters: {
-        horizon: 21600.0,
+        horizon: 43200.0,
         interval: 3600.0,
       },
-      scenario: {
-        timePeriod: 'cooling peak',
-        electricityPrice: 'constant',
-        weatherForecastUncertainty: 'deterministic',
-      },
+     scenario: {
+       timePeriod: 'heating typical',
+        electricityPrice: 'dynamic',
+       weatherForecastUncertainty: 'deterministic',
+     },
       buildingType: {
-        uid: 'buildingType-1',
+        uid: 'buildingType-2',
       },
     },
     {
@@ -120,7 +127,7 @@ export async function seedTestData(apiKey: string): Promise<void> {
       isShared: true,
       controlStep: '360.0',
       account: {
-        apiKey: apiKey,
+        apiKey: userAccount.apiKey,
       },
       tags: ['string1', 'string2', 'string3'],
       kpis: {
@@ -152,7 +159,7 @@ export async function seedTestData(apiKey: string): Promise<void> {
       isShared: true,
       controlStep: '360.0',
       account: {
-        apiKey: apiKey,
+        apiKey: userAccount.apiKey,
       },
       tags: ['tags1', 'tags2', 'tags3'],
       kpis: {
@@ -169,37 +176,36 @@ export async function seedTestData(apiKey: string): Promise<void> {
         interval: 3600.0,
       },
       scenario: {
-        timePeriod: 'cooling peak',
-        electricityPrice: 'constant',
-        weatherForecastUncertainty: 'deterministic',
+        timePeriod: 'heating peak',
+        electricityPrice: 'dynamic',
+        weatherForecastUncertainty: 'unknown',
       },
       buildingType: {
-        uid: 'buildingType-1',
+        uid: 'buildingType-2',
       },
     },
   ];
 
   const accounts = [
     {
-      hashedIdentifier: 'hashed-id-1',
+      hashedIdentifier: 'demo-jerry',
       displayName: 'Jerry',
       apiKey: 'jerrysapikey',
       apiKeySalt: 'salt-1',
       shareAllResults: true,
       oauthProvider: 'google',
     },
-    {
-      hashedIdentifier: 'hashed-id-2',
-      displayName: 'Elaine',
-      apiKey: apiKey,
-      apiKeySalt: 'salt-2',
-      shareAllResults: false,
-      oauthProvider: 'github',
-    },
   ];
 
   await connectToDb();
   await createAccounts(accounts);
   await createBuildingTypes(buildingTypes);
-  await createResults(results);
+
+  const resultInsertions = await createResults(results);
+  const rejected = resultInsertions.filter((entry: any) => entry.status === 'rejected');
+  if (rejected.length > 0) {
+    console.warn('Seed data encountered rejected result insertions:', rejected);
+  } else {
+    console.log('Seed data inserted demo results for account', userAccount.displayName);
+  }
 }

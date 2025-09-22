@@ -30,19 +30,19 @@ export const nnonexistentUserLogin: LoginData = {
 type BuildingTypePayload = Omit<BuildingType, 'id' | 'markdown' | 'results'>;
 type BuildingTypeUpdatePayload = Omit<BuildingType, 'id' | 'uid' | 'markdown' | 'results'>;
 
-const scenario1: JSON = <JSON><unknown> {
+const scenario1 = {
   "timePeriod": ["cooling peak", "heating peak", "heating typical"],
   "electricityPrice": ["constant", "dynamic", "highly dynamic"],
   "weatherForecastUncertainty": ["deterministic"]
 };
 
-const scenario2: JSON = <JSON><unknown> {
+const scenario2 = {
   "timePeriod": ["cooling peak", "heating typical"],
   "electricityPrice": ["dynamic", "highly dynamic"],
   "weatherForecastUncertainty": ["deterministic"]
 };
 
-const scenario3: JSON = <JSON><unknown> {
+const scenario3 = {
   "timePeriod": ["cooling peak", "heating typical", "freezing peak"],
   "electricityPrice": ["dynamic", "highly dynamic"],
   "weatherForecastUncertainty": ["deterministic"],

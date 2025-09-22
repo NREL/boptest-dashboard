@@ -4,7 +4,7 @@ services:
     container_name: "server"
     build: ./server
     environment:
-      DATABASE_URL: postgres://user:pass@postgres:5432/boptest
+      DATABASE_URL: ${DATABASE_URL:-postgres://admin:pass@postgres:5432/boptestdb}
     env_file:
       - ./server/.env
     ports:

@@ -8,7 +8,7 @@ export type BuildingTypeData = Omit<BuildingType, 'id' | 'results'>;
 const COLLECTION = 'buildingTypes';
 
 function mapRecordToBuildingType(record: DocumentRecord<JsonObject>): BuildingType {
-  const data = record.data as BuildingTypeData;
+  const data = record.data as unknown as BuildingTypeData;
   return {
     id: record.numericId,
     uid: data.uid,
@@ -40,10 +40,16 @@ export async function createBuildingType(data: BuildingTypeData): Promise<Buildi
 
   const markdown = await fetchMarkdown(data.markdownURL);
 
-  const record = await store.insert<JsonObject>(COLLECTION, {
-    ...data,
-    markdown,
-  });
+  const payload: JsonObject = {
+    uid: data.uid,
+    name: data.name,
+    markdown: markdown ?? null,
+    markdownURL: data.markdownURL,
+    pdfURL: data.pdfURL,
+    scenarios: (data.scenarios || {}) as unknown as JsonObject,
+  };
+
+  const record = await store.insert<JsonObject>(COLLECTION, payload);
 
   return mapRecordToBuildingType(record);
 }
@@ -59,17 +65,16 @@ export async function updateBuildingType(
   }
 
   const markdown = await fetchMarkdown(newData.markdownURL);
-  record.data = {
-    ...record.data,
-    name: newData.name,
-    pdfURL: newData.pdfURL,
-    markdownURL: newData.markdownURL,
-    markdown,
-    scenarios: newData.scenarios,
+  const updatedPayload: JsonObject = {
     uid: newData.uid,
+    name: newData.name,
+    markdown: markdown ?? null,
+    markdownURL: newData.markdownURL,
+    pdfURL: newData.pdfURL,
+    scenarios: (newData.scenarios || {}) as unknown as JsonObject,
   };
 
-  const updated = await store.replace<JsonObject>(COLLECTION, record.docId, record.data);
+  const updated = await store.replace<JsonObject>(COLLECTION, record.docId, updatedPayload);
   if (!updated) {
     throw new Error(`Failed to update building type with id ${building.id}`);
   }

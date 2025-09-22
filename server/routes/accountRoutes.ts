@@ -6,6 +6,10 @@ import {Account} from './../../common/interfaces';
 import {updateDisplayName as persistDisplayName, updateGlobalShare as persistGlobalShare} from '../models/Account';
 import {validateSessionCsrf} from '../utils/security';
 
+type AuthedAccount = Account & {
+  privileged?: boolean;
+};
+
 export const accountRouter = express.Router();
 
 accountRouter.get('/info', (req: express.Request, res: express.Response) => {
@@ -20,7 +24,7 @@ accountRouter.get('/info', (req: express.Request, res: express.Response) => {
   }
 
   if (req.user) {
-    const user = req.user as Account;
+    const user = req.user as AuthedAccount;
     return res.json({
       displayName: user.displayName || '',
       hashedIdentifier: user.hashedIdentifier || '',
@@ -41,9 +45,9 @@ accountRouter.get('/info', (req: express.Request, res: express.Response) => {
 
 accountRouter.use(authorizer);
 
-function requireAccount(req: express.Request, res: express.Response): Account | null {
+function requireAccount(req: express.Request, res: express.Response): AuthedAccount | null {
   if (req.user) {
-    return req.user as Account;
+    return req.user as AuthedAccount;
   }
   res.status(401).json({error: 'Unauthorized'});
   return null;

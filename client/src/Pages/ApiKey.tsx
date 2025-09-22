@@ -57,7 +57,6 @@ const copyApiKeyToClipboard = () => {
   document.execCommand('copy');
 };
 
-};
 
 export const ApiKey: React.FC = () => {
   const classes = useStyles();

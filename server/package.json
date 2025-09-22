@@ -39,7 +39,8 @@
     "supertest": "^4.0.2",
     "ts-jest": "^26.1.1",
     "ts-node": "3.3.0",
-    "typescript": "^3.9.6"
+    "typescript": "^3.9.6",
+    "@types/pg": "^8.6.5"
   },
   "devDependencies": {
     "axios": "^0.19.2"

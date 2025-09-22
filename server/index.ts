@@ -4,7 +4,9 @@ import path from 'path';
 import bodyParser from 'body-parser';
 import session from 'express-session';
 import passport from 'passport';
+import {URL} from 'url';
 import {Account} from '../common/interfaces';
+import {resolveClientBuildDir} from './utils/paths';
 
 import {accountRouter} from './routes/accountRoutes';
 import {buildingTypeRouter} from './routes/buildingTypeRoutes';
@@ -27,15 +29,21 @@ const parsedOrigins = rawOrigins
 const defaultOrigins = new Set<string>();
 const callbackBase = process.env.CALLBACK_URL_BASE;
 
+
 const parseOrigin = (value: string): string | null => {
   if (!value) {
     return null;
   }
   try {
-    const url = new URL(value);
-    return `${url.protocol}//${url.host}`;
+    const parsed = new URL(value);
+    return `${parsed.protocol}//${parsed.host}`;
   } catch (err) {
-    return value;
+    try {
+      const parsedFallback = new URL(`https://${value}`);
+      return `${parsedFallback.protocol}//${parsedFallback.host}`;
+    } catch (_) {
+      return null;
+    }
   }
 };
 
@@ -127,11 +135,13 @@ passport.deserializeUser((id: any, done: any) => {
 
 // serve static files from the React app
 console.log('ENV:', process.env.NODE_ENV);
+const clientBuildDir = resolveClientBuildDir();
+
 if (!IN_PROD) {
-  console.log("Serving static files from APP");
-  app.use(express.static(path.join(__dirname, '/usr/client/build')));
+  console.log(`Serving static files from ${clientBuildDir}`);
+  app.use(express.static(clientBuildDir));
 } else {
-  console.log("Serving static files from nginx");
+  console.log('Serving static files from nginx');
 }
 
 // define routes

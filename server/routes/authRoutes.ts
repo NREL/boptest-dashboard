@@ -5,6 +5,10 @@ import {getAccountById, getAccountByAPIKey} from '../controllers/account';
 import {configurePassport} from '../oauth';
 import {ensureSessionCsrfToken} from '../utils/security';
 
+type PrivilegedAccount = Account & {
+  privileged?: boolean;
+};
+
 const superUsers: string = process.env.SUPER_USERS || '';
 const superUserIds: string[] = superUsers
   .split(',')
@@ -21,10 +25,11 @@ export function authorizer(
   if (key) {
     getAccountByAPIKey(key)
       .then((account: Account) => {
-        req.user = {
+        const enriched: PrivilegedAccount = {
           ...account,
           privileged: superUserIds.includes(account.hashedIdentifier),
         };
+        req.user = enriched;
         next();
       })
       .catch(() => {
@@ -42,10 +47,11 @@ export function authorizer(
 
     getAccountById(id)
       .then((account: Account) => {
-        req.user = {
+        const enriched: PrivilegedAccount = {
           ...account,
           privileged: superUserIds.includes(account.hashedIdentifier),
         };
+        req.user = enriched;
         next();
       })
       .catch(() => {
@@ -66,7 +72,6 @@ authRouter.get(
   '/google',
   passport.authenticate('google', {
     scope: ['profile', 'email'],
-    state: true,
   })
 );
 
@@ -99,7 +104,6 @@ authRouter.get(
   '/github',
   passport.authenticate('github', {
     scope: ['user:email'],
-    state: true,
   })
 );
 

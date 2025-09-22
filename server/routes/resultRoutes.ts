@@ -11,6 +11,10 @@ import {
 import {authorizer} from './authRoutes';
 import {validateSessionCsrf} from '../utils/security';
 
+type PrivilegedAccount = Account & {
+  privileged?: boolean;
+};
+
 export const resultRouter = express.Router();
 
 resultRouter.get('/', (req: express.Request, res: express.Response) => {
@@ -22,7 +26,7 @@ resultRouter.get('/', (req: express.Request, res: express.Response) => {
 });
 
 resultRouter.get('/my-results', authorizer, (req: express.Request, res: express.Response) => {
-  const user = req.user as Account | undefined;
+  const user = req.user as PrivilegedAccount | undefined;
   if (!user) {
     return res.status(401).json({error: 'Not authenticated'});
   }
@@ -64,7 +68,7 @@ resultRouter.post('/', (req: express.Request, res: express.Response) => {
 });
 
 resultRouter.patch('/share', authorizer, (req: express.Request, res: express.Response) => {
-  const user = req.user as Account | undefined;
+  const user = req.user as PrivilegedAccount | undefined;
   if (!user) {
     return res.status(401).json({error: 'Not authenticated'});
   }

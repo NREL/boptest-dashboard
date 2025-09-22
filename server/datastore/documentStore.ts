@@ -1,8 +1,8 @@
 import {Pool, PoolClient, types} from 'pg';
-import {randomUUID} from 'crypto';
+import {randomBytes} from 'crypto';
 
-types.setTypeParser(20, value => parseInt(value, 10));
-types.setTypeParser(1700, value => parseFloat(value));
+types.setTypeParser(20, (value: string) => parseInt(value, 10));
+types.setTypeParser(1700, (value: string) => parseFloat(value));
 
 type JsonPrimitive = string | number | boolean | null;
 
@@ -21,6 +21,15 @@ export interface DocumentRecord<T> {
   data: T;
   createdAt: Date;
   updatedAt: Date;
+}
+
+function generateUuid(): string {
+  const bytes = randomBytes(16);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+  const hex = bytes.toString('hex');
+  return `${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}`;
 }
 
 const SEQUENCE_NAME = 'documents_numeric_id_seq';
@@ -76,20 +85,29 @@ export class DocumentStore {
     }
   }
 
-  private mapRow<T>(row: any): DocumentRecord<T> {
+  private mapRow<T>(row: Record<string, unknown>): DocumentRecord<T> {
+    const typed = row as {
+      doc_id: string;
+      numeric_id: number | string;
+      collection: string;
+      data: T;
+      created_at: string | Date;
+      updated_at: string | Date;
+    };
+
     return {
-      docId: row.doc_id,
-      numericId: typeof row.numeric_id === 'number' ? row.numeric_id : parseInt(row.numeric_id, 10),
-      collection: row.collection,
-      data: row.data as T,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at)
+      docId: typed.doc_id,
+      numericId: typeof typed.numeric_id === 'number' ? typed.numeric_id : parseInt(typed.numeric_id, 10),
+      collection: typed.collection,
+      data: typed.data,
+      createdAt: new Date(typed.created_at),
+      updatedAt: new Date(typed.updated_at),
     };
   }
 
   async insert<T extends JsonValue>(collection: string, data: T): Promise<DocumentRecord<T>> {
     await this.ensureInit();
-    const docId = randomUUID();
+    const docId = generateUuid();
     const result = await this.pool.query(
       `INSERT INTO ${TABLE_NAME} (doc_id, collection, data)
        VALUES ($1, $2, $3::jsonb)
@@ -97,7 +115,7 @@ export class DocumentStore {
       [docId, collection, data]
     );
 
-    return this.mapRow<T>(result.rows[0]);
+    return this.mapRow<T>(result.rows[0] as Record<string, unknown>);
   }
 
   async replace<T extends JsonValue>(collection: string, docId: string, data: T): Promise<DocumentRecord<T> | null> {
@@ -115,7 +133,7 @@ export class DocumentStore {
       return null;
     }
 
-    return this.mapRow<T>(result.rows[0]);
+    return this.mapRow<T>(result.rows[0] as Record<string, unknown>);
   }
 
   async delete(collection: string, docId: string): Promise<void> {
@@ -140,7 +158,7 @@ export class DocumentStore {
       return null;
     }
 
-    return this.mapRow<T>(result.rows[0]);
+    return this.mapRow<T>(result.rows[0] as Record<string, unknown>);
   }
 
   async findByNumericId<T>(collection: string, numericId: number): Promise<DocumentRecord<T> | null> {
@@ -157,7 +175,7 @@ export class DocumentStore {
       return null;
     }
 
-    return this.mapRow<T>(result.rows[0]);
+    return this.mapRow<T>(result.rows[0] as Record<string, unknown>);
   }
 
   async findOneByField<T>(collection: string, field: string, value: string | number | boolean): Promise<DocumentRecord<T> | null> {
@@ -175,7 +193,7 @@ export class DocumentStore {
       return null;
     }
 
-    return this.mapRow<T>(result.rows[0]);
+    return this.mapRow<T>(result.rows[0] as Record<string, unknown>);
   }
 
   async findManyByField<T>(collection: string, field: string, value: string | number | boolean): Promise<DocumentRecord<T>[]> {
@@ -188,7 +206,7 @@ export class DocumentStore {
       [collection, field, String(value)]
     );
 
-    return result.rows.map(row => this.mapRow<T>(row));
+    return result.rows.map(row => this.mapRow<T>(row as Record<string, unknown>));
   }
 
   async findAll<T>(collection: string): Promise<DocumentRecord<T>[]> {
@@ -200,7 +218,7 @@ export class DocumentStore {
       [collection]
     );
 
-    return result.rows.map(row => this.mapRow<T>(row));
+    return result.rows.map(row => this.mapRow<T>(row as Record<string, unknown>));
   }
 
   async findByNumericIds<T>(collection: string, ids: number[]): Promise<DocumentRecord<T>[]> {
@@ -216,7 +234,7 @@ export class DocumentStore {
       [collection, ids]
     );
 
-    return result.rows.map(row => this.mapRow<T>(row));
+    return result.rows.map(row => this.mapRow<T>(row as Record<string, unknown>));
   }
 }
 
