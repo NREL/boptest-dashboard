@@ -7,7 +7,7 @@ import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 
-import DashboardResultsTable from '../Components/DashboardResultsTable';
+import ResultsTable from '../Components/ResultsTable';
 import {Modal} from '../Components/Modal';
 import {ResultDetails} from '../Components/ResultDetails';
 import MainTableHeader from '../Components/MainTableHeader';
@@ -97,9 +97,8 @@ export const Dashboard: React.FC = () => {
     }
   }, [selectedResult]);
 
-  const handleChange = result => {
-    const updatedResult = {uid: result.resultUid, ...result};
-    setSelectedResult(updatedResult);
+  const handleChange = (result: any) => {
+    setSelectedResult(result);
   };
 
   const closeModal = () => setShowResultModal(false);
@@ -142,14 +141,17 @@ export const Dashboard: React.FC = () => {
           </Paper>
         ) : (
           <>
-            <DashboardResultsTable
+            <ResultsTable
               results={results}
               buildingTypes={buildingTypes}
               setSelectedResult={handleChange}
-              updateResults={updateResults}
               viewMyResults={viewMyResults}
               onToggleChange={handleToggleChange}
               isLoggedIn={isLoggedIn}
+              enableSelection
+              enableShareToggle
+              showDownloadButton
+              onShareToggleComplete={updateResults}
             />
             {showResultModal && (
               <Modal

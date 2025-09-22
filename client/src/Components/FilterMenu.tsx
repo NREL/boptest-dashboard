@@ -162,7 +162,7 @@ interface FilterMenuProps {
   filterRanges: FilterRanges;
   filterValues: FilterValues;
   onRequestFilters: (requestedFilters: FilterValues) => void;
-  scenarioOptions: string[];
+  scenarioOptions?: Record<string, string[]>;
   tagOptions: string[];
 }
 
@@ -549,7 +549,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                 <MenuItem key="buildingType-none-option" value="">
                   {key === 'weatherForecastUncertainty' ? 'All Weather Forecasts' : `All ${key.split(/(?=[A-Z])/).join(' ')}s`}
                 </MenuItem>
-                {scenarioOptions[key].map(option => {
+                {(scenarioOptions?.[key] || []).map(option => {
                   return (
                     <MenuItem
                       key={`${option}-option`}

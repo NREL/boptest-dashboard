@@ -1,4 +1,5 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
+import axios from 'axios';
 import {
   createStyles,
   makeStyles,
@@ -7,6 +8,11 @@ import {
   useTheme,
 } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import Paper from '@material-ui/core/Paper';
+import Switch from '@material-ui/core/Switch';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -17,12 +23,10 @@ import TableSortLabel from '@material-ui/core/TableSortLabel';
 import TextField from '@material-ui/core/TextField';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import MenuItem from '@material-ui/core/MenuItem';
-import Paper from '@material-ui/core/Paper';
-import Switch from '@material-ui/core/Switch';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
+
 import {FilterMenu} from './FilterMenu';
-import {FilterRanges, FilterValues} from '../common/interfaces';
+import {useUser} from '../Context/user-context';
+import {FilterRanges, FilterValues} from '../../common/interfaces';
 import {
   createRows,
   createTagOptions,
@@ -37,7 +41,7 @@ import {
   stableSort,
 } from '../Lib/TableHelpers';
 
-const headCells: HeadCell[] = [
+const baseHeadCells: HeadCell[] = [
   {
     id: 'buildingTypeName',
     numeric: false,
@@ -101,42 +105,86 @@ const headCells: HeadCell[] = [
   },
 ];
 
+function buildHeadCells(includeShareColumn: boolean): HeadCell[] {
+  if (!includeShareColumn) {
+    return baseHeadCells;
+  }
+  return [
+    ...baseHeadCells,
+    {
+      id: 'isShared',
+      numeric: false,
+      disablePadding: false,
+      label: 'Shared',
+    },
+  ];
+}
+
 interface EnhancedTableProps {
   classes: ReturnType<typeof useStyles>;
+  enableSelection: boolean;
+  includeShareColumn: boolean;
+  numSelected: number;
   onRequestSort: (
     event: React.MouseEvent<unknown>,
     property: keyof Data
   ) => void;
+  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
   order: Order;
-  orderBy: string;
+  orderBy: keyof Data;
+  rowCount: number;
 }
 
-// Helper function to split the label into main text and units
-const parseHeaderLabel = (label: string): { main: string; unit: string | null } => {
+const parseHeaderLabel = (label: string): {main: string; unit: string | null} => {
   const matches = label.match(/^(.*?)\s*(\[.*?\])?$/);
   if (matches && matches[2]) {
-    return { 
-      main: matches[1].trim(), 
-      unit: matches[2].trim() 
+    return {
+      main: matches[1].trim(),
+      unit: matches[2].trim(),
     };
   }
-  return { main: label, unit: null };
+  return {main: label, unit: null};
 };
 
 function EnhancedTableHead(props: EnhancedTableProps) {
-  const {classes, order, orderBy, onRequestSort} = props;
+  const {
+    classes,
+    enableSelection,
+    includeShareColumn,
+    numSelected,
+    onSelectAllClick,
+    onRequestSort,
+    order,
+    orderBy,
+    rowCount,
+  } = props;
   const theme = useTheme();
+  const headCells = buildHeadCells(includeShareColumn);
+
   const createSortHandler =
     (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
     };
 
+  const allSelected = rowCount > 0 && numSelected === rowCount;
+
   return (
-    <TableHead style={{ borderSpacing: '0 !important' }}>
-      <TableRow style={{ borderCollapse: 'collapse' }}>
+    <TableHead style={{borderSpacing: '0 !important'}}>
+      <TableRow style={{borderCollapse: 'collapse'}}>
+        {enableSelection && (
+          <TableCell padding="checkbox">
+            <Checkbox
+              checked={allSelected}
+              indeterminate={numSelected > 0 && numSelected < rowCount}
+              onChange={onSelectAllClick}
+              inputProps={{'aria-label': 'select all results'}}
+              color="primary"
+            />
+          </TableCell>
+        )}
         {headCells.map(headCell => {
-          const { main, unit } = parseHeaderLabel(headCell.label);
-          
+          const {main, unit} = parseHeaderLabel(headCell.label);
+
           return (
             <TableCell
               key={headCell.id}
@@ -176,32 +224,21 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(0, 3),
       borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
       backgroundColor: 'rgba(0, 0, 0, 0.02)',
+      minHeight: '56px',
       flexWrap: 'wrap',
-      minHeight: '56px', /* Fixed minimum height for the toolbar */
+      gap: theme.spacing(1),
     },
     filterContainer: {
       display: 'flex',
-      alignItems: 'center', /* Center items vertically */
+      alignItems: 'center',
       flexWrap: 'wrap',
-      height: '56px', /* Fixed height for container */
+      gap: theme.spacing(1),
     },
     select: {
       margin: theme.spacing(0, 2, 0, 0),
-      width: '320px', /* Match width with filter row dropdowns */
+      width: '320px',
       maxWidth: '100%',
-      '& .MuiInputLabel-outlined': {
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        maxWidth: 'calc(100% - 60px)' /* Space for dropdown arrow */
-      },
-      '& .MuiSelect-select': {
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis'
-      }
     },
-    /* Use standard Material-UI icon */
     selectIcon: {
       fill: theme.palette.primary.main,
     },
@@ -209,14 +246,8 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'flex-end',
-      flexWrap: 'wrap',
-      minWidth: '200px',
-      margin: theme.spacing(1, 0),
-    },
-    headerTitle: {
-      fontWeight: 600,
-      color: theme.palette.primary.main,
-      letterSpacing: '0.02em',
+      minWidth: '220px',
+      gap: theme.spacing(1),
     },
     switch: {
       '& .MuiSwitch-track': {
@@ -237,11 +268,9 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
       fontSize: '0.875rem',
       fontWeight: 500,
     },
-    titleAndFilterContainer: {
-      display: 'flex',
-      alignItems: 'center',
-      flex: 1
-    }
+    downloadButton: {
+      whiteSpace: 'nowrap',
+    },
   })
 );
 
@@ -249,8 +278,8 @@ const ColorButton = withStyles(theme => ({
   root: {
     color: theme.palette.primary.main,
     borderColor: theme.palette.primary.main,
-    margin: theme.spacing(0, 0, 0, 2), /* Adjusted margin for vertical alignment */
-    height: '40px', /* Fixed height to match dropdown */
+    margin: theme.spacing(0, 0, 0, 2),
+    height: '40px',
   },
 }))(Button);
 
@@ -277,26 +306,29 @@ const ColorSelect = withStyles(theme => ({
       },
     },
     '& .MuiSelect-icon': {
-      right: '12px', /* Position the select icon farther right */
+      right: '12px',
       position: 'absolute',
     },
     '& .MuiSelect-select': {
-      paddingRight: '60px !important', /* More space for the dropdown arrow */
+      paddingRight: '60px !important',
     },
   },
 }))(TextField);
 
 interface EnhancedTableToolbarProps {
-  buildingTypeFilterOptions: {
-    [index: number]: string;
-  };
+  buildingTypeFilterOptions: {[index: number]: string};
   displayClear: boolean;
   buildingFilterValue: string;
   totalResults: number;
-  updateBuildingFilter: (requestedBuilding: string) => void;
+  numSelected: number;
+  updateBuildingFilter: (value: string) => void;
   viewMyResults?: boolean;
   onToggleChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   isLoggedIn?: boolean;
+  enableSelection?: boolean;
+  showDownloadButton?: boolean;
+  onDownloadSelected?: () => void;
+  downloadDisabled?: boolean;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
@@ -306,10 +338,15 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     displayClear,
     buildingFilterValue,
     totalResults,
+    numSelected,
     updateBuildingFilter,
     viewMyResults = false,
     onToggleChange,
-    isLoggedIn = false
+    isLoggedIn = false,
+    enableSelection = false,
+    showDownloadButton = false,
+    onDownloadSelected,
+    downloadDisabled = false,
   } = props;
 
   const selectProps = {
@@ -320,72 +357,65 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
         horizontal: 'left',
       },
       getContentAnchorEl: null,
-      PaperProps: {
-        style: { 
-          maxWidth: '400px' 
-        }
-      }
     },
-    // Use standard Material-UI icon positioning with custom styles
-    displayEmpty: true
+    displayEmpty: true,
   };
 
-  const onBuildingTypeFilter =
-    (clear = false) =>
-    (event: React.MouseEvent<EventTarget>) => {
-      // If clear is true or the selected value is empty, clear the filter
-      // This handles both the Clear button and selecting "All Building Types"
-      updateBuildingFilter(clear || event.target.value === '' ? '' : event.target.value);
-    };
+  const handleSelectChange = (
+    event: React.ChangeEvent<{name?: string; value: unknown}>
+  ) => {
+    const value = event.target.value as string;
+    updateBuildingFilter(value === 'all' ? '' : value);
+  };
+
+  const summaryText = enableSelection && numSelected > 0
+    ? `${numSelected} Selected`
+    : `${totalResults} Total Results`;
 
   return (
     <Toolbar className={classes.root}>
-      <div className={classes.titleAndFilterContainer}>
-        <div className={classes.filterContainer}>
-          <ColorSelect
-            className={classes.select}
-            label=""
-            placeholder="Building Type"
-            name="buildingType-filter"
-            onChange={onBuildingTypeFilter()}
-            select
-            value={buildingFilterValue || ''}
-            defaultValue="" /* Always show "All Building Types" by default */
-            variant="outlined"
-            SelectProps={{
-              ...selectProps,
-              displayEmpty: true,
-              renderValue: (value) => value ? value : "All Building Types"
-            }}
-            size="small"
-            InputProps={{
-              style: { 
-                height: '40px'
-              }
-            }}
-          >
-            {/* Use a single empty option for "All Building Types" */}
-            <MenuItem value="">All Building Types</MenuItem>
-            {buildingTypeFilterOptions.map(option => {
-              if (option === "All Building Types") return null; // Skip duplicate
-              return (
-                <MenuItem key={`${option}-option`} value={option}>
-                  {option}
-                </MenuItem>
-              );
-            })}
-          </ColorSelect>
-          {displayClear && (
-            <ColorButton 
-              variant="outlined" 
-              onClick={onBuildingTypeFilter(true)}
-            >
-              Clear
-            </ColorButton>
-          )}
-        </div>
+      <div className={classes.filterContainer}>
+        <ColorSelect
+          className={classes.select}
+          label=""
+          placeholder="Building Type"
+          name="buildingType-filter"
+          onChange={handleSelectChange}
+          select
+          value={buildingFilterValue || 'all'}
+          defaultValue="all"
+          variant="outlined"
+          SelectProps={{
+            ...selectProps,
+            renderValue: value =>
+              value && value !== 'all' ? (value as string) : 'All Building Types',
+          }}
+          size="small"
+          InputProps={{
+            style: {
+              height: '40px',
+            },
+          }}
+        >
+          <MenuItem value="all">All Building Types</MenuItem>
+          {buildingTypeFilterOptions.map(option => {
+            if (option === 'All Building Types') {
+              return null;
+            }
+            return (
+              <MenuItem key={`${option}-option`} value={option}>
+                {option}
+              </MenuItem>
+            );
+          })}
+        </ColorSelect>
+        {displayClear && (
+          <ColorButton variant="outlined" onClick={() => updateBuildingFilter('')}>
+            Clear
+          </ColorButton>
+        )}
       </div>
-      
+
       <div className={classes.toggleContainer}>
         {isLoggedIn && onToggleChange && (
           <FormControlLabel
@@ -401,9 +431,21 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
             className={classes.switchLabel}
           />
         )}
-        <Typography variant="body2" style={{ marginLeft: '16px' }}>
-          {totalResults} Total Results
+        <Typography variant="body2">
+          {summaryText}
         </Typography>
+        {showDownloadButton && (
+          <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            onClick={() => onDownloadSelected?.()}
+            disabled={downloadDisabled}
+            className={classes.downloadButton}
+          >
+            Download Selected (CSV)
+          </Button>
+        )}
       </div>
     </Toolbar>
   );
@@ -413,13 +455,13 @@ const useFilterToolbarStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       justifyContent: 'space-between',
-      padding: theme.spacing(0, 3), /* Match padding with other toolbars */
+      padding: theme.spacing(0, 3),
     },
   })
 );
 
 interface FilterToolbarProps {
-  scenarioOptions: string[];
+  scenarioOptions?: Record<string, string[]>;
   tagOptions: string[];
   filterRanges: FilterRanges;
   filterValues: FilterValues;
@@ -436,7 +478,7 @@ const FilterToolbar = (props: FilterToolbarProps) => {
     updateFilters,
   } = props;
 
-  const onRequestUpdateFilters = requestedFilters => {
+  const onRequestUpdateFilters = (requestedFilters: FilterValues) => {
     updateFilters(requestedFilters);
   };
 
@@ -495,7 +537,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     tableContainer: {
-      maxHeight: 'calc(100vh - 250px)', /* Adjust based on your layout */
+      maxHeight: 'calc(100vh - 250px)',
       overflow: 'auto',
     },
     stickyHeader: {
@@ -513,7 +555,7 @@ const useStyles = makeStyles((theme: Theme) =>
         height: '1px',
         bottom: 0,
         backgroundColor: 'rgba(224, 224, 224, 1)',
-      }
+      },
     },
     visuallyHidden: {
       border: 0,
@@ -542,77 +584,101 @@ const useStyles = makeStyles((theme: Theme) =>
         textDecoration: 'underline',
       },
     },
+    tableRow: {
+      '&$selected, &$selected:hover': {
+        backgroundColor: theme.palette.primary.light,
+      },
+    },
+    selected: {},
   })
 );
 
-// type the props here.
-// results - list of results from the server
-// displayResult() - method to show the result detail modal
-export default function ResultsTable(props: {
+interface ResultsTableProps {
   results: any[];
   buildingTypes: any[];
   setSelectedResult: (result: any) => void;
   viewMyResults?: boolean;
   onToggleChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   isLoggedIn?: boolean;
-}) {
-  const classes = useStyles();
-  const [order, setOrder] = React.useState<Order>('asc');
-  const [orderBy, setOrderBy] = React.useState<keyof Data>('dateRun');
-  const [rows, setRows] = React.useState<Data[]>([]);
-  const [filteredRows, setFilteredRows] = React.useState<Data[]>([]);
-  const [buildingScenarios, setBuildingScenarios] = React.useState({});
-  const [filterRanges, setFilterRanges] = React.useState({});
-  const [displayFilters, setDisplayFilters] = React.useState(false);
-  const [buildingTypeFilter, setBuildingTypeFilter] =
-    React.useState<string>('');
-  const [filters, setFilters] = React.useState({});
-  const [tagOptions, setTagOptions] = React.useState<string[]>([]);
+  enableSelection?: boolean;
+  enableShareToggle?: boolean;
+  onShareToggleComplete?: () => void;
+  showDownloadButton?: boolean;
+}
 
-  // set the rows from the results that we get
+export default function ResultsTable(props: ResultsTableProps) {
+  const {
+    results,
+    buildingTypes,
+    setSelectedResult,
+    viewMyResults = false,
+    onToggleChange,
+    isLoggedIn = false,
+    enableSelection = false,
+    enableShareToggle = false,
+    onShareToggleComplete,
+    showDownloadButton = false,
+  } = props;
+
+  const {csrfToken} = useUser();
+  const sessionHeaders = useMemo(
+    () => (csrfToken ? {'X-CSRF-Token': csrfToken} : {}),
+    [csrfToken]
+  );
+
+  const classes = useStyles();
+  const [order, setOrder] = useState<Order>('asc');
+  const [orderBy, setOrderBy] = useState<keyof Data>('dateRun');
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [rows, setRows] = useState<Data[]>([]);
+  const [filteredRows, setFilteredRows] = useState<Data[]>([]);
+  const [buildingScenarios, setBuildingScenarios] = useState<Record<string, any>>({});
+  const [filterRanges, setFilterRanges] = useState<FilterRanges | any>({});
+  const [displayFilters, setDisplayFilters] = useState(false);
+  const [buildingTypeFilter, setBuildingTypeFilter] = useState<string>('');
+  const [filters, setFilters] = useState<FilterValues | any>({});
+  const [tagOptions, setTagOptions] = useState<string[]>([]);
+
   useEffect(() => {
-    const allRows: Data[] = createRows(props.results);
+    const allRows = createRows(results);
     setRows(allRows);
     setFilteredRows(allRows);
-    setBuildingScenarios(getBuildingScenarios(props.buildingTypes));
-  }, [props.results, props.buildingTypes]);
+    setBuildingScenarios(getBuildingScenarios(buildingTypes));
+    setSelectedIds([]);
+  }, [results, buildingTypes]);
 
   useEffect(() => {
     setFilterRanges(getFilterRanges(rows));
   }, [rows]);
 
   useEffect(() => {
-    setFilters(setupFilters(filterRanges, []));
+    setFilters(setupFilters(filterRanges as FilterRanges, []));
   }, [filterRanges]);
 
   useEffect(() => {
     if (buildingTypeFilter === '') {
       setDisplayFilters(false);
-      setFilters(setupFilters(filterRanges, []));
+      setFilters(setupFilters(filterRanges as FilterRanges, []));
     } else {
       setDisplayFilters(true);
-      setFilters(
-        setupFilters(
-          filterRanges,
-          Object.keys(buildingScenarios[buildingTypeFilter])
-        )
-      );
+      const scenarioKeys = Object.keys(buildingScenarios[buildingTypeFilter] || {});
+      setFilters(setupFilters(filterRanges as FilterRanges, scenarioKeys));
     }
-  }, [buildingTypeFilter]);
+  }, [buildingTypeFilter, buildingScenarios, filterRanges]);
 
   useEffect(() => {
-    setFilteredRows(filterRows(rows, buildingTypeFilter, filters));
-  }, [filters]);
+    setFilteredRows(filterRows(rows, buildingTypeFilter, filters as FilterValues));
+  }, [filters, rows, buildingTypeFilter]);
 
   useEffect(() => {
     setTagOptions(createTagOptions(filteredRows));
   }, [filteredRows]);
 
-  const handleUpdateFilters = requestedFilters => {
+  const handleUpdateFilters = (requestedFilters: FilterValues) => {
     setFilters(requestedFilters);
   };
 
-  const handleUpdateBuildingFilter = requestedBuilding => {
+  const handleUpdateBuildingFilter = (requestedBuilding: string) => {
     setBuildingTypeFilter(requestedBuilding);
   };
 
@@ -625,12 +691,132 @@ export default function ResultsTable(props: {
     setOrderBy(property);
   };
 
-  const handleRowClick = (event: React.MouseEvent<unknown>, result: Data) => {
-    // I think we just want to call a method that's passed in to handle the modal display
-    // may need to call into a global state for the selected result here instead of
-    // sending the result to the modal.
-    props.setSelectedResult(result);
+  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!enableSelection) {
+      return;
+    }
+    if (event.target.checked) {
+      const newSelecteds = filteredRows.map(row => row.id);
+      setSelectedIds(newSelecteds);
+      return;
+    }
+    setSelectedIds([]);
   };
+
+  const handleCheckboxClick = (
+    event: React.MouseEvent<unknown>,
+    id: number
+  ) => {
+    event.stopPropagation();
+    if (!enableSelection) {
+      return;
+    }
+
+    setSelectedIds(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(existing => existing !== id);
+      }
+      return [...prev, id];
+    });
+  };
+
+  const isSelected = (id: number) => selectedIds.indexOf(id) !== -1;
+
+  const handleRowClick = (
+    event: React.MouseEvent<unknown>,
+    result: Data
+  ) => {
+    event.preventDefault();
+    setSelectedResult(result);
+  };
+
+  const handleShareToggleClick = (
+    event: React.MouseEvent<unknown>,
+    result: Data
+  ) => {
+    event.stopPropagation();
+    if (!enableShareToggle) {
+      return;
+    }
+
+    axios
+      .patch(
+        '/api/results/share',
+        {id: result.id, share: !result.isShared},
+        {
+          headers: sessionHeaders,
+          withCredentials: true,
+        }
+      )
+      .then(() => {
+        onShareToggleComplete?.();
+      })
+      .catch(error => {
+        console.error('Unable to update sharing preference', error);
+      });
+  };
+
+  const selectedRows = useMemo(
+    () => rows.filter(row => selectedIds.includes(row.id)),
+    [rows, selectedIds]
+  );
+
+  const downloadResultsToCSV = () => {
+    if (!enableSelection || selectedRows.length === 0) {
+      return;
+    }
+
+    const headers = [
+      'Result UID',
+      'Building Type',
+      'Date Run',
+      'Total Energy',
+      'Thermal Discomfort',
+      'IAQ Discomfort',
+      'Cost',
+      'Emissions',
+      'Peak Electricity',
+      'Peak Gas',
+      'Peak District Heating',
+      'Computational Time Ratio',
+      'Shared',
+    ];
+
+    const csvRows = selectedRows.map(row => [
+      row.uid,
+      row.buildingTypeName,
+      new Date(row.dateRun).toISOString(),
+      row.totalEnergy,
+      row.thermalDiscomfort,
+      row.aqDiscomfort,
+      row.cost,
+      row.emissions,
+      row.peakElectricity,
+      row.peakGas ?? '',
+      row.peakDistrictHeating ?? '',
+      row.compTimeRatio,
+      row.isShared ? 'Yes' : 'No',
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...csvRows.map(row => row.join(',')),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'results.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const tableRows = stableSort(filteredRows, getComparator(order, orderBy));
+  const includeShareColumn = enableShareToggle;
+  const displayClear = buildingTypeFilter !== '';
 
   return (
     <div className={classes.root}>
@@ -639,20 +825,29 @@ export default function ResultsTable(props: {
           buildingTypeFilterOptions={
             buildingScenarios && Object.keys(buildingScenarios)
           }
-          displayClear={displayFilters}
+          displayClear={displayClear}
           buildingFilterValue={buildingTypeFilter}
           totalResults={filteredRows.length}
+          numSelected={selectedIds.length}
           updateBuildingFilter={handleUpdateBuildingFilter}
-          viewMyResults={props.viewMyResults}
-          onToggleChange={props.onToggleChange}
-          isLoggedIn={props.isLoggedIn}
+          viewMyResults={viewMyResults}
+          onToggleChange={onToggleChange}
+          isLoggedIn={isLoggedIn}
+          enableSelection={enableSelection}
+          showDownloadButton={enableSelection && showDownloadButton}
+          onDownloadSelected={downloadResultsToCSV}
+          downloadDisabled={selectedIds.length === 0}
         />
         {displayFilters && (
           <FilterToolbar
-            scenarioOptions={buildingScenarios[buildingTypeFilter]}
+            scenarioOptions={
+              buildingTypeFilter
+                ? (buildingScenarios[buildingTypeFilter] as Record<string, string[]>)
+                : undefined
+            }
             tagOptions={tagOptions}
-            filterRanges={filterRanges}
-            filterValues={filters}
+            filterRanges={filterRanges as FilterRanges}
+            filterValues={filters as FilterValues}
             updateFilters={handleUpdateFilters}
           />
         )}
@@ -660,136 +855,157 @@ export default function ResultsTable(props: {
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
-            //size={dense ? 'small' : 'medium'}
             size={'medium'}
             stickyHeader
-            // aria-label="enhanced table"
-            style={{ 
-              borderCollapse: 'collapse',
-            }}
-            /* Override with a direct CSS rule to remove vertical lines in header */
+            style={{borderCollapse: 'collapse'}}
             classes={{
-              root: classes.table
+              root: classes.table,
             }}
           >
             <EnhancedTableHead
               classes={classes}
+              enableSelection={enableSelection}
+              includeShareColumn={includeShareColumn}
+              numSelected={selectedIds.length}
+              onRequestSort={handleRequestSort}
+              onSelectAllClick={handleSelectAllClick}
               order={order}
               orderBy={orderBy}
-              onRequestSort={handleRequestSort}
+              rowCount={filteredRows.length}
             />
             <TableBody>
-              {stableSort(filteredRows, getComparator(order, orderBy))
-                //.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  const labelId = `enhanced-table-checkbox-${index}`;
+              {tableRows.map((row, index) => {
+                const isItemSelected = enableSelection ? isSelected(row.id) : false;
+                const labelId = `enhanced-table-checkbox-${index}`;
+                const dateString = new Date(row.dateRun).toLocaleString();
 
-                  const dateString = new Date(row.dateRun).toLocaleString();
-
-                  return (
-                    <TableRow
-                      hover
-                      onClick={event => handleRowClick(event, row)}
-                      role="checkbox"
-                      tabIndex={-1}
-                      key={row.uid}
+                return (
+                  <TableRow
+                    hover
+                    onClick={event => handleRowClick(event, row)}
+                    role="checkbox"
+                    aria-checked={enableSelection ? isItemSelected : undefined}
+                    tabIndex={-1}
+                    key={row.uid}
+                    selected={enableSelection && isItemSelected}
+                    classes={{selected: classes.selected}}
+                    className={classes.tableRow}
+                  >
+                    {enableSelection && (
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          checked={isItemSelected}
+                          inputProps={{'aria-labelledby': labelId}}
+                          color="primary"
+                          onClick={event => handleCheckboxClick(event, row.id)}
+                        />
+                      </TableCell>
+                    )}
+                    <TableCell
+                      component="th"
+                      id={labelId}
+                      scope="row"
+                      padding="normal"
+                      style={{maxWidth: '180px'}}
                     >
-                      <TableCell
-                        component="th"
-                        id={labelId}
-                        scope="row"
-                        padding="normal"
-                        style={{ maxWidth: '180px' }}
+                      <Typography
+                        variant="body1"
+                        noWrap
+                        style={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: 'block',
+                        }}
+                        title={row.buildingTypeName}
                       >
-                        <Typography
-                          variant="body1"
-                          noWrap
-                          style={{ 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis',
-                            display: 'block'
-                          }}
-                          title={row.buildingTypeName}
-                        >
-                          {row.buildingTypeName}
-                        </Typography>
-                      </TableCell>
+                        {row.buildingTypeName}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography
+                        variant="body1"
+                        noWrap
+                        style={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: 'block',
+                        }}
+                        title={dateString}
+                      >
+                        {dateString}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body1">
+                        {row.totalEnergy.toFixed(4)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body1">
+                        {row.thermalDiscomfort.toFixed(4)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body1">
+                        {row.aqDiscomfort.toFixed(4)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body1">
+                        {row.cost.toFixed(2)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body1">
+                        {row.emissions.toFixed(4)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body1">
+                        {row.peakElectricity.toFixed(4)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body1">
+                        {row.peakGas !== null ? row.peakGas.toFixed(4) : 'N/A'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body1">
+                        {row.peakDistrictHeating !== null
+                          ? row.peakDistrictHeating.toFixed(4)
+                          : 'N/A'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body1">
+                        {row.compTimeRatio.toFixed(4)}
+                      </Typography>
+                    </TableCell>
+                    {includeShareColumn && (
                       <TableCell align="center">
-                        <Typography
-                          variant="body1"
-                          noWrap
-                          style={{
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            display: 'block'
-                          }}
-                          title={dateString}
-                        >
-                          {dateString}
-                        </Typography>
+                        <Switch
+                          checked={row.isShared}
+                          onClick={event => handleShareToggleClick(event, row)}
+                          name="share switch"
+                          inputProps={{'aria-label': 'toggle shared'}}
+                          color="primary"
+                        />
                       </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body1">
-                          {row.totalEnergy.toFixed(4)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body1">
-                          {row.thermalDiscomfort.toFixed(4)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body1">
-                          {row.aqDiscomfort.toFixed(4)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body1">
-                          {row.cost.toFixed(2)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body1">
-                          {row.emissions.toFixed(4)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body1">
-                          {row.peakElectricity.toFixed(4)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body1">
-                          {row.peakGas !== null
-                            ? row.peakGas.toFixed(4)
-                            : 'N/A'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body1">
-                          {row.peakDistrictHeating !== null
-                            ? row.peakDistrictHeating.toFixed(4)
-                            : 'N/A'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body1">
-                          {row.compTimeRatio.toFixed(4)}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                    )}
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
         <div className={classes.footer}>
           <Typography variant="body2">
             All results are from BOPTEST. Please visit the{' '}
-            <a 
-              href="https://ibpsa.github.io/project1-boptest/" 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            <a
+              href="https://ibpsa.github.io/project1-boptest/"
+              target="_blank"
+              rel="noopener noreferrer"
               className={classes.link}
             >
               BOPTEST Homepage
