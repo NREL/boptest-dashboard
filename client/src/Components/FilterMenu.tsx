@@ -29,7 +29,8 @@ const useMenuStyles = makeStyles((theme: Theme) =>
       marginRight: theme.spacing(2),
       gap: theme.spacing(2), /* Match spacing with Building Type row */
       alignItems: 'center', /* Center items vertically */
-      height: '56px', /* Fixed height */
+      minHeight: '56px',
+      height: 'auto',
       [theme.breakpoints.down('sm')]: {
         width: '100%'
       },
@@ -37,9 +38,10 @@ const useMenuStyles = makeStyles((theme: Theme) =>
     buttonContainer: {
       display: 'flex',
       justifyContent: 'flex-end',
-      flexWrap: 'nowrap', /* Prevent wrapping */
+      flexWrap: 'wrap',
       flex: '0 0 auto',
       alignItems: 'center', /* Align with other elements */
+      gap: theme.spacing(1.5),
     },
     select: {
       margin: theme.spacing(0, 2, 0, 0), /* Match margin with Building Type row */

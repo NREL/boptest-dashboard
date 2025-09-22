@@ -29,6 +29,7 @@ const useStyles = makeStyles((theme: Theme) =>
       flexDirection: 'column',
       width: '100%',
       minHeight: '100vh',
+      overflow: 'hidden',
     },
     appBar: {
       zIndex: theme.zIndex.drawer + 1,
@@ -94,8 +95,14 @@ const useStyles = makeStyles((theme: Theme) =>
     content: {
       flexGrow: 1,
       padding: 0,
-      marginTop: 70, // Match the toolbar height
-      backgroundColor: theme.palette.background.default, // Use theme background color
+      backgroundColor: theme.palette.background.default,
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: 0,
+      overflow: 'hidden',
+      height: '100vh',
+      paddingTop: 70, // Match the toolbar height
+      boxSizing: 'border-box',
     },
     // viewToggle removed
     loginButton: {

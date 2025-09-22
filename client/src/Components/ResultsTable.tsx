@@ -9,7 +9,6 @@ import {
 } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import Switch from '@material-ui/core/Switch';
@@ -226,7 +225,7 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
     root: {
       display: 'flex',
       justifyContent: 'space-between',
-      padding: theme.spacing(0, 3),
+      padding: theme.spacing(1.5, 3, 1, 3),
       borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
       backgroundColor: 'rgba(0, 0, 0, 0.02)',
       minHeight: '56px',
@@ -238,6 +237,8 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
       alignItems: 'center',
       flexWrap: 'wrap',
       gap: theme.spacing(1),
+      flex: 1,
+      minWidth: 0,
     },
     select: {
       margin: theme.spacing(0, 2, 0, 0),
@@ -253,28 +254,13 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
       justifyContent: 'flex-end',
       minWidth: '220px',
       gap: theme.spacing(1),
-    },
-    switch: {
-      '& .MuiSwitch-track': {
-        backgroundColor: 'rgba(0, 0, 0, 0.2)',
-      },
-      '& .MuiSwitch-thumb': {
-        backgroundColor: '#ffffff',
-      },
-      '& .Mui-checked + .MuiSwitch-track': {
-        backgroundColor: `${theme.palette.primary.main} !important`,
-        opacity: 0.5,
-      },
-      '& .Mui-checked .MuiSwitch-thumb': {
-        backgroundColor: theme.palette.primary.main,
-      },
-    },
-    switchLabel: {
-      fontSize: '0.875rem',
-      fontWeight: 500,
+      flexWrap: 'wrap',
     },
     downloadButton: {
       whiteSpace: 'nowrap',
+    },
+    summary: {
+      color: theme.palette.text.secondary,
     },
   })
 );
@@ -283,7 +269,7 @@ const ColorButton = withStyles(theme => ({
   root: {
     color: theme.palette.primary.main,
     borderColor: theme.palette.primary.main,
-    margin: theme.spacing(0, 0, 0, 2),
+    margin: theme.spacing(0, 0, 0, 1.5),
     height: '40px',
   },
 }))(Button);
@@ -327,9 +313,6 @@ interface EnhancedTableToolbarProps {
   totalResults: number;
   numSelected: number;
   updateBuildingFilter: (value: string) => void;
-  viewMyResults?: boolean;
-  onToggleChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  isLoggedIn?: boolean;
   enableSelection?: boolean;
   showDownloadButton?: boolean;
   onDownloadSelected?: () => void;
@@ -345,9 +328,6 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     totalResults,
     numSelected,
     updateBuildingFilter,
-    viewMyResults = false,
-    onToggleChange,
-    isLoggedIn = false,
     enableSelection = false,
     showDownloadButton = false,
     onDownloadSelected,
@@ -374,8 +354,8 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   };
 
   const summaryText = enableSelection && numSelected > 0
-    ? `${numSelected} Selected`
-    : `${totalResults} Total Results`;
+    ? `${numSelected.toLocaleString()} selected`
+    : `${totalResults.toLocaleString()} total results`;
 
   return (
     <Toolbar className={classes.root}>
@@ -422,21 +402,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
       </div>
 
       <div className={classes.toggleContainer}>
-        {isLoggedIn && onToggleChange && (
-          <FormControlLabel
-            control={
-              <Switch
-                checked={viewMyResults}
-                onChange={onToggleChange}
-                color="primary"
-                className={classes.switch}
-              />
-            }
-            label="Show My Results Only"
-            className={classes.switchLabel}
-          />
-        )}
-        <Typography variant="body2">
+        <Typography variant="body2" className={classes.summary}>
           {summaryText}
         </Typography>
         {showDownloadButton && (
@@ -460,7 +426,10 @@ const useFilterToolbarStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       justifyContent: 'space-between',
-      padding: theme.spacing(0, 3),
+      padding: theme.spacing(1, 3, 0, 3),
+      marginTop: theme.spacing(1),
+      flexWrap: 'wrap',
+      gap: theme.spacing(1),
     },
   })
 );
@@ -504,9 +473,19 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       width: '100%',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      boxSizing: 'border-box',
+      minHeight: 0,
     },
     paper: {
       width: '100%',
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      boxSizing: 'border-box',
+      minHeight: 0,
     },
     headerCell: {
       fontWeight: 600,
@@ -542,8 +521,11 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     tableContainer: {
-      maxHeight: 'calc(100vh - 250px)',
+      flex: 1,
+      height: '100%',
       overflow: 'auto',
+      maxHeight: 'none',
+      minHeight: 0,
     },
     stickyHeader: {
       position: 'sticky',
@@ -602,9 +584,6 @@ interface ResultsTableProps {
   results: any[];
   buildingFacets: ResultFacet[];
   setSelectedResult: (result: any) => void;
-  viewMyResults?: boolean;
-  onToggleChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  isLoggedIn?: boolean;
   enableSelection?: boolean;
   enableShareToggle?: boolean;
   onShareToggleComplete?: () => void;
@@ -616,9 +595,6 @@ export default function ResultsTable(props: ResultsTableProps) {
     results,
     buildingFacets = [],
     setSelectedResult,
-    viewMyResults = false,
-    onToggleChange,
-    isLoggedIn = false,
     enableSelection = false,
     enableShareToggle = false,
     onShareToggleComplete,
@@ -835,9 +811,6 @@ export default function ResultsTable(props: ResultsTableProps) {
           totalResults={filteredRows.length}
           numSelected={selectedIds.length}
           updateBuildingFilter={handleUpdateBuildingFilter}
-          viewMyResults={viewMyResults}
-          onToggleChange={onToggleChange}
-          isLoggedIn={isLoggedIn}
           enableSelection={enableSelection}
           showDownloadButton={enableSelection && showDownloadButton}
           onDownloadSelected={downloadResultsToCSV}
@@ -995,6 +968,7 @@ export default function ResultsTable(props: ResultsTableProps) {
                           name="share switch"
                           inputProps={{'aria-label': 'toggle shared'}}
                           color="primary"
+                          size="small"
                         />
                       </TableCell>
                     )}
