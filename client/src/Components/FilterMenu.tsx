@@ -43,6 +43,9 @@ const useMenuStyles = makeStyles((theme: Theme) =>
       alignItems: 'center', /* Align with other elements */
       gap: theme.spacing(1.5),
     },
+    popper: {
+      zIndex: theme.zIndex.modal,
+    },
     select: {
       margin: theme.spacing(0, 2, 0, 0), /* Match margin with Building Type row */
       width: '320px', /* Slightly smaller to fit with wider gaps */
@@ -467,6 +470,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                 open={open[filter]}
                 anchorEl={anchorEl}
                 placement={'bottom'}
+                className={menuClasses.popper}
               >
                 <ClickAwayListener onClickAway={handleClosePopper(filter)}>
                   <Paper elevation={3}>{renderPopperContents(filter)}</Paper>

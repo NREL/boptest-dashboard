@@ -980,7 +980,7 @@ export default function ResultsTable(props: ResultsTableProps) {
         </TableContainer>
         <div className={classes.footer}>
           <Typography variant="body2">
-            All results are from BOPTEST. Please visit the{' '}
+            These results are generated using BOPTEST. Please visit the{' '}
             <a
               href="https://ibpsa.github.io/project1-boptest/"
               target="_blank"
