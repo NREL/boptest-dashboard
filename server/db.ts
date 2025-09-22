@@ -3,6 +3,158 @@ import {createAccounts, getAccountByAPIKey} from './controllers/account';
 import {createBuildingTypes} from './controllers/buildingTypes';
 import {createResults} from './controllers/result';
 
+interface SeedAccountConfig {
+  alias: string;
+  hashedIdentifier: string;
+  displayName: string;
+  apiKey: string;
+  apiKeySalt: string;
+  shareAllResults: boolean | null;
+  oauthProvider: string;
+}
+
+interface SeedAccountInfo {
+  alias: string;
+  apiKey: string;
+  shareAllResults: boolean | null;
+}
+
+interface SeedBuildingType {
+  uid: string;
+  name: string;
+  markdownURL: string;
+  pdfURL: string;
+  scenarios: {
+    timePeriod: string[];
+    electricityPrice: string[];
+    weatherForecastUncertainty: string[];
+  };
+}
+
+function pseudoRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+function randomInt(seed: number, min: number, max: number): number {
+  const value = pseudoRandom(seed);
+  return Math.floor(value * (max - min + 1)) + min;
+}
+
+function pickFrom<T>(seed: number, values: T[]): T {
+  const index = randomInt(seed, 0, values.length - 1);
+  return values[index];
+}
+
+function buildTags(seed: number, tagPool: string[]): string[] {
+  const tags = new Set<string>();
+  const tagCount = randomInt(seed, 2, 4);
+  for (let i = 0; i < tagPool.length && tags.size < tagCount; i++) {
+    tags.add(pickFrom(seed + i, tagPool));
+  }
+  return Array.from(tags);
+}
+
+function generateSeedResults(
+  total: number,
+  accountPool: SeedAccountInfo[],
+  buildingTypes: SeedBuildingType[],
+  userAccount: SeedAccountInfo
+) {
+  const results: any[] = [];
+  const tagPool = [
+    'baseline',
+    'optimized',
+    'comfort',
+    'hvac',
+    'weekend',
+    'night',
+    'dr-event',
+    'preheat',
+    'simulation',
+    'v1',
+  ];
+  const controlSteps = ['180.0', '300.0', '360.0', '600.0'];
+  const forecastIntervals = [900, 1800, 3600];
+  const baseDate = new Date('2024-01-01T00:00:00.000Z').getTime();
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  const combinedAccounts = [userAccount, ...accountPool];
+
+  for (let index = 0; index < total; index++) {
+    const seed = index + 1;
+    const account = combinedAccounts[index % combinedAccounts.length];
+    const buildingType = pickFrom(seed + 5, buildingTypes);
+    const scenario = {
+      timePeriod: pickFrom(seed + 10, buildingType.scenarios.timePeriod),
+      electricityPrice: pickFrom(
+        seed + 11,
+        buildingType.scenarios.electricityPrice
+      ),
+      weatherForecastUncertainty: pickFrom(
+        seed + 12,
+        buildingType.scenarios.weatherForecastUncertainty
+      ),
+    };
+
+    const horizonSteps = randomInt(seed + 13, 6, 24);
+    const interval = pickFrom(seed + 14, forecastIntervals);
+    const baseEnergy = randomInt(seed + 15, 40, 120) / 10;
+    const energySpread = randomInt(seed + 16, -10, 10) / 10;
+    const thermal = randomInt(seed + 17, 30, 120) / 10;
+    const emissions = randomInt(seed + 18, 10, 40);
+    const cost = randomInt(seed + 19, 60, 180);
+    const timeRatio = randomInt(seed + 20, 700, 1100);
+    const peakElectricity = randomInt(seed + 21, 5, 20);
+    const peakGas = randomInt(seed + 22, 0, 10);
+    const peakDistrictHeating = randomInt(seed + 23, 0, 8);
+
+    const isShared = account.shareAllResults === true
+      ? true
+      : pseudoRandom(seed + 24) > 0.35;
+
+    const runDate = new Date(
+      baseDate + index * dayMs + randomInt(seed + 25, 0, 12) * 60 * 60 * 1000
+    ).toISOString();
+
+    results.push({
+      uid: `seed-${account.alias}-${seed}`,
+      dateRun: runDate,
+      boptestVersion: `0.${randomInt(seed + 26, 1, 3)}.${randomInt(seed + 27, 0, 9)}`,
+      isShared,
+      controlStep: pickFrom(seed + 28, controlSteps),
+      account: {
+        apiKey: account.apiKey,
+      },
+      tags: buildTags(seed + 29, tagPool),
+      kpis: {
+        cost_tot: cost,
+        emis_tot: emissions,
+        ener_tot: Number((baseEnergy + energySpread).toFixed(2)),
+        idis_tot: randomInt(seed + 30, 20, 80),
+        tdis_tot: Number(thermal.toFixed(2)),
+        time_rat: timeRatio,
+        pele_tot: Number((peakElectricity + pseudoRandom(seed + 31)).toFixed(2)),
+        pgas_tot: peakGas === 0 ? null : Number((peakGas / 2).toFixed(2)),
+        pdih_tot:
+          peakDistrictHeating === 0
+            ? null
+            : Number((peakDistrictHeating / 2).toFixed(2)),
+      },
+      forecastParameters: {
+        horizon: horizonSteps * 3600,
+        interval,
+      },
+      scenario,
+      buildingType: {
+        uid: buildingType.uid,
+      },
+    });
+  }
+
+  return results;
+}
+
 export async function connectToDb(): Promise<void> {
   try {
     await getDocumentStore();
@@ -30,7 +182,7 @@ export async function seedTestData(apiKey: string): Promise<void> {
   const readmeUrl =
     'https://raw.githubusercontent.com/NREL/project1-boptest/master/README.md';
 
-  const buildingTypes = [
+  const buildingTypes: SeedBuildingType[] = [
     {
       uid: 'buildingType-1',
       name: 'BIG building',
@@ -54,140 +206,36 @@ export async function seedTestData(apiKey: string): Promise<void> {
       },
     },
   ];
-
-  const results = [
+  const seededAccounts: SeedAccountConfig[] = [
     {
-      uid: 'result1',
-      dateRun: '2020-08-04T23:00:00.000Z',
-      boptestVersion: '0.1.0',
-      isShared: true,
-      controlStep: '360.0',
-      account: {
-        apiKey: userAccount.apiKey,
-      },
-      tags: ['string1', 'string2', 'string3'],
-      kpis: {
-        cost_tot: 100,
-        emis_tot: 19,
-        ener_tot: 5,
-        idis_tot: 43,
-        tdis_tot: 6,
-        time_rat: 900,
-        pele_tot: 10.0,
-      },
-      forecastParameters: {
-        horizon: 21600.0,
-        interval: 3600.0,
-      },
-      scenario: {
-        timePeriod: 'cooling peak',
-        electricityPrice: 'dynamic',
-        weatherForecastUncertainty: 'deterministic',
-      },
-      buildingType: {
-        uid: 'buildingType-1',
-      },
+      alias: 'grid-squad',
+      hashedIdentifier: 'seed-grid-squad',
+      displayName: 'Grid Squad',
+      apiKey: 'grid-squad-key',
+      apiKeySalt: 'seed-salt-1',
+      shareAllResults: true,
+      oauthProvider: 'seed',
     },
     {
-      uid: 'result2',
-      dateRun: '2020-08-05T12:00:00.000Z',
-      boptestVersion: '0.1.0',
-      isShared: true,
-      controlStep: '180.0',
-      account: {
-        apiKey: userAccount.apiKey,
-      },
-      tags: ['demo', 'baseline'],
-      kpis: {
-        cost_tot: 110,
-        emis_tot: 13,
-        ener_tot: 8,
-        idis_tot: 49,
-        tdis_tot: 10,
-        time_rat: 855,
-        pele_tot: 12.5,
-      },
-      forecastParameters: {
-        horizon: 43200.0,
-        interval: 3600.0,
-      },
-     scenario: {
-       timePeriod: 'heating typical',
-        electricityPrice: 'dynamic',
-       weatherForecastUncertainty: 'deterministic',
-     },
-      buildingType: {
-        uid: 'buildingType-2',
-      },
+      alias: 'comfort-co',
+      hashedIdentifier: 'seed-comfort-co',
+      displayName: 'Comfort Co',
+      apiKey: 'comfort-co-key',
+      apiKeySalt: 'seed-salt-2',
+      shareAllResults: false,
+      oauthProvider: 'seed',
     },
     {
-      uid: 'result3',
-      dateRun: '2020-08-04T23:00:00.000Z',
-      boptestVersion: '0.1.0',
-      isShared: true,
-      controlStep: '360.0',
-      account: {
-        apiKey: userAccount.apiKey,
-      },
-      tags: ['string1', 'string2', 'string3'],
-      kpis: {
-        cost_tot: 105,
-        emis_tot: 22,
-        ener_tot: 4,
-        idis_tot: 37,
-        tdis_tot: 3,
-        time_rat: 915,
-        pele_tot: 10.0,
-      },
-      forecastParameters: {
-        horizon: 21600.0,
-        interval: 3600.0,
-      },
-      scenario: {
-        timePeriod: 'cooling peak',
-        electricityPrice: 'constant',
-        weatherForecastUncertainty: 'deterministic',
-      },
-      buildingType: {
-        uid: 'buildingType-1',
-      },
+      alias: 'peak-patrol',
+      hashedIdentifier: 'seed-peak-patrol',
+      displayName: 'Peak Patrol',
+      apiKey: 'peak-patrol-key',
+      apiKeySalt: 'seed-salt-3',
+      shareAllResults: null,
+      oauthProvider: 'seed',
     },
     {
-      uid: 'result4',
-      dateRun: '2020-08-04T23:00:00.000Z',
-      boptestVersion: '0.1.0',
-      isShared: true,
-      controlStep: '360.0',
-      account: {
-        apiKey: userAccount.apiKey,
-      },
-      tags: ['tags1', 'tags2', 'tags3'],
-      kpis: {
-        cost_tot: 95,
-        emis_tot: 14,
-        ener_tot: 7,
-        idis_tot: 35,
-        tdis_tot: 5,
-        time_rat: 920,
-        pele_tot: 10.0,
-      },
-      forecastParameters: {
-        horizon: 21600.0,
-        interval: 3600.0,
-      },
-      scenario: {
-        timePeriod: 'heating peak',
-        electricityPrice: 'dynamic',
-        weatherForecastUncertainty: 'unknown',
-      },
-      buildingType: {
-        uid: 'buildingType-2',
-      },
-    },
-  ];
-
-  const accounts = [
-    {
+      alias: 'jerry',
       hashedIdentifier: 'demo-jerry',
       displayName: 'Jerry',
       apiKey: 'jerrysapikey',
@@ -197,15 +245,44 @@ export async function seedTestData(apiKey: string): Promise<void> {
     },
   ];
 
+  const accounts = seededAccounts.map(account => ({
+    hashedIdentifier: account.hashedIdentifier,
+    displayName: account.displayName,
+    apiKey: account.apiKey,
+    apiKeySalt: account.apiKeySalt,
+    shareAllResults: account.shareAllResults,
+    oauthProvider: account.oauthProvider,
+  }));
+
   await connectToDb();
   await createAccounts(accounts);
   await createBuildingTypes(buildingTypes);
 
-  const resultInsertions = await createResults(results);
+  const accountPool: SeedAccountInfo[] = seededAccounts
+    .filter(account => account.apiKey !== userAccount.apiKey)
+    .map(account => ({
+      alias: account.alias,
+      apiKey: account.apiKey,
+      shareAllResults: account.shareAllResults,
+    }));
+
+  const generatedResults = generateSeedResults(
+    160,
+    accountPool,
+    buildingTypes,
+    {
+      alias: 'primary-user',
+      apiKey: userAccount.apiKey,
+      shareAllResults: (userAccount.shareAllResults as boolean | null) ?? null,
+    }
+  );
+
+  const resultInsertions = await createResults(generatedResults);
   const rejected = resultInsertions.filter((entry: any) => entry.status === 'rejected');
   if (rejected.length > 0) {
     console.warn('Seed data encountered rejected result insertions:', rejected);
   } else {
     console.log('Seed data inserted demo results for account', userAccount.displayName);
+    console.log(`Generated ${generatedResults.length} synthetic results across ${accountPool.length + 1} accounts.`);
   }
 }
