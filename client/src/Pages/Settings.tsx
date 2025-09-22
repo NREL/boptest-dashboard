@@ -24,12 +24,24 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       padding: theme.spacing(3),
+      flex: 1,
+      minHeight: 0,
+      overflow: 'hidden',
     },
     paper: {
       padding: theme.spacing(3),
       width: '100%',
       maxWidth: 800,
       margin: '0 auto',
+      height: '100%',
+      boxSizing: 'border-box',
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    scrollArea: {
+      flex: 1,
+      overflowY: 'auto',
+      paddingRight: theme.spacing(1),
     },
     bold: {
       fontWeight: 'inherit',
@@ -360,9 +372,10 @@ export const Settings: React.FC = () => {
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <Typography variant="h5" gutterBottom>
-          Account Settings
-        </Typography>
+        <div className={classes.scrollArea}>
+          <Typography variant="h5" gutterBottom>
+            Account Settings
+          </Typography>
         
         <Box fontWeight="fontWeightBold" mt={3}>
           <Typography variant="h6" className={classes.bold}>
@@ -591,8 +604,10 @@ export const Settings: React.FC = () => {
           </div>
         )}
       </div>
-      
-      <Snackbar
+
+        </div>
+      </Paper>
+      <Snackbar 
         open={snackMessageOpen}
         autoHideDuration={6000}
         onClose={handleSnackMessageClose}
@@ -601,7 +616,6 @@ export const Settings: React.FC = () => {
           {snackMessage[0]}
         </Alert>
       </Snackbar>
-      </Paper>
     </div>
   );
 };
