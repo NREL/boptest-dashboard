@@ -1,13 +1,15 @@
 import React, {useEffect} from 'react';
 import axios from 'axios';
 
+type SharePreference = 'default' | 'yes' | 'no';
+
 interface UserContextValue {
   displayName: string;
   setDisplayName: (name: string) => void;
   authedId: string;
   hashedIdentifier: string;
-  shareAllResults: string;
-  setShareAllResults: (share: string) => void;
+  shareAllResults: SharePreference;
+  setShareAllResults: (share: SharePreference) => void;
   loading: boolean;
   refreshAuthStatus: () => void;
   isAdmin: boolean;
@@ -19,7 +21,7 @@ export const UserContext = React.createContext<UserContextValue>({
   setDisplayName: () => {},
   authedId: '',
   hashedIdentifier: '',
-  shareAllResults: '',
+  shareAllResults: 'default',
   setShareAllResults: () => {},
   loading: true,
   refreshAuthStatus: () => {},
@@ -37,12 +39,22 @@ const UserProvider = ({children}: Props) => {
   const [displayName, setDisplayName] = React.useState('');
   const [authedId, setAuthedId] = React.useState('');
   const [hashedIdentifier, setHashedIdentifier] = React.useState('');
-  const [shareAllResults, setShareAllResults] = React.useState('');
+  const [shareAllResults, setShareAllResultsState] = React.useState<SharePreference>('default');
   const [loading, setLoading] = React.useState(true);
   const [isAdmin, setIsAdmin] = React.useState(false);
   const [csrfToken, setCsrfToken] = React.useState<string | null>(null);
 
   const authStatusEndpoint = '/api/auth/status';
+
+  const mapSharePreference = (value: unknown): SharePreference => {
+    if (value === true || value === 'yes') {
+      return 'yes';
+    }
+    if (value === false || value === 'no') {
+      return 'no';
+    }
+    return 'default';
+  };
 
   const fetchAuthStatus = () => {
     setLoading(true);
@@ -54,14 +66,14 @@ const UserProvider = ({children}: Props) => {
           setDisplayName(result.data.user.displayName || '');
           setAuthedId(result.data.user.userId || '');
           setHashedIdentifier(result.data.user.hashedIdentifier || '');
-          setShareAllResults(result.data.user.shareAllResults || '');
+          setShareAllResultsState(mapSharePreference(result.data.user.shareAllResults));
           setIsAdmin(result.data.user.isAdmin || false);
           setCsrfToken(result.data.csrfToken || null);
         } else {
           setDisplayName('');
           setAuthedId('');
           setHashedIdentifier('');
-          setShareAllResults('');
+          setShareAllResultsState('default');
           setIsAdmin(false);
           setCsrfToken(null);
         }
@@ -71,7 +83,7 @@ const UserProvider = ({children}: Props) => {
         setDisplayName('');
         setAuthedId('');
         setHashedIdentifier('');
-        setShareAllResults('');
+        setShareAllResultsState('default');
         setIsAdmin(false);
         setCsrfToken(null);
       })
@@ -93,6 +105,10 @@ const UserProvider = ({children}: Props) => {
   useEffect(() => {
     fetchAuthStatus();
   }, []);
+
+  const setShareAllResults = (share: SharePreference) => {
+    setShareAllResultsState(share);
+  };
 
   return (
     <UserContext.Provider

@@ -207,15 +207,7 @@ export const Settings: React.FC = () => {
     setSnackMessageOpen(false);
   };
 
-  const getShareResults = () => {
-    if (shareAllResults === true) {
-      return 'yes';
-    } else if (shareAllResults === false) {
-      return 'no';
-    } else {
-      return 'default';
-    }
-  };
+  const getShareResults = () => shareAllResults || 'default';
 
   const setShareResults = event => {
     let shareValue: boolean | null;
@@ -232,7 +224,13 @@ export const Settings: React.FC = () => {
       .then(() => {
         // Update UI state
         if (setShareAllResults) {
-          setShareAllResults(shareValue ? 'yes' : (shareValue === false ? 'no' : 'default'));
+          if (shareValue === true) {
+            setShareAllResults('yes');
+          } else if (shareValue === false) {
+            setShareAllResults('no');
+          } else {
+            setShareAllResults('default');
+          }
         }
         
         // Refresh auth status
