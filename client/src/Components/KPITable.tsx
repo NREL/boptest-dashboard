@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, {useEffect, useState} from 'react';
-import {Table, TableBody, TableCell, TableRow} from '@material-ui/core';
+import {Table, TableBody, TableCell, TableRow, CircularProgress} from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import {SignatureDetails, Result} from '../../common/interfaces';
@@ -43,6 +43,19 @@ const useStyles = makeStyles((theme: Theme) =>
     noComparison: {
       color: theme.palette.text.secondary,
     },
+    loadingContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: theme.spacing(2),
+      minHeight: 320,
+      padding: theme.spacing(3),
+      color: theme.palette.text.secondary,
+    },
+    errorText: {
+      color: theme.palette.error.main,
+    },
   })
 );
 
@@ -59,19 +72,63 @@ export const KPITable: React.FC<KPITableProps> = props => {
   const [details, setDetails] = useState<SignatureDetails | undefined>(
     undefined
   );
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // propulate the signature details
   useEffect(() => {
-    // prevent the use effect from firing on render if we don't have a result
-    if (props.result === undefined) return;
+    if (!props.result) {
+      return;
+    }
 
-    axios.get(getSignatureEndpoint(props.result.uid)).then(response => {
-      setDetails(response.data);
-    });
-  }, [props.result]);
+    let isActive = true;
+    setIsLoading(true);
+    setLoadError(null);
+    setDetails(undefined);
 
-  if (!details) {
-    return null;
+    axios
+      .get(getSignatureEndpoint(props.result.uid))
+      .then(response => {
+        if (!isActive) {
+          return;
+        }
+        setDetails(response.data);
+      })
+      .catch(() => {
+        if (!isActive) {
+          return;
+        }
+        setLoadError('Unable to load comparison data.');
+      })
+      .finally(() => {
+        if (!isActive) {
+          return;
+        }
+        setIsLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [props.result?.uid]);
+
+  if (isLoading || !details) {
+    return (
+      <div className={`${classes.kpiTable} ${classes.loadingContainer}`}>
+        {isLoading ? (
+          <>
+            <CircularProgress size={28} color="primary" />
+            <Typography variant="body2" color="textSecondary">
+              Loading key performance indicators...
+            </Typography>
+          </>
+        ) : (
+          <Typography variant="body2" className={classes.errorText}>
+            {loadError ?? 'No KPI data available.'}
+          </Typography>
+        )}
+      </div>
+    );
   }
 
   const showComparisons = details.numResults >= numberOfResultsToShowChart;

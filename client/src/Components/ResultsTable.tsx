@@ -138,6 +138,21 @@ const baseHeadCells: HeadCell[] = [
   },
 ];
 
+const columnWidths: Partial<Record<keyof Data, string>> = {
+  buildingTypeName: '220px',
+  dateRun: '200px',
+  totalEnergy: '160px',
+  thermalDiscomfort: '180px',
+  aqDiscomfort: '220px',
+  cost: '180px',
+  emissions: '200px',
+  peakElectricity: '200px',
+  peakGas: '180px',
+  peakDistrictHeating: '200px',
+  compTimeRatio: '180px',
+  isShared: '120px',
+};
+
 function buildHeadCells(includeShareColumn: boolean): HeadCell[] {
   if (!includeShareColumn) {
     return baseHeadCells;
@@ -205,7 +220,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     <TableHead style={{borderSpacing: '0 !important'}}>
       <TableRow style={{borderCollapse: 'collapse'}}>
         {enableSelection && (
-          <TableCell padding="checkbox">
+          <TableCell padding="checkbox" style={{width: '52px'}}>
             <Checkbox
               checked={allSelected}
               indeterminate={numSelected > 0 && numSelected < rowCount}
@@ -217,6 +232,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
         )}
         {headCells.map(headCell => {
           const {main, unit} = parseHeaderLabel(headCell.label);
+          const width = columnWidths[headCell.id];
 
           return (
             <TableCell
@@ -225,6 +241,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
               padding={'none'}
               sortDirection={orderBy === headCell.id ? order : false}
               className={`${classes.headerCell} ${classes.stickyHeader}`}
+              style={width ? {width} : undefined}
             >
               <TableSortLabel
                 active={orderBy === headCell.id}
@@ -269,6 +286,12 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
       flex: 1,
       minWidth: 0,
     },
+    filterActions: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(1),
+      flexWrap: 'wrap',
+    },
     select: {
       margin: theme.spacing(0, 2, 0, 0),
       width: '320px',
@@ -300,6 +323,17 @@ const ColorButton = withStyles(theme => ({
     borderColor: theme.palette.primary.main,
     margin: theme.spacing(0, 0, 0, 1.5),
     height: '40px',
+    padding: theme.spacing(0, 2),
+    fontWeight: 600,
+  },
+}))(Button);
+
+const LoadMoreButton = withStyles(theme => ({
+  root: {
+    marginLeft: theme.spacing(1.5),
+    height: '40px',
+    padding: theme.spacing(0, 2),
+    fontWeight: 600,
   },
 }))(Button);
 
@@ -346,6 +380,9 @@ interface EnhancedTableToolbarProps {
   showDownloadButton?: boolean;
   onDownloadSelected?: () => void;
   downloadDisabled?: boolean;
+  hasMoreResults?: boolean;
+  onLoadMoreResults?: () => void;
+  isLoadingMoreResults?: boolean;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
@@ -361,6 +398,9 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     showDownloadButton = false,
     onDownloadSelected,
     downloadDisabled = false,
+    hasMoreResults = false,
+    onLoadMoreResults,
+    isLoadingMoreResults = false,
   } = props;
 
   const selectProps = {
@@ -382,9 +422,15 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     updateBuildingFilter(value === 'all' ? '' : value);
   };
 
-  const summaryText = enableSelection && numSelected > 0
+  const selectionSummary = enableSelection && numSelected > 0
     ? `${numSelected.toLocaleString()} selected`
-    : `${totalResults.toLocaleString()} total results`;
+    : null;
+
+  const summaryText = selectionSummary
+    ? selectionSummary
+    : hasMoreResults
+        ? `Showing ${totalResults.toLocaleString()} results`
+        : `Showing all ${totalResults.toLocaleString()} results`;
 
   return (
     <Toolbar className={classes.root}>
@@ -402,7 +448,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
           SelectProps={{
             ...selectProps,
             renderValue: value =>
-              value && value !== 'all' ? (value as string) : 'All Building Types',
+              value && value !== 'all' ? (value as string) : 'All Test Cases',
           }}
           size="small"
           InputProps={{
@@ -411,9 +457,9 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
             },
           }}
         >
-          <MenuItem value="all">All Building Types</MenuItem>
+          <MenuItem value="all">All Test Cases</MenuItem>
           {buildingTypeFilterOptions.map(option => {
-            if (option === 'All Building Types') {
+            if (option === 'All Test Cases') {
               return null;
             }
             return (
@@ -423,11 +469,24 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
             );
           })}
         </ColorSelect>
-        {displayClear && (
-          <ColorButton variant="outlined" onClick={() => updateBuildingFilter('')}>
-            Clear
-          </ColorButton>
-        )}
+        <div className={classes.filterActions}>
+          {displayClear && (
+            <ColorButton variant="outlined" onClick={() => updateBuildingFilter('')}>
+              Clear
+            </ColorButton>
+          )}
+          {hasMoreResults && (
+            <LoadMoreButton
+              variant="outlined"
+              color="primary"
+              size="small"
+              onClick={onLoadMoreResults}
+              disabled={isLoadingMoreResults}
+            >
+              {isLoadingMoreResults ? 'Loading...' : 'Load more results'}
+            </LoadMoreButton>
+          )}
+        </div>
       </div>
 
       <div className={classes.toggleContainer}>
@@ -519,8 +578,7 @@ const useStyles = makeStyles((theme: Theme) =>
     headerCell: {
       fontWeight: 600,
       padding: theme.spacing(1.5),
-      minWidth: '100px',
-      maxWidth: '180px',
+      minWidth: 0,
       border: 'none',
       borderBottom: '1px solid rgba(224, 224, 224, 1)',
     },
@@ -544,6 +602,8 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     table: {
       minWidth: 750,
+      width: '100%',
+      tableLayout: 'fixed',
       '& .MuiTableCell-root': {
         borderLeft: 'none',
         borderRight: 'none',
@@ -619,6 +679,9 @@ interface ResultsTableProps {
   showDownloadButton?: boolean;
   isLoading?: boolean;
   onFiltersChange?: (payload: {buildingTypeName: string; filters: FilterValues}) => void;
+  hasMoreResults?: boolean;
+  onLoadMoreResults?: () => void;
+  isLoadingMoreResults?: boolean;
 }
 
 export default function ResultsTable(props: ResultsTableProps) {
@@ -632,6 +695,9 @@ export default function ResultsTable(props: ResultsTableProps) {
     showDownloadButton = false,
     isLoading = false,
     onFiltersChange,
+    hasMoreResults = false,
+    onLoadMoreResults,
+    isLoadingMoreResults = false,
   } = props;
 
   const {csrfToken} = useUser();
@@ -641,7 +707,8 @@ export default function ResultsTable(props: ResultsTableProps) {
   );
 
   const classes = useStyles();
-  const [order, setOrder] = useState<Order>('asc');
+  const getColumnWidth = (column: keyof Data) => columnWidths[column];
+  const [order, setOrder] = useState<Order>('desc');
   const [orderBy, setOrderBy] = useState<keyof Data>('dateRun');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [displayFilters, setDisplayFilters] = useState(false);
@@ -976,6 +1043,9 @@ export default function ResultsTable(props: ResultsTableProps) {
           showDownloadButton={enableSelection && showDownloadButton}
           onDownloadSelected={downloadResultsToCSV}
           downloadDisabled={selectedIds.length === 0}
+          hasMoreResults={hasMoreResults}
+          onLoadMoreResults={onLoadMoreResults}
+          isLoadingMoreResults={isLoadingMoreResults}
         />
         {displayFilters && (
           <FilterToolbar
@@ -1047,7 +1117,7 @@ export default function ResultsTable(props: ResultsTableProps) {
                     className={classes.tableRow}
                   >
                     {enableSelection && (
-                      <TableCell padding="checkbox">
+                      <TableCell padding="checkbox" style={{width: '52px'}}>
                         <Checkbox
                           checked={isItemSelected}
                           inputProps={{'aria-labelledby': labelId}}
@@ -1061,7 +1131,10 @@ export default function ResultsTable(props: ResultsTableProps) {
                       id={labelId}
                       scope="row"
                       padding="normal"
-                      style={{maxWidth: '180px'}}
+                      style={{
+                        width: getColumnWidth('buildingTypeName'),
+                        maxWidth: getColumnWidth('buildingTypeName'),
+                      }}
                     >
                       <Typography
                         variant="body1"
@@ -1076,7 +1149,10 @@ export default function ResultsTable(props: ResultsTableProps) {
                         {row.buildingTypeName}
                       </Typography>
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell
+                      align="center"
+                      style={{width: getColumnWidth('dateRun')}}
+                    >
                       <Typography
                         variant="body1"
                         noWrap
@@ -1090,55 +1166,85 @@ export default function ResultsTable(props: ResultsTableProps) {
                         {dateString}
                       </Typography>
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell
+                      align="center"
+                      style={{width: getColumnWidth('totalEnergy')}}
+                    >
                       <Typography variant="body1">
                         {row.totalEnergy.toFixed(4)}
                       </Typography>
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell
+                      align="center"
+                      style={{width: getColumnWidth('thermalDiscomfort')}}
+                    >
                       <Typography variant="body1">
                         {row.thermalDiscomfort.toFixed(4)}
                       </Typography>
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell
+                      align="center"
+                      style={{width: getColumnWidth('aqDiscomfort')}}
+                    >
                       <Typography variant="body1">
                         {row.aqDiscomfort.toFixed(4)}
                       </Typography>
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell
+                      align="center"
+                      style={{width: getColumnWidth('cost')}}
+                    >
                       <Typography variant="body1">
                         {row.cost.toFixed(2)}
                       </Typography>
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell
+                      align="center"
+                      style={{width: getColumnWidth('emissions')}}
+                    >
                       <Typography variant="body1">
                         {row.emissions.toFixed(4)}
                       </Typography>
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell
+                      align="center"
+                      style={{width: getColumnWidth('peakElectricity')}}
+                    >
                       <Typography variant="body1">
                         {row.peakElectricity.toFixed(4)}
                       </Typography>
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell
+                      align="center"
+                      style={{width: getColumnWidth('peakGas')}}
+                    >
                       <Typography variant="body1">
                         {row.peakGas !== null ? row.peakGas.toFixed(4) : 'N/A'}
                       </Typography>
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell
+                      align="center"
+                      style={{width: getColumnWidth('peakDistrictHeating')}}
+                    >
                       <Typography variant="body1">
                         {row.peakDistrictHeating !== null
                           ? row.peakDistrictHeating.toFixed(4)
                           : 'N/A'}
                       </Typography>
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell
+                      align="center"
+                      style={{width: getColumnWidth('compTimeRatio')}}
+                    >
                       <Typography variant="body1">
                         {row.compTimeRatio.toFixed(4)}
                       </Typography>
                     </TableCell>
                     {includeShareColumn && (
-                      <TableCell align="center">
+                      <TableCell
+                        align="center"
+                        style={{width: getColumnWidth('isShared')}}
+                      >
                         <Switch
                           checked={row.isShared}
                           onClick={event => handleShareToggleClick(event, row)}
@@ -1157,7 +1263,7 @@ export default function ResultsTable(props: ResultsTableProps) {
         </TableContainer>
         <div className={classes.footer}>
           <Typography variant="body2">
-            These results are generated using BOPTEST. Please visit the{' '}
+            These results are made with BOPTEST. Please visit the{' '}
             <a
               href="https://ibpsa.github.io/project1-boptest/"
               target="_blank"

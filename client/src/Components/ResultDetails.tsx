@@ -12,13 +12,26 @@ import FileCopyIcon from '@material-ui/icons/FileCopy';
 const useStyles = makeStyles(() =>
   createStyles({
     root: {
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      boxSizing: 'border-box',
       padding: 0,
+      flex: 1,
+      minHeight: 0,
     },
     headerRow: {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
       marginBottom: 16,
+      paddingBottom: 16,
+      borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+      backgroundColor: '#fff',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1,
+      paddingRight: 12,
     },
     headerText: {
       display: 'flex',
@@ -31,6 +44,12 @@ const useStyles = makeStyles(() =>
     },
     content: {
       flexGrow: 1,
+      overflowY: 'auto',
+      paddingTop: 24,
+      paddingRight: 16,
+      paddingLeft: 4,
+      minHeight: 0,
+      boxSizing: 'border-box',
     },
   })
 );
@@ -95,7 +114,7 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
       <div className={classes.headerRow}>
         <div className={classes.headerText}>
           <Typography variant="h6" noWrap>
-            {`TESTCASE: ${props.result.buildingTypeName}`}
+            {`TEST CASE: ${props.result.buildingTypeName}`}
           </Typography>
           <Typography variant="body2" className={classes.subheading} noWrap>
             Result ID: {props.result.uid}

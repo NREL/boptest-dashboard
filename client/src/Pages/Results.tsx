@@ -6,7 +6,6 @@ import {Modal} from '../Components/Modal';
 import {ResultDetails} from '../Components/ResultDetails';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
-import Button from '@material-ui/core/Button';
 import {Result, ResultFacet, FilterValues} from '../../common/interfaces';
 import {AppRoute} from '../enums';
 import {createDataFromResult, Data} from '../Lib/TableHelpers';
@@ -375,20 +374,10 @@ export const Results: React.FC = () => {
             setSelectedResult={handleChange}
             isLoading={isLoadingResults && results.length === 0}
             onFiltersChange={handleFiltersChange}
+            hasMoreResults={hasNext}
+            onLoadMoreResults={handleLoadMore}
+            isLoadingMoreResults={isLoadingMore}
           />
-        </div>
-
-        <div style={{padding: '16px'}}>
-          {hasNext && (
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={handleLoadMore}
-              disabled={isLoadingMore}
-            >
-              {isLoadingMore ? 'Loading...' : 'Load more results'}
-            </Button>
-          )}
         </div>
 
         {showResultModal && selectedResult && (
