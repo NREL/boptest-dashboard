@@ -1,4 +1,6 @@
-import React, {useEffect} from 'react';
+import React from 'react';
+import Box from '@material-ui/core/Box';
+import Chip from '@material-ui/core/Chip';
 import {
   Table,
   TableBody,
@@ -6,35 +8,48 @@ import {
   TableContainer,
   TableRow,
 } from '@material-ui/core';
-import {createStyles, makeStyles} from '@material-ui/core/styles';
+import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import {Result} from '../../common/interfaces';
 
-const useStyles = makeStyles(() =>
+const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     tableContainer: {
-      padding: '0 0 16px 0',
-    },
-    idTable: {
-      width: '35%',
+      paddingBottom: theme.spacing(1),
     },
     sectionHeader: {
-      padding: '16px 0 0 0',
+      padding: theme.spacing(2, 0, 1),
+      fontWeight: 600,
+      color: theme.palette.text.secondary,
     },
-    grayed: {
-      backgroundColor: 'rgb(236, 239, 240)',
+    row: {
+      '&:nth-of-type(odd)': {
+        backgroundColor: theme.palette.action.hover,
+      },
     },
-    longboi: {
-      width: '100%',
+    labelCell: {
+      width: '45%',
+      borderBottom: 'none',
+      padding: theme.spacing(1, 2, 1, 0),
+    },
+    valueCell: {
+      borderBottom: 'none',
+      padding: theme.spacing(1, 0, 1, 0),
+    },
+    tagRow: {
+      borderBottom: 'none',
+      padding: theme.spacing(1, 0, 0, 0),
+    },
+    tagContainer: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: theme.spacing(1),
+    },
+    emptyState: {
+      color: theme.palette.text.secondary,
     },
   })
 );
-
-const camelCaseToTitleCaseWithSpaces = (camelCase: string): string => {
-  return camelCase
-    .replace(/([A-Z])/g, match => ` ${match}`)
-    .replace(/^./, match => match.toUpperCase());
-};
 
 interface ResultInfoTableProps {
   result: Result;
@@ -42,246 +57,146 @@ interface ResultInfoTableProps {
 
 export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
   const classes = useStyles();
-
-  useEffect(() => {
-    // prevent the use effect from firing on render if we don't have a result
-    if (props.result === undefined) return;
-  }, [props.result]);
-
   const dateString = new Date(props.result.dateRun).toLocaleString();
-
-  const renderScenario = () => {
-    const scenarioArray = [];
-    let isGrey = true;
-    for (const scenarioKey in props.result.scenario) {
-      scenarioArray.push(
-        <TableRow className={isGrey ? classes.grayed : ''} key={scenarioKey}>
-          <TableCell>
-            <Typography variant="body2">
-              {camelCaseToTitleCaseWithSpaces(scenarioKey)}
-            </Typography>
-          </TableCell>
-          <TableCell>
-            <Typography variant="body1">
-              {props.result.scenario[scenarioKey]}
-            </Typography>
-          </TableCell>
-        </TableRow>
-      );
-      isGrey = !isGrey;
+  const formatValue = (value: unknown): string => {
+    if (value === null || value === undefined || value === '') {
+      return '—';
     }
-    return scenarioArray;
+    if (Array.isArray(value)) {
+      return value.map(item => formatValue(item)).join(', ');
+    }
+    if (value instanceof Date) {
+      return value.toLocaleString();
+    }
+    return String(value);
   };
 
-  const renderTags = () => {
-    const tagArray = [];
-    let isGrey = true;
-    if (props.result.tags.length <= 0) {
-      return (
-        <TableRow className={classes.grayed}>
-          <TableCell colSpan={2}>
-            <Typography variant="body2">
-              This result does not have any tags associated with it.
-            </Typography>
-          </TableCell>
-        </TableRow>
-      );
+  const toTitleCase = (key: string): string => {
+    const normalized = key
+      .replace(/[_-]/g, ' ')
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!normalized) {
+      return key;
     }
-    props.result.tags.forEach((tag, idx) => {
-      if (idx % 2 === 0) {
-        tagArray.push(
-          <TableRow className={isGrey ? classes.grayed : ''} key={idx}>
-            <TableCell>
-              <Typography variant="body1">{tag}</Typography>
-            </TableCell>
-            {idx + 1 < props.result.tags.length ? (
-              <TableCell>
-                <Typography variant="body1">
-                  {props.result.tags[idx + 1]}
-                </Typography>
-              </TableCell>
-            ) : (
-              <TableCell />
-            )}
-          </TableRow>
-        );
-        isGrey = !isGrey;
+
+    return normalized.replace(/\b\w/g, match => match.toUpperCase());
+  };
+
+  const scenarioLabels: Record<string, string> = {
+    timePeriod: 'Time Period',
+    electricityPrice: 'Electricity Price Scenario',
+    weatherForecastUncertainty: 'Weather Forecast Uncertainty',
+  };
+
+  const scenarioRows = Object.entries({
+    timePeriod: props.result.timePeriod,
+    electricityPrice: props.result.electricityPrice,
+    weatherForecastUncertainty: props.result.weatherForecastUncertainty,
+    ...props.result.scenario,
+  })
+    .filter(([, value]) => value !== undefined && value !== null && value !== '')
+    .map(([key, value]) => {
+      const label = scenarioLabels[key] || toTitleCase(key);
+      return {label, value: formatValue(value)};
+    })
+    .reduce((acc: Array<{label: string; value: string}>, current) => {
+      if (!acc.find(item => item.label === current.label && item.value === current.value)) {
+        acc.push(current);
       }
-    });
-    return tagArray;
-  };
+      return acc;
+    }, []);
+
+  const forecastParameters = props.result.forecastParameters || {};
+  const forecastRows = Object.entries(forecastParameters)
+    .filter(([, value]) => value !== undefined && value !== null && value !== '')
+    .map(([key, value]) => ({
+      label: toTitleCase(key),
+      value: formatValue(value),
+    }));
+
+  const sections: Array<{
+    title: string;
+    rows: Array<{label: string; value: string}>;
+  }> = [
+    {
+      title: 'Overview',
+      rows: [
+        {label: 'Simulation Date', value: dateString},
+        {label: 'Submitted By', value: formatValue(props.result.accountUsername)},
+        {label: 'BOPTEST Version', value: formatValue(props.result.boptestVersion)},
+        {label: 'Control Step', value: formatValue(props.result.controlStep)},
+      ],
+    },
+    {
+      title: 'Scenario',
+      rows: [
+        ...scenarioRows,
+      ],
+    },
+  ];
+
+  if (forecastRows.length > 0) {
+    sections.push({title: 'Forecast Settings', rows: forecastRows});
+  }
+
+  const hasTags = props.result.tags && props.result.tags.length > 0;
 
   return (
-    <div className={classes.idTable}>
-      <TableContainer className={classes.tableContainer}>
-        <Table size="small">
-          <TableBody>
-            <TableRow>
-              <TableCell>
-                <Typography
-                  variant="subtitle2"
-                  className={classes.sectionHeader}
-                >
-                  BUILDING TYPE
+    <TableContainer className={classes.tableContainer}>
+      <Table size="small">
+        <TableBody>
+          {sections.map(section => (
+            <React.Fragment key={section.title}>
+              {section.rows.length > 0 && (
+                <TableRow>
+                  <TableCell colSpan={2} className={classes.labelCell}>
+                    <Typography variant="subtitle2" className={classes.sectionHeader}>
+                      {section.title.toUpperCase()}
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              )}
+              {section.rows.map(row => (
+                <TableRow className={classes.row} key={`${section.title}-${row.label}`}>
+                  <TableCell className={classes.labelCell}>
+                    <Typography variant="body2" color="textSecondary">
+                      {row.label}
+                    </Typography>
+                  </TableCell>
+                  <TableCell className={classes.valueCell}>
+                    <Typography variant="body1">{row.value}</Typography>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </React.Fragment>
+          ))}
+          <TableRow>
+            <TableCell colSpan={2} className={classes.labelCell}>
+              <Typography variant="subtitle2" className={classes.sectionHeader}>
+                TAGS
+              </Typography>
+            </TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell colSpan={2} className={classes.tagRow}>
+              {hasTags ? (
+                <Box className={classes.tagContainer}>
+                  {props.result.tags.map(tag => (
+                    <Chip key={tag} size="small" label={tag} color="primary" variant="outlined" />
+                  ))}
+                </Box>
+              ) : (
+                <Typography variant="body2" className={classes.emptyState}>
+                  This result does not have any tags associated with it.
                 </Typography>
-              </TableCell>
-            </TableRow>
-            <TableRow className={classes.grayed}>
-              <TableCell className={classes.longboi} colSpan={2}>
-                <Typography variant="body2">
-                  {props.result.buildingTypeName}
-                </Typography>
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>
-                <Typography
-                  variant="subtitle2"
-                  className={classes.sectionHeader}
-                >
-                  PARAMETERS
-                </Typography>
-              </TableCell>
-            </TableRow>
-            <TableRow className={classes.grayed}>
-              <TableCell>
-                <Typography variant="body2">Time Period</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body1">
-                  {props.result.timePeriod}
-                </Typography>
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>
-                <Typography variant="body2">
-                  Electricity Price Scenario
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body1">
-                  {props.result.electricityPrice}
-                </Typography>
-              </TableCell>
-            </TableRow>
-            <TableRow className={classes.grayed}>
-              <TableCell>
-                <Typography variant="body2">
-                  Weather Forcast Uncertainty
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body1">
-                  {props.result.weatherForecastUncertainty}
-                </Typography>
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>
-                <Typography variant="body2">Forcast Horizon</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body1">
-                  {props.result.forecastParameters.horizon}
-                </Typography>
-              </TableCell>
-            </TableRow>
-            <TableRow className={classes.grayed}>
-              <TableCell>
-                <Typography variant="body2">Forcast Interval</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body1">
-                  {props.result.forecastParameters.interval}
-                </Typography>
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>
-                <Typography
-                  variant="subtitle2"
-                  className={classes.sectionHeader}
-                >
-                  GENERAL
-                </Typography>
-              </TableCell>
-            </TableRow>
-            <TableRow className={classes.grayed}>
-              <TableCell>
-                <Typography variant="body2">Identifier</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body1">{props.result.uid}</Typography>
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>
-                <Typography variant="body2">Simulation Date</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body1">{dateString}</Typography>
-              </TableCell>
-            </TableRow>
-            <TableRow className={classes.grayed}>
-              <TableCell>
-                <Typography variant="body2">BOPTest Version</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body1">
-                  {props.result.boptestVersion}
-                </Typography>
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>
-                <Typography variant="body2">Control Step</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body1">
-                  {props.result.controlStep}
-                </Typography>
-              </TableCell>
-            </TableRow>
-            <TableRow className={classes.grayed}>
-              <TableCell>
-                <Typography variant="body2">User Name</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body1">
-                  {props.result.accountUsername}
-                </Typography>
-              </TableCell>
-            </TableRow>
-            {props.result.scenario && (
-              <TableRow>
-                <TableCell colSpan={2}>
-                  <Typography
-                    variant="subtitle2"
-                    className={classes.sectionHeader}
-                  >
-                    SCENARIO
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-            {renderScenario()}
-            {props.result.tags.length > 0 && (
-              <TableRow>
-                <TableCell colSpan={2}>
-                  <Typography
-                    variant="subtitle2"
-                    className={classes.sectionHeader}
-                  >
-                    TAGS
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-            {renderTags()}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </div>
+              )}
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };

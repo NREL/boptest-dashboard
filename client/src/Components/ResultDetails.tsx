@@ -1,6 +1,7 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
-import {Divider, Button} from '@material-ui/core';
+import {Button} from '@material-ui/core';
+import Grid from '@material-ui/core/Grid';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
 import {KPITable} from './KPITable';
 import {ResultInfoTable} from './ResultInfoTable';
@@ -17,12 +18,17 @@ const useStyles = makeStyles(() =>
       alignItems: 'center',
       marginBottom: 16,
     },
-    divider: {
-      backgroundColor: 'rgba(0, 0, 0, 0.12)',
-      margin: '24px 0',
-    },
-    blocks: {
+    headerText: {
       display: 'flex',
+      flexDirection: 'column',
+      gap: 4,
+      minWidth: 0,
+    },
+    subheading: {
+      color: 'rgba(0, 0, 0, 0.54)',
+    },
+    content: {
+      flexGrow: 1,
     },
   })
 );
@@ -46,22 +52,29 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
   return (
     <div className={classes.root}>
       <div className={classes.headerRow}>
-        <Typography variant="subtitle1">TEST CASE</Typography>
+        <div className={classes.headerText}>
+          <Typography variant="h6" noWrap>
+            Testcase: {props.result.buildingTypeName}
+          </Typography>
+          <Typography variant="body2" className={classes.subheading} noWrap>
+            Result ID: {props.result.uid}
+          </Typography>
+        </div>
         {canShare && (
           <Button size="small" variant="outlined" color="primary" onClick={copyLinkToClipboard}>
             Copy Result Link
           </Button>
         )}
       </div>
-      <div className={classes.blocks}>
-        <ResultInfoTable result={props.result} />
-        <Divider
-          className={classes.divider}
-          orientation="vertical"
-          flexItem
-          variant="middle"
-        />
-        <KPITable result={props.result} />
+      <div className={classes.content}>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={5}>
+            <ResultInfoTable result={props.result} />
+          </Grid>
+          <Grid item xs={12} md={7}>
+            <KPITable result={props.result} />
+          </Grid>
+        </Grid>
       </div>
     </div>
   );
