@@ -328,15 +328,6 @@ const ColorButton = withStyles(theme => ({
   },
 }))(Button);
 
-const LoadMoreButton = withStyles(theme => ({
-  root: {
-    marginLeft: theme.spacing(1.5),
-    height: '40px',
-    padding: theme.spacing(0, 2),
-    fontWeight: 600,
-  },
-}))(Button);
-
 const ColorSelect = withStyles(theme => ({
   root: {
     '& label': {
@@ -380,9 +371,6 @@ interface EnhancedTableToolbarProps {
   showDownloadButton?: boolean;
   onDownloadSelected?: () => void;
   downloadDisabled?: boolean;
-  hasMoreResults?: boolean;
-  onLoadMoreResults?: () => void;
-  isLoadingMoreResults?: boolean;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
@@ -398,9 +386,6 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     showDownloadButton = false,
     onDownloadSelected,
     downloadDisabled = false,
-    hasMoreResults = false,
-    onLoadMoreResults,
-    isLoadingMoreResults = false,
   } = props;
 
   const selectProps = {
@@ -428,9 +413,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
 
   const summaryText = selectionSummary
     ? selectionSummary
-    : hasMoreResults
-        ? `Showing ${totalResults.toLocaleString()} results`
-        : `Showing all ${totalResults.toLocaleString()} results`;
+    : `Showing ${totalResults.toLocaleString()} results`;
 
   return (
     <Toolbar className={classes.root}>
@@ -474,17 +457,6 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
             <ColorButton variant="outlined" onClick={() => updateBuildingFilter('')}>
               Clear
             </ColorButton>
-          )}
-          {hasMoreResults && (
-            <LoadMoreButton
-              variant="outlined"
-              color="primary"
-              size="small"
-              onClick={onLoadMoreResults}
-              disabled={isLoadingMoreResults}
-            >
-              {isLoadingMoreResults ? 'Loading...' : 'Load more results'}
-            </LoadMoreButton>
           )}
         </div>
       </div>
@@ -612,7 +584,8 @@ const useStyles = makeStyles((theme: Theme) =>
     tableContainer: {
       flex: 1,
       height: '100%',
-      overflow: 'auto',
+      overflowY: 'auto',
+      overflowX: 'auto',
       maxHeight: 'none',
       minHeight: 0,
     },
@@ -666,6 +639,49 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     selected: {},
+    loadMoreRow: {
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    loadMoreContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+      padding: theme.spacing(2, 0),
+      width: '100%',
+      overflow: 'hidden',
+      position: 'sticky',
+      left: 0,
+      right: 0,
+      backgroundColor: theme.palette.background.paper,
+      zIndex: 1,
+      maxWidth: '100vw',
+      margin: '0 auto',
+    },
+    loadMoreInner: {
+      position: 'relative',
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+    },
+    loadMoreGradientLeft: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      bottom: 0,
+      width: theme.spacing(12),
+      background: `linear-gradient(to right, ${theme.palette.background.paper} 0%, rgba(255,255,255,0) 100%)`,
+      pointerEvents: 'none',
+    },
+    loadMoreGradientRight: {
+      position: 'absolute',
+      right: 0,
+      top: 0,
+      bottom: 0,
+      width: theme.spacing(12),
+      background: `linear-gradient(to left, ${theme.palette.background.paper} 0%, rgba(255,255,255,0) 100%)`,
+      pointerEvents: 'none',
+    },
   })
 );
 
@@ -921,6 +937,31 @@ export default function ResultsTable(props: ResultsTableProps) {
       requestedBuilding === '' ? [] : scenarioKeys
     );
     setFilters(nextFilters);
+    setFilterRanges(prev => {
+      const expandRange = (
+        current: {min: number; max: number},
+        active: {min: number; max: number}
+      ) => ({
+        min: Math.min(current.min, active.min),
+        max: Math.max(current.max, active.max),
+      });
+
+      return {
+        costRange: expandRange(computedFilterRanges.costRange, nextFilters.cost),
+        thermalDiscomfortRange: expandRange(
+          computedFilterRanges.thermalDiscomfortRange,
+          nextFilters.thermalDiscomfort
+        ),
+        aqDiscomfortRange: expandRange(
+          computedFilterRanges.aqDiscomfortRange,
+          nextFilters.aqDiscomfort
+        ),
+        energyRange: expandRange(
+          computedFilterRanges.energyRange,
+          nextFilters.energy
+        ),
+      };
+    });
     filtersInitialized.current = true;
     onFiltersChange?.({buildingTypeName: requestedBuilding, filters: nextFilters});
   };
@@ -1079,9 +1120,6 @@ export default function ResultsTable(props: ResultsTableProps) {
           showDownloadButton={enableSelection && showDownloadButton}
           onDownloadSelected={downloadResultsToCSV}
           downloadDisabled={selectedIds.length === 0}
-          hasMoreResults={hasMoreResults}
-          onLoadMoreResults={onLoadMoreResults}
-          isLoadingMoreResults={isLoadingMoreResults}
         />
         {displayFilters && (
           <FilterToolbar
@@ -1294,6 +1332,30 @@ export default function ResultsTable(props: ResultsTableProps) {
                   </TableRow>
                 );
               })}
+              {hasMoreResults && (
+                <TableRow hover={false} className={classes.loadMoreRow}>
+                  <TableCell
+                    style={{padding: 0, borderBottom: 'none'}}
+                    colSpan={columnCount}
+                    align="center"
+                  >
+                    <div className={classes.loadMoreContainer}>
+                      <div className={classes.loadMoreInner}>
+                        <div className={classes.loadMoreGradientLeft} />
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          onClick={onLoadMoreResults}
+                          disabled={isLoadingMoreResults}
+                        >
+                          {isLoadingMoreResults ? 'Loading...' : 'Load more results'}
+                        </Button>
+                        <div className={classes.loadMoreGradientRight} />
+                      </div>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
