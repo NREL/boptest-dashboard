@@ -145,7 +145,7 @@ export async function getSharedResultByUid(uid: string): Promise<Result | null> 
 
   const result = hydrated[0];
   const shareAll = result.account.shareAllResults;
-  const canShare = shareAll === true || (shareAll !== false && result.isShared);
+  const canShare = shareAll === true || result.isShared;
   if (!canShare) {
     return null;
   }

@@ -170,7 +170,9 @@ export const KPITable: React.FC<KPITableProps> = props => {
   return (
     <div className={classes.kpiTable}>
       <div className={classes.kpiTitleLine}>
-        <Typography variant="subtitle1">Key Performance Indicators</Typography>
+        <Typography variant="subtitle1">
+          {'Key Performance Indicators'.toUpperCase()}
+        </Typography>
         <Typography variant="body2" color="textSecondary">
           Comparison sample: {details.numResults}
         </Typography>

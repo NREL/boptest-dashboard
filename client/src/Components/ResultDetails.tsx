@@ -1,11 +1,13 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
-import {Button} from '@material-ui/core';
+import {Button, Menu, MenuItem, ListItemIcon, ListItemText} from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
 import {KPITable} from './KPITable';
 import {ResultInfoTable} from './ResultInfoTable';
 import {Result} from '../../common/interfaces';
+import ShareIcon from '@material-ui/icons/Share';
+import FileCopyIcon from '@material-ui/icons/FileCopy';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -40,6 +42,9 @@ interface ResultDetailsProps {
 export const ResultDetails: React.FC<ResultDetailsProps> = props => {
   const classes = useStyles();
   const canShare = props.result.isShared === true;
+  const [shareAnchor, setShareAnchor] = React.useState<null | HTMLElement>(null);
+  const canUseWebShare =
+    typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
   const copyLinkToClipboard = () => {
     const {origin} = window.location;
@@ -49,21 +54,86 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
     });
   };
 
+  const getShareUrl = () => {
+    const {origin} = window.location;
+    return `${origin}/result/${props.result.uid}`;
+  };
+
+  const openShareMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setShareAnchor(event.currentTarget);
+  };
+
+  const closeShareMenu = () => {
+    setShareAnchor(null);
+  };
+
+  const handleNativeShare = async () => {
+    closeShareMenu();
+    if (!canUseWebShare) {
+      return;
+    }
+
+    const shareUrl = getShareUrl();
+    try {
+      await navigator.share({
+        title: 'BOPTEST Result',
+        text: `Check out this BOPTEST result for ${props.result.buildingTypeName}`,
+        url: shareUrl,
+      });
+    } catch (error) {
+      // ignore if the user cancels or sharing fails
+    }
+  };
+
+  const handleCopyShareLink = () => {
+    closeShareMenu();
+    copyLinkToClipboard();
+  };
+
   return (
     <div className={classes.root}>
       <div className={classes.headerRow}>
         <div className={classes.headerText}>
           <Typography variant="h6" noWrap>
-            Testcase: {props.result.buildingTypeName}
+            {`TESTCASE: ${props.result.buildingTypeName}`}
           </Typography>
           <Typography variant="body2" className={classes.subheading} noWrap>
             Result ID: {props.result.uid}
           </Typography>
         </div>
         {canShare && (
-          <Button size="small" variant="outlined" color="primary" onClick={copyLinkToClipboard}>
-            Copy Result Link
-          </Button>
+          <>
+            <Button
+              size="small"
+              variant="outlined"
+              color="primary"
+              startIcon={<ShareIcon />}
+              onClick={openShareMenu}
+            >
+              Share
+            </Button>
+            <Menu
+              anchorEl={shareAnchor}
+              keepMounted
+              open={Boolean(shareAnchor)}
+              onClose={closeShareMenu}
+            >
+              {canUseWebShare && (
+                <MenuItem onClick={handleNativeShare}>
+                  <ListItemIcon>
+                    <ShareIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary="Share with device" />
+                </MenuItem>
+              )}
+              <MenuItem onClick={handleCopyShareLink}>
+                <ListItemIcon>
+                  <FileCopyIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Copy link" />
+              </MenuItem>
+            </Menu>
+          </>
         )}
       </div>
       <div className={classes.content}>

@@ -148,12 +148,20 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
     <TableContainer className={classes.tableContainer}>
       <Table size="small">
         <TableBody>
-          {sections.map(section => (
+          {sections.map((section, index) => (
             <React.Fragment key={section.title}>
               {section.rows.length > 0 && (
                 <TableRow>
-                  <TableCell colSpan={2} className={classes.labelCell}>
-                    <Typography variant="subtitle2" className={classes.sectionHeader}>
+                  <TableCell
+                    colSpan={2}
+                    className={classes.labelCell}
+                    style={index === 0 ? {paddingTop: 0} : undefined}
+                  >
+                    <Typography
+                      variant="subtitle2"
+                      className={classes.sectionHeader}
+                      style={index === 0 ? {paddingTop: 0} : undefined}
+                    >
                       {section.title.toUpperCase()}
                     </Typography>
                   </TableCell>
