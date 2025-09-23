@@ -24,17 +24,29 @@ const endpoint = '/api/results';
 export const ResultsQuickView: React.FC = () => {
   const classes = useStyles();
 
-  const [results, setResults] = useState([]);
-  const [rows, setRows] = useState([]);
+  const [results, setResults] = useState<
+    Array<{dateRun: string; buildingType: {name: string}; energyUse: number}>
+  >([]);
+  const [rows, setRows] = useState<Array<{buildingType: string; energyUse: number}>>([]);
 
   // build out simple data fetcher straight in the useEffect for now
   useEffect(() => {
-    axios.get(endpoint).then(response => {
-      const sortedData = response.data.sort((a, b) => {
-        new Date(a.dateRun).getTime() - new Date(b.dateRun).getTime();
+    axios
+      .get(endpoint, {params: {limit: 10}})
+      .then(response => {
+        const payload = response.data as {
+          results: Array<{dateRun: string; buildingType: {name: string}; energyUse: number}>;
+        };
+
+        const sortedData = [...(payload.results || [])].sort(
+          (a, b) =>
+            new Date(b.dateRun).getTime() - new Date(a.dateRun).getTime()
+        );
+        setResults(sortedData);
+      })
+      .catch(err => {
+        console.error('Unable to load quick view results', err);
       });
-      setResults(sortedData);
-    });
   }, []);
 
   // this one fires each time new results are fetched to create our table rows
@@ -42,7 +54,8 @@ export const ResultsQuickView: React.FC = () => {
     if (!results) return;
 
     const newRowSet = results.map(result => {
-      return createData(result.buildingType.name, result.energyUse);
+      const buildingName = result.buildingType?.name || result.buildingType?.uid || 'Unknown Building';
+      return createData(buildingName, result.energyUse);
     });
 
     setRows(newRowSet);

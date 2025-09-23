@@ -1,15 +1,9 @@
 import {
   SignatureDetails,
   Result,
-  Scenario,
-  Scenarios,
   Account,
   BuildingType,
 } from '../../common/interfaces';
-import {
-  getBuildingTypeByUid,
-  findBuildingTypesByIds,
-} from '../models/BuildingType';
 import {
   findAccountById,
   findAccountsByIds,
@@ -23,6 +17,8 @@ import {
   findResultByUid,
   replaceResult,
   ResultDocument,
+  querySharedResultDocuments,
+  SharedResultQueryOptions,
 } from '../models/Result';
 import {upsertResultFacet} from '../models/ResultFacet';
 import {DocumentRecord, JsonObject} from '../datastore/documentStore';
@@ -48,19 +44,18 @@ function sanitizeAccountForResult(account: Account): Account {
   };
 }
 
-function sanitizeBuildingType(buildingType: BuildingType): BuildingType {
-  return {
-    ...buildingType,
-    results: [],
-  };
-}
-
 function toResult(
   record: DocumentRecord<ResultDocument>,
-  account: Account,
-  buildingType: BuildingType
+  account: Account
 ): Result {
   const data = record.data;
+  const buildingType: BuildingType = {
+    uid: data.buildingTypeUid || 'unknown-building',
+    name:
+      data.buildingTypeName ||
+      data.buildingTypeUid ||
+      'Unknown Building',
+  };
   return {
     id: record.numericId,
     uid: data.uid,
@@ -85,7 +80,7 @@ function toResult(
     forecastParameters: jsonObjectToPlain(data.forecastParameters),
     scenario: jsonObjectToPlain(data.scenario),
     account: sanitizeAccountForResult(account),
-    buildingType: sanitizeBuildingType(buildingType),
+    buildingType,
   };
 }
 
@@ -97,15 +92,10 @@ async function hydrateResults(
   }
 
   const accountIds = Array.from(new Set(records.map(r => r.data.accountId)));
-  const buildingIds = Array.from(new Set(records.map(r => r.data.buildingTypeId)));
 
-  const [accounts, buildingTypes] = await Promise.all([
-    findAccountsByIds(accountIds),
-    findBuildingTypesByIds(buildingIds),
-  ]);
+  const accounts = await findAccountsByIds(accountIds);
 
   const accountMap = new Map(accounts.map(account => [account.id, account]));
-  const buildingMap = new Map(buildingTypes.map(bt => [bt.id, bt]));
 
   const hydrated: Result[] = [];
 
@@ -118,15 +108,7 @@ async function hydrateResults(
       return;
     }
 
-    const buildingType = buildingMap.get(record.data.buildingTypeId);
-    if (!buildingType) {
-      console.warn(
-        `Skipping result ${record.data.uid}: missing building type ${record.data.buildingTypeId}`
-      );
-      return;
-    }
-
-    hydrated.push(toResult(record, account, buildingType));
+    hydrated.push(toResult(record, account));
   });
 
   return hydrated;
@@ -161,16 +143,10 @@ function sanitizeSharedResult(result: Result): Result {
   delete account.results;
   delete account.id;
 
-  const buildingType: any = {...result.buildingType};
-  delete buildingType.results;
-  delete buildingType.markdown;
-  delete buildingType.markdownURL;
-  delete buildingType.pdfURL;
-
   return {
     ...result,
     account: account as Account,
-    buildingType: buildingType as BuildingType,
+    buildingType: result.buildingType,
   };
 }
 
@@ -196,6 +172,30 @@ export async function getAllSharedResults(): Promise<Result[]> {
   return filtered.map(sanitizeSharedResult);
 }
 
+export interface SharedResultsPage {
+  results: Result[];
+  pageInfo: {
+    hasNext: boolean;
+    nextCursor: number | null;
+  };
+}
+
+export async function getSharedResultsPage(
+  options: SharedResultQueryOptions
+): Promise<SharedResultsPage> {
+  const {records, hasNext, nextCursor} = await querySharedResultDocuments(options);
+  const hydrated = await hydrateResults(records);
+  const sanitized = hydrated.map(sanitizeSharedResult);
+
+  return {
+    results: sanitized,
+    pageInfo: {
+      hasNext,
+      nextCursor,
+    },
+  };
+}
+
 export async function getAllResultsForUser(userId: string): Promise<Result[]> {
   const accountId = parseInt(userId, 10);
   if (Number.isNaN(accountId)) {
@@ -213,25 +213,12 @@ export async function getAllResultsForUser(userId: string): Promise<Result[]> {
   return hydrateResults(active);
 }
 
-function validateScenario(
-  buildingType: BuildingType,
-  scenario: Scenario,
-  resultUid: string
-): void {
-  const buildingScenarios: Scenarios = {...(buildingType.scenarios as any)};
-  const scenarioCopy: Scenario = {...scenario};
-
-  for (const key in scenarioCopy) {
-    if (!buildingScenarios[key] || !buildingScenarios[key].includes(scenarioCopy[key])) {
-      throw {
-        message: `Invalid Data: Result (${resultUid}) tried to use scenario type: "${key}" with value: "${scenarioCopy[key]}" for building type: "${buildingType.name}"`,
-        data: scenario,
-      };
-    }
-  }
-}
-
-function buildResultDocument(result: any, account: Account, buildingType: BuildingType): ResultDocument {
+function buildResultDocument(
+  result: any,
+  account: Account,
+  buildingTypeUid: string,
+  buildingTypeName: string
+): ResultDocument {
   return {
     uid: result.uid,
     deleted: false,
@@ -255,17 +242,19 @@ function buildResultDocument(result: any, account: Account, buildingType: Buildi
     forecastParameters: toJsonObject(result.forecastParameters),
     scenario: toJsonObject(result.scenario),
     accountId: account.id,
-    buildingTypeId: buildingType.id,
+    buildingTypeUid,
+    buildingTypeName,
   };
 }
 
 async function createResultAndAssociatedModels(result: any) {
   const account = await getAccountByAPIKey(result.account.apiKey);
-  const buildingType = await getBuildingTypeByUid(result.buildingType.uid);
+  const buildingTypeUid = String(result.buildingType?.uid ?? 'unknown');
+  const buildingTypeName = String(
+    result.buildingType?.name ?? result.buildingType?.uid ?? 'Unknown Building'
+  );
 
-  validateScenario(buildingType, result.scenario, result.uid);
-
-  const document = buildResultDocument(result, account, buildingType);
+  const document = buildResultDocument(result, account, buildingTypeUid, buildingTypeName);
   await createResult(document);
 
   const scenarioValues: Record<string, string[]> = {};
@@ -285,8 +274,8 @@ async function createResultAndAssociatedModels(result: any) {
   }
 
   await upsertResultFacet(
-    buildingType.uid,
-    buildingType.name,
+    buildingTypeUid,
+    buildingTypeName,
     scenarioValues,
     Array.isArray(result.tags) ? result.tags.map((tag: any) => String(tag)) : []
   );

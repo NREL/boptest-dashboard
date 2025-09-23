@@ -5,7 +5,6 @@ import {createStyles, makeStyles} from '@material-ui/core/styles';
 import {About} from './Pages/About';
 import {ApiKey} from './Pages/ApiKey';
 import {Dashboard} from './Pages/Dashboard';
-import {Doc} from './Pages/Doc';
 import {Home} from './Pages/Home';
 import {Results} from './Pages/Results';
 import {Settings} from './Pages/Settings';

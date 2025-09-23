@@ -42,14 +42,8 @@ export interface SignatureDetails {
 }
 
 export interface BuildingType {
-  id: number;
   uid: string;
   name: string;
-  markdown: string | null;
-  markdownURL: string;
-  pdfURL: string;
-  results: Result[];
-  scenarios: Record<string, any>;
 }
 
 export interface Account {

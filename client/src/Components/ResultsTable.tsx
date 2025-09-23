@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import axios from 'axios';
 import {
   createStyles,
@@ -44,6 +44,35 @@ import {
   setupFilters,
   stableSort,
 } from '../Lib/TableHelpers';
+
+const emptyFilterRanges: FilterRanges = {
+  costRange: {min: 0, max: 0},
+  thermalDiscomfortRange: {min: 0, max: 0},
+  aqDiscomfortRange: {min: 0, max: 0},
+  energyRange: {min: 0, max: 0},
+};
+
+const clampRange = (
+  range: {min: number; max: number},
+  limits: {min: number; max: number}
+): {min: number; max: number} => {
+  const clampedMin = Math.min(Math.max(range.min, limits.min), limits.max);
+  const clampedMax = Math.min(Math.max(range.max, limits.min), limits.max);
+  return {min: clampedMin, max: clampedMax};
+};
+
+const clampFiltersToRanges = (values: FilterValues, ranges: FilterRanges): FilterValues => {
+  return {
+    ...values,
+    cost: clampRange(values.cost, ranges.costRange),
+    thermalDiscomfort: clampRange(
+      values.thermalDiscomfort,
+      ranges.thermalDiscomfortRange
+    ),
+    aqDiscomfort: clampRange(values.aqDiscomfort, ranges.aqDiscomfortRange),
+    energy: clampRange(values.energy, ranges.energyRange),
+  };
+};
 
 const baseHeadCells: HeadCell[] = [
   {
@@ -588,6 +617,8 @@ interface ResultsTableProps {
   enableShareToggle?: boolean;
   onShareToggleComplete?: () => void;
   showDownloadButton?: boolean;
+  isLoading?: boolean;
+  onFiltersChange?: (payload: {buildingTypeName: string; filters: FilterValues}) => void;
 }
 
 export default function ResultsTable(props: ResultsTableProps) {
@@ -599,6 +630,8 @@ export default function ResultsTable(props: ResultsTableProps) {
     enableShareToggle = false,
     onShareToggleComplete,
     showDownloadButton = false,
+    isLoading = false,
+    onFiltersChange,
   } = props;
 
   const {csrfToken} = useUser();
@@ -611,56 +644,182 @@ export default function ResultsTable(props: ResultsTableProps) {
   const [order, setOrder] = useState<Order>('asc');
   const [orderBy, setOrderBy] = useState<keyof Data>('dateRun');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [rows, setRows] = useState<Data[]>([]);
-  const [filteredRows, setFilteredRows] = useState<Data[]>([]);
-  const [buildingScenarios, setBuildingScenarios] = useState<BuildingScenarios>({});
-  const [filterRanges, setFilterRanges] = useState<FilterRanges | any>({});
   const [displayFilters, setDisplayFilters] = useState(false);
   const [buildingTypeFilter, setBuildingTypeFilter] = useState<string>('');
-  const [filters, setFilters] = useState<FilterValues | any>({});
-  const [tagOptions, setTagOptions] = useState<string[]>([]);
+  const [scenarioOptions, setScenarioOptions] = useState<Record<string, string[]>>({});
+  const filtersInitialized = useRef(false);
+  const [filters, setFilters] = useState<FilterValues>(() =>
+    setupFilters(emptyFilterRanges, [])
+  );
+  const [filterRanges, setFilterRanges] = useState<FilterRanges>(emptyFilterRanges);
+
+  const rows = useMemo(() => createRows(results), [results]);
+  const buildingScenarios = useMemo(() => getBuildingScenarios(buildingFacets), [buildingFacets]);
+  const computedFilterRanges = useMemo(() => getFilterRanges(rows), [rows]);
+  const filteredRows = useMemo(() => {
+    if (onFiltersChange) {
+      return rows;
+    }
+    return filterRows(rows, buildingTypeFilter, filters);
+  }, [onFiltersChange, rows, buildingTypeFilter, filters]);
+  const fallbackTagOptions = useMemo(() => createTagOptions(filteredRows), [filteredRows]);
+  const tagOptions = useMemo(() => {
+    if (!onFiltersChange) {
+      return fallbackTagOptions;
+    }
+
+    if (buildingTypeFilter) {
+      const facet = buildingFacets.find(
+        item => item.buildingTypeName === buildingTypeFilter
+      );
+      if (facet?.tags?.length) {
+        const store = new Map<string, string>();
+        facet.tags.forEach(tag => {
+          if (typeof tag !== 'string') {
+            return;
+          }
+          const normalized = tag.trim();
+          if (!normalized) {
+            return;
+          }
+          const key = normalized.toLowerCase();
+          if (!store.has(key)) {
+            store.set(key, normalized);
+          }
+        });
+        return Array.from(store.values()).sort((a, b) =>
+          a.localeCompare(b, undefined, {sensitivity: 'base'})
+        );
+      }
+      return [];
+    }
+
+    const store = new Map<string, string>();
+    buildingFacets.forEach(facet => {
+      (facet.tags || []).forEach(tag => {
+        if (typeof tag !== 'string') {
+          return;
+        }
+        const normalized = tag.trim();
+        if (!normalized) {
+          return;
+        }
+        const key = normalized.toLowerCase();
+        if (!store.has(key)) {
+          store.set(key, normalized);
+        }
+      });
+    });
+    return Array.from(store.values()).sort((a, b) =>
+      a.localeCompare(b, undefined, {sensitivity: 'base'})
+    );
+  }, [onFiltersChange, fallbackTagOptions, buildingFacets, buildingTypeFilter]);
 
   useEffect(() => {
-    const allRows = createRows(results);
-    setRows(allRows);
-    setFilteredRows(allRows);
-    setBuildingScenarios(getBuildingScenarios(buildingFacets));
-    setSelectedIds([]);
-  }, [results, buildingFacets]);
+    setFilterRanges(computedFilterRanges);
+    const nextScenarioOptions: Record<string, string[]> = {};
+
+    if (!onFiltersChange) {
+      if (!filtersInitialized.current && rows.length > 0) {
+        const scenarioKeys = buildingTypeFilter
+          ? Object.keys(buildingScenarios[buildingTypeFilter] || {})
+          : [];
+        setFilters(setupFilters(computedFilterRanges, scenarioKeys));
+        filtersInitialized.current = true;
+      }
+    } else {
+      const addScenarioValue = (bucket: Map<string, string>, value: unknown) => {
+        if (typeof value !== 'string') {
+          return;
+        }
+        const normalized = value.trim();
+        if (!normalized) {
+          return;
+        }
+        const key = normalized.toLowerCase();
+        if (!bucket.has(key)) {
+          bucket.set(key, normalized);
+        }
+      };
+
+      if (buildingTypeFilter) {
+        const facet = buildingFacets.find(
+          item => item.buildingTypeName === buildingTypeFilter
+        );
+        if (facet && facet.scenario) {
+          Object.entries(facet.scenario).forEach(([key, values]) => {
+            const bucket = new Map<string, string>();
+            values.forEach(value => addScenarioValue(bucket, value));
+            nextScenarioOptions[key] = Array.from(bucket.values()).sort((a, b) =>
+              a.localeCompare(b, undefined, {sensitivity: 'base'})
+            );
+          });
+        }
+      } else {
+        const scenarioBuckets: Record<string, Map<string, string>> = {};
+        buildingFacets.forEach(facet => {
+          Object.entries(facet.scenario || {}).forEach(([key, values]) => {
+            if (!scenarioBuckets[key]) {
+              scenarioBuckets[key] = new Map<string, string>();
+            }
+            values.forEach(value => addScenarioValue(scenarioBuckets[key], value));
+          });
+        });
+        Object.entries(scenarioBuckets).forEach(([key, bucket]) => {
+          nextScenarioOptions[key] = Array.from(bucket.values()).sort((a, b) =>
+            a.localeCompare(b, undefined, {sensitivity: 'base'})
+          );
+        });
+      }
+    }
+
+    setScenarioOptions(nextScenarioOptions);
+  }, [computedFilterRanges, rows.length, buildingTypeFilter, buildingScenarios, buildingFacets, onFiltersChange]);
 
   useEffect(() => {
-    setFilterRanges(getFilterRanges(rows));
-  }, [rows]);
-
-  useEffect(() => {
-    setFilters(setupFilters(filterRanges as FilterRanges, []));
+    setFilters(prev => {
+      const clamped = clampFiltersToRanges(prev, filterRanges);
+      const rangesMatch =
+        prev.cost.min === clamped.cost.min &&
+        prev.cost.max === clamped.cost.max &&
+        prev.energy.min === clamped.energy.min &&
+        prev.energy.max === clamped.energy.max &&
+        prev.thermalDiscomfort.min === clamped.thermalDiscomfort.min &&
+        prev.thermalDiscomfort.max === clamped.thermalDiscomfort.max &&
+        prev.aqDiscomfort.min === clamped.aqDiscomfort.min &&
+        prev.aqDiscomfort.max === clamped.aqDiscomfort.max;
+      if (rangesMatch) {
+        return prev;
+      }
+      return clamped;
+    });
   }, [filterRanges]);
 
   useEffect(() => {
-    if (buildingTypeFilter === '') {
-      setDisplayFilters(false);
-      setFilters(setupFilters(filterRanges as FilterRanges, []));
-    } else {
-      setDisplayFilters(true);
-      const scenarioKeys = Object.keys(buildingScenarios[buildingTypeFilter] || {});
-      setFilters(setupFilters(filterRanges as FilterRanges, scenarioKeys));
-    }
-  }, [buildingTypeFilter, buildingScenarios, filterRanges]);
-
-  useEffect(() => {
-    setFilteredRows(filterRows(rows, buildingTypeFilter, filters as FilterValues));
-  }, [filters, rows, buildingTypeFilter]);
-
-  useEffect(() => {
-    setTagOptions(createTagOptions(filteredRows));
+    setSelectedIds([]);
   }, [filteredRows]);
 
   const handleUpdateFilters = (requestedFilters: FilterValues) => {
     setFilters(requestedFilters);
+    filtersInitialized.current = true;
+    onFiltersChange?.({buildingTypeName: buildingTypeFilter, filters: requestedFilters});
   };
 
   const handleUpdateBuildingFilter = (requestedBuilding: string) => {
     setBuildingTypeFilter(requestedBuilding);
+    const scenarioKeys = Object.keys(buildingScenarios[requestedBuilding] || {});
+    if (requestedBuilding === '') {
+      setDisplayFilters(false);
+    } else {
+      setDisplayFilters(true);
+    }
+    const nextFilters = setupFilters(
+      computedFilterRanges,
+      requestedBuilding === '' ? [] : scenarioKeys
+    );
+    setFilters(nextFilters);
+    filtersInitialized.current = true;
+    onFiltersChange?.({buildingTypeName: requestedBuilding, filters: nextFilters});
   };
 
   const handleRequestSort = (
@@ -738,8 +897,8 @@ export default function ResultsTable(props: ResultsTableProps) {
   };
 
   const selectedRows = useMemo(
-    () => rows.filter(row => selectedIds.includes(row.id)),
-    [rows, selectedIds]
+    () => filteredRows.filter(row => selectedIds.includes(row.id)),
+    [filteredRows, selectedIds]
   );
 
   const downloadResultsToCSV = () => {
@@ -797,6 +956,8 @@ export default function ResultsTable(props: ResultsTableProps) {
 
   const tableRows = stableSort(filteredRows, getComparator(order, orderBy));
   const includeShareColumn = enableShareToggle;
+  const headCells = buildHeadCells(includeShareColumn);
+  const columnCount = headCells.length + (enableSelection ? 1 : 0);
   const displayClear = buildingTypeFilter !== '';
 
   return (
@@ -819,13 +980,15 @@ export default function ResultsTable(props: ResultsTableProps) {
         {displayFilters && (
           <FilterToolbar
             scenarioOptions={
-              buildingTypeFilter
-                ? (buildingScenarios[buildingTypeFilter] as Record<string, string[]>)
-                : undefined
+              onFiltersChange
+                ? (Object.keys(scenarioOptions).length > 0 ? scenarioOptions : undefined)
+                : buildingTypeFilter
+                    ? (buildingScenarios[buildingTypeFilter] as Record<string, string[]>)
+                    : undefined
             }
             tagOptions={tagOptions}
-            filterRanges={filterRanges as FilterRanges}
-            filterValues={filters as FilterValues}
+            filterRanges={filterRanges}
+            filterValues={filters}
             updateFilters={handleUpdateFilters}
           />
         )}
@@ -852,6 +1015,20 @@ export default function ResultsTable(props: ResultsTableProps) {
               rowCount={filteredRows.length}
             />
             <TableBody>
+              {isLoading && tableRows.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={columnCount} align="center">
+                    Loading results...
+                  </TableCell>
+                </TableRow>
+              )}
+              {!isLoading && tableRows.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={columnCount} align="center">
+                    No results available.
+                  </TableCell>
+                </TableRow>
+              )}
               {tableRows.map((row, index) => {
                 const isItemSelected = enableSelection ? isSelected(row.id) : false;
                 const labelId = `enhanced-table-checkbox-${index}`;

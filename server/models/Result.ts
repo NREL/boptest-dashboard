@@ -1,4 +1,5 @@
 import {DocumentRecord, JsonObject, JsonValue, getDocumentStore} from '../datastore/documentStore';
+import {listAccounts} from './Account';
 
 function toJsonValue(value: unknown): JsonValue {
   if (value === null) {
@@ -47,7 +48,8 @@ export interface ResultDocument {
   forecastParameters: JsonObject;
   scenario: JsonObject;
   accountId: number;
-  buildingTypeId: number;
+  buildingTypeUid: string;
+  buildingTypeName: string;
 }
 
 export type ResultData = Omit<ResultDocument, 'uid'> & { uid: string };
@@ -55,7 +57,16 @@ export type ResultData = Omit<ResultDocument, 'uid'> & { uid: string };
 const COLLECTION = 'results';
 
 function mapRecordToDocument(record: DocumentRecord<JsonObject>): ResultDocument {
-  const data = record.data as unknown as ResultDocument;
+  const raw = record.data as Record<string, any>;
+  const buildingTypeUid = typeof raw.buildingTypeUid === 'string' && raw.buildingTypeUid.length > 0
+    ? raw.buildingTypeUid
+    : raw.buildingTypeId !== undefined
+      ? String(raw.buildingTypeId)
+      : 'unknown-building';
+  const buildingTypeName = typeof raw.buildingTypeName === 'string' && raw.buildingTypeName.length > 0
+    ? raw.buildingTypeName
+    : buildingTypeUid;
+  const data = raw as ResultDocument;
   return {
     uid: data.uid,
     deleted: data.deleted,
@@ -79,7 +90,8 @@ function mapRecordToDocument(record: DocumentRecord<JsonObject>): ResultDocument
     forecastParameters: data.forecastParameters,
     scenario: data.scenario,
     accountId: data.accountId,
-    buildingTypeId: data.buildingTypeId,
+    buildingTypeUid,
+    buildingTypeName,
   };
 }
 
@@ -109,7 +121,9 @@ export async function createResult(data: ResultData): Promise<DocumentRecord<Res
     forecastParameters: toJsonValue(data.forecastParameters),
     scenario: toJsonValue(data.scenario),
     accountId: data.accountId,
-    buildingTypeId: data.buildingTypeId,
+    buildingTypeUid: data.buildingTypeUid ?? 'unknown-building',
+    buildingTypeName:
+      data.buildingTypeName ?? data.buildingTypeUid ?? 'Unknown Building',
   };
 
   const existing = await store.findOneByField<JsonObject>(COLLECTION, 'uid', data.uid);
@@ -171,7 +185,11 @@ export async function replaceResult(record: DocumentRecord<ResultDocument>): Pro
     forecastParameters: toJsonValue(record.data.forecastParameters),
     scenario: toJsonValue(record.data.scenario),
     accountId: record.data.accountId,
-    buildingTypeId: record.data.buildingTypeId,
+    buildingTypeUid: record.data.buildingTypeUid ?? 'unknown-building',
+    buildingTypeName:
+      record.data.buildingTypeName ??
+      record.data.buildingTypeUid ??
+      'Unknown Building',
   };
 
   const updated = await store.replace<JsonObject>(COLLECTION, record.docId, normalized);
@@ -179,4 +197,155 @@ export async function replaceResult(record: DocumentRecord<ResultDocument>): Pro
     throw new Error(`Result with docId ${record.docId} not found`);
   }
   return updated as unknown as DocumentRecord<ResultDocument>;
+}
+
+interface RangeFilter {
+  min?: number;
+  max?: number;
+}
+
+export interface SharedResultFilters {
+  buildingTypeUid?: string;
+  tags?: string[];
+  scenario?: Record<string, string>;
+  cost?: RangeFilter;
+  energy?: RangeFilter;
+  thermalDiscomfort?: RangeFilter;
+  aqDiscomfort?: RangeFilter;
+  emissions?: RangeFilter;
+}
+
+export interface SharedResultQueryOptions {
+  limit: number;
+  cursor?: number;
+  filters?: SharedResultFilters;
+  sortDirection?: 'asc' | 'desc';
+}
+
+interface QueryRow {
+  doc_id: string;
+  collection: string;
+  numeric_id: number | string;
+  data: ResultDocument;
+  created_at: string;
+  updated_at: string;
+}
+
+function mapQueryRowToRecord(row: QueryRow): DocumentRecord<ResultDocument> {
+  return {
+    docId: row.doc_id,
+    collection: row.collection,
+    numericId: typeof row.numeric_id === 'number' ? row.numeric_id : parseInt(row.numeric_id, 10),
+    data: row.data,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+  };
+}
+
+export interface SharedResultQueryOutput {
+  records: Array<DocumentRecord<ResultDocument>>;
+  nextCursor: number | null;
+  hasNext: boolean;
+}
+
+export async function querySharedResultDocuments(
+  options: SharedResultQueryOptions
+): Promise<SharedResultQueryOutput> {
+  const {limit, cursor, filters, sortDirection = 'desc'} = options;
+  const store = await getDocumentStore();
+  const pool = store.getPool();
+
+  const params: Array<number | string | number[]> = [];
+  const conditions: string[] = [`collection = 'results'`, `(data->>'deleted')::boolean = false`];
+
+  if (typeof cursor === 'number' && Number.isFinite(cursor)) {
+    params.push(cursor);
+    if (sortDirection === 'asc') {
+      conditions.push(`numeric_id > $${params.length}`);
+    } else {
+      conditions.push(`numeric_id < $${params.length}`);
+    }
+  }
+
+  if (filters?.buildingTypeUid) {
+    params.push(filters.buildingTypeUid);
+    conditions.push(`data->>'buildingTypeUid' = $${params.length}`);
+  }
+
+  if (filters?.tags && filters.tags.length > 0) {
+    params.push(JSON.stringify(filters.tags));
+    conditions.push(`(data->'tags') @> $${params.length}::jsonb`);
+  }
+
+  if (filters?.scenario) {
+    const scenarioEntries = Object.entries(filters.scenario)
+      .filter(([, value]) => value !== undefined && value !== null && value !== '')
+      .map(([key, value]) => [key, value as string]);
+    if (scenarioEntries.length > 0) {
+      const scenarioObject: Record<string, string> = {};
+      scenarioEntries.forEach(([key, value]) => {
+        scenarioObject[key] = value;
+      });
+      params.push(JSON.stringify(scenarioObject));
+      conditions.push(`(data->'scenario') @> $${params.length}::jsonb`);
+    }
+  }
+
+  const pushRange = (field: string, range?: RangeFilter) => {
+    if (!range) {
+      return;
+    }
+    if (range.min !== undefined && Number.isFinite(range.min)) {
+      params.push(range.min);
+      conditions.push(`COALESCE((data->>'${field}')::double precision, 0) >= $${params.length}`);
+    }
+    if (range.max !== undefined && Number.isFinite(range.max)) {
+      params.push(range.max);
+      conditions.push(`COALESCE((data->>'${field}')::double precision, 0) <= $${params.length}`);
+    }
+  };
+
+  pushRange('cost', filters?.cost);
+  pushRange('energyUse', filters?.energy);
+  pushRange('thermalDiscomfort', filters?.thermalDiscomfort);
+  pushRange('iaq', filters?.aqDiscomfort);
+  pushRange('emissions', filters?.emissions);
+
+  const accountIdsSharingAll = (await listAccounts())
+    .filter(account => account.shareAllResults === true)
+    .map(account => account.id);
+
+  if (accountIdsSharingAll.length > 0) {
+    params.push(accountIdsSharingAll);
+    const placeholder = `$${params.length}`;
+    conditions.push(
+      `((data->>'isShared')::boolean = true OR (data->>'accountId')::bigint = ANY(${placeholder}::bigint[]))`
+    );
+  } else {
+    conditions.push(`(data->>'isShared')::boolean = true`);
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  const safeLimit = Math.min(Math.max(limit || 0, 1), 100);
+  const orderDirection = sortDirection === 'asc' ? 'ASC' : 'DESC';
+  const sql = `
+    SELECT doc_id, collection, numeric_id, data, created_at, updated_at
+    FROM documents
+    ${whereClause}
+    ORDER BY numeric_id ${orderDirection}
+    LIMIT ${safeLimit + 1}
+  `;
+
+  const {rows} = await pool.query(sql, params);
+  const mapped = rows.map(row => mapQueryRowToRecord(row as unknown as QueryRow));
+
+  const hasNext = mapped.length > safeLimit;
+  const trimmed = hasNext ? mapped.slice(0, safeLimit) : mapped;
+  const nextCursor = hasNext ? trimmed[trimmed.length - 1].numericId : null;
+
+  return {
+    records: trimmed,
+    nextCursor,
+    hasNext,
+  };
 }

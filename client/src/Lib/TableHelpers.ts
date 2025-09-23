@@ -41,7 +41,7 @@ export const createDataFromResult = (result: Result): Data => {
     uid: result.uid,
     isShared: result.isShared,
     accountUsername: result.account.displayName,
-    buildingTypeName: result.buildingType.name,
+    buildingTypeName: result.buildingType?.name || result.buildingType?.uid || 'Unknown Building',
     dateRun: result.dateRun,
     totalEnergy: result.energyUse,
     thermalDiscomfort: result.thermalDiscomfort,

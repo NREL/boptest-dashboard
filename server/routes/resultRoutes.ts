@@ -3,13 +3,14 @@ import express from 'express';
 
 import {
   getAllResultsForUser,
-  getAllSharedResults,
   getSharedResultByUid,
   getSignatureDetailsForResult,
   createResults,
   toggleShared,
+  getSharedResultsPage,
 } from '../controllers/result';
 import {listResultFacets} from '../models/ResultFacet';
+import {SharedResultFilters} from '../models/Result';
 import {authorizer} from './authRoutes';
 import {validateSessionCsrf} from '../utils/security';
 
@@ -19,12 +20,98 @@ type PrivilegedAccount = Account & {
 
 export const resultRouter = express.Router();
 
-resultRouter.get('/', (req: express.Request, res: express.Response) => {
-  getAllSharedResults()
-    .then(results => {
-      res.json(results);
-    })
-    .catch(err => console.log('Unable to get results' + err));
+resultRouter.get('/', async (req: express.Request, res: express.Response) => {
+  const {limit, cursor, sortDirection} = req.query;
+
+  const parsedLimit = typeof limit === 'string' ? parseInt(limit, 10) : undefined;
+  const parsedCursor = typeof cursor === 'string' ? parseInt(cursor, 10) : undefined;
+
+  const filters: SharedResultFilters = {};
+
+  const parseNumber = (value: unknown): number | undefined => {
+    if (typeof value !== 'string') {
+      return undefined;
+    }
+    const parsed = parseFloat(value);
+    return Number.isNaN(parsed) ? undefined : parsed;
+  };
+
+  if (typeof req.query.buildingTypeUid === 'string' && req.query.buildingTypeUid.trim().length > 0) {
+    filters.buildingTypeUid = req.query.buildingTypeUid.trim();
+  }
+
+  const tagsParam = req.query.tags;
+  if (typeof tagsParam === 'string') {
+    const parsedTags = tagsParam
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
+    if (parsedTags.length > 0) {
+      filters.tags = parsedTags;
+    }
+  } else if (Array.isArray(tagsParam)) {
+    const parsedTags = (tagsParam as unknown[])
+      .map(tag => (typeof tag === 'string' ? tag.trim() : ''))
+      .filter((tag): tag is string => tag.length > 0);
+    if (parsedTags.length > 0) {
+      filters.tags = parsedTags;
+    }
+  }
+
+  const scenarioFilters: Record<string, string> = {};
+  Object.entries(req.query).forEach(([key, value]) => {
+    if (key.startsWith('scenario.') && typeof value === 'string' && value.length > 0) {
+      const scenarioKey = key.substring('scenario.'.length);
+      if (scenarioKey.length > 0) {
+        scenarioFilters[scenarioKey] = value;
+      }
+    }
+  });
+  if (Object.keys(scenarioFilters).length > 0) {
+    filters.scenario = scenarioFilters;
+  }
+
+  const assignRange = (
+    targetKey: 'cost' | 'energy' | 'thermalDiscomfort' | 'aqDiscomfort' | 'emissions',
+    minKey: string,
+    maxKey: string
+  ) => {
+    const minValue = parseNumber(req.query[minKey]);
+    const maxValue = parseNumber(req.query[maxKey]);
+    if (minValue !== undefined || maxValue !== undefined) {
+      filters[targetKey] = {
+        ...(minValue !== undefined ? {min: minValue} : {}),
+        ...(maxValue !== undefined ? {max: maxValue} : {}),
+      };
+    }
+  };
+
+  assignRange('cost', 'costMin', 'costMax');
+  assignRange('energy', 'energyMin', 'energyMax');
+  assignRange('thermalDiscomfort', 'thermalDiscomfortMin', 'thermalDiscomfortMax');
+  assignRange('aqDiscomfort', 'aqDiscomfortMin', 'aqDiscomfortMax');
+  assignRange('emissions', 'emissionsMin', 'emissionsMax');
+
+  const sanitizedFilters = Object.values(filters).some(value => value !== undefined)
+    ? filters
+    : undefined;
+
+  try {
+    const page = await getSharedResultsPage({
+      limit: parsedLimit && !Number.isNaN(parsedLimit) ? parsedLimit : 25,
+      cursor: parsedCursor && !Number.isNaN(parsedCursor) ? parsedCursor : undefined,
+      filters: sanitizedFilters,
+      sortDirection:
+        typeof sortDirection === 'string' && sortDirection.toLowerCase() === 'asc'
+          ? 'asc'
+          : 'desc',
+    });
+
+    res.json(page);
+  } catch (err) {
+    console.log('Unable to get results', err);
+    res.status(500).json({error: 'Failed to load results'});
+  }
 });
 
 resultRouter.get('/my-results', authorizer, (req: express.Request, res: express.Response) => {

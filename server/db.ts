@@ -1,6 +1,5 @@
 import {getDocumentStore} from './datastore/documentStore';
 import {createAccounts, getAccountByAPIKey} from './controllers/account';
-import {createBuildingTypes} from './controllers/buildingTypes';
 import {createResults} from './controllers/result';
 
 interface SeedAccountConfig {
@@ -22,8 +21,6 @@ interface SeedAccountInfo {
 interface SeedBuildingType {
   uid: string;
   name: string;
-  markdownURL: string;
-  pdfURL: string;
   scenarios: {
     timePeriod: string[];
     electricityPrice: string[];
@@ -148,6 +145,7 @@ function generateSeedResults(
       scenario,
       buildingType: {
         uid: buildingType.uid,
+        name: buildingType.name,
       },
     });
   }
@@ -179,15 +177,10 @@ export async function seedTestData(apiKey: string): Promise<void> {
     );
   }
 
-  const readmeUrl =
-    'https://raw.githubusercontent.com/NREL/project1-boptest/master/README.md';
-
   const buildingTypes: SeedBuildingType[] = [
     {
       uid: 'buildingType-1',
       name: 'BIG building',
-      markdownURL: readmeUrl,
-      pdfURL: readmeUrl,
       scenarios: {
         timePeriod: ['cooling peak', 'heating peak'],
         electricityPrice: ['constant', 'dynamic', 'highly dynamic'],
@@ -197,8 +190,6 @@ export async function seedTestData(apiKey: string): Promise<void> {
     {
       uid: 'buildingType-2',
       name: 'small building',
-      markdownURL: readmeUrl,
-      pdfURL: readmeUrl,
       scenarios: {
         timePeriod: ['heating peak', 'heating typical'],
         electricityPrice: ['constant', 'dynamic'],
@@ -256,7 +247,6 @@ export async function seedTestData(apiKey: string): Promise<void> {
 
   await connectToDb();
   await createAccounts(accounts);
-  await createBuildingTypes(buildingTypes);
 
   const accountPool: SeedAccountInfo[] = seededAccounts
     .filter(account => account.apiKey !== userAccount.apiKey)

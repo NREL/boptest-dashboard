@@ -34,6 +34,8 @@ function generateUuid(): string {
 
 const SEQUENCE_NAME = 'documents_numeric_id_seq';
 const TABLE_NAME = 'documents';
+const RESULT_FACET_COLLECTION = 'resultFacets';
+const RESULT_FACET_UNIQUE_INDEX = 'documents_result_facets_building_uid_idx';
 
 async function runQueries(client: PoolClient, statements: string[]): Promise<void> {
   for (const statement of statements) {
@@ -46,12 +48,17 @@ export class DocumentStore {
 
   constructor(private readonly pool: Pool) {}
 
+  getPool(): Pool {
+    return this.pool;
+  }
+
   async init(): Promise<void> {
     if (this.initialized) {
       return;
     }
 
     const client = await this.pool.connect();
+    let initSucceeded = false;
 
     try {
       await client.query('BEGIN');
@@ -70,12 +77,17 @@ export class DocumentStore {
         `CREATE INDEX IF NOT EXISTS ${TABLE_NAME}_data_gin_idx ON ${TABLE_NAME} USING GIN (data);`
       ]);
       await client.query('COMMIT');
-      this.initialized = true;
+      initSucceeded = true;
     } catch (err) {
       await client.query('ROLLBACK');
       throw err;
     } finally {
       client.release();
+    }
+
+    if (initSucceeded) {
+      await this.ensureResultFacetIndex();
+      this.initialized = true;
     }
   }
 
@@ -83,6 +95,10 @@ export class DocumentStore {
     if (!this.initialized) {
       await this.init();
     }
+  }
+
+  private async ensureResultFacetIndex(): Promise<void> {
+    await ensureResultFacetIndexInternal(this.pool);
   }
 
   private mapRow<T>(row: Record<string, unknown>): DocumentRecord<T> {
@@ -235,6 +251,217 @@ export class DocumentStore {
     );
 
     return result.rows.map(row => this.mapRow<T>(row as Record<string, unknown>));
+  }
+}
+
+function unionStrings(existing: string[] = [], incoming: string[] = []): string[] {
+  const set = new Set<string>(existing.filter(value => value !== undefined && value !== null).map(String));
+  for (const value of incoming || []) {
+    if (value !== null && value !== undefined) {
+      set.add(String(value));
+    }
+  }
+  return Array.from(set).sort();
+}
+
+function mergeScenario(
+  existing: Record<string, string[]> = {},
+  incoming: Record<string, string[]>
+): Record<string, string[]> {
+  const merged: Record<string, string[]> = {...existing};
+  for (const key of Object.keys(incoming || {})) {
+    merged[key] = unionStrings(existing?.[key], incoming[key]);
+  }
+  return merged;
+}
+
+function normalizeScenario(value: unknown): Record<string, string[]> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+
+  const scenario = value as Record<string, unknown>;
+  const normalized: Record<string, string[]> = {};
+  for (const key of Object.keys(scenario)) {
+    const scenarioValue = scenario[key];
+    if (Array.isArray(scenarioValue)) {
+      normalized[key] = scenarioValue
+        .filter(item => item !== undefined && item !== null)
+        .map(item => String(item));
+    } else if (scenarioValue !== undefined && scenarioValue !== null) {
+      normalized[key] = [String(scenarioValue)];
+    }
+  }
+  return normalized;
+}
+
+function normalizeTags(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter(item => item !== undefined && item !== null)
+    .map(item => String(item));
+}
+
+interface ResultFacetRow {
+  docId: string;
+  buildingTypeUid: string;
+  buildingTypeName?: string;
+  scenario: Record<string, string[]>;
+  tags: string[];
+  updatedAt: Date;
+}
+
+function toResultFacetRow(row: any): ResultFacetRow | null {
+  const docId = row.docId as string | undefined;
+  const data = row.data as Record<string, unknown> | undefined;
+  if (!docId || !data) {
+    return null;
+  }
+
+  const buildingTypeUid = String(data.buildingTypeUid ?? '');
+  if (!buildingTypeUid) {
+    return null;
+  }
+
+  return {
+    docId,
+    buildingTypeUid,
+    buildingTypeName: typeof data.buildingTypeName === 'string' ? data.buildingTypeName : undefined,
+    scenario: normalizeScenario(data.scenario),
+    tags: normalizeTags(data.tags),
+    updatedAt: new Date(row.updatedAt ?? row.updated_at ?? new Date()),
+  };
+}
+
+function mergeFacetRows(rows: ResultFacetRow[]): {primary: ResultFacetRow; document: ResultFacetRow} {
+  const [primary, ...rest] = rows.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+  let mergedScenario = mergeScenario({}, normalizeScenario(primary.scenario));
+  let mergedTags = unionStrings([], normalizeTags(primary.tags));
+  let buildingTypeName = primary.buildingTypeName;
+
+  for (const row of rest) {
+    mergedScenario = mergeScenario(mergedScenario, row.scenario);
+    mergedTags = unionStrings(mergedTags, row.tags);
+    if (!buildingTypeName && row.buildingTypeName) {
+      buildingTypeName = row.buildingTypeName;
+    }
+  }
+
+  const mergedDocument: ResultFacetRow = {
+    docId: primary.docId,
+    buildingTypeUid: primary.buildingTypeUid,
+    buildingTypeName: buildingTypeName ?? primary.buildingTypeUid,
+    scenario: mergedScenario,
+    tags: mergedTags,
+    updatedAt: primary.updatedAt,
+  };
+
+  return {primary, document: mergedDocument};
+}
+
+async function fetchDuplicateResultFacets(client: PoolClient): Promise<ResultFacetRow[][]> {
+  const result = await client.query(
+    `SELECT
+        data->>'buildingTypeUid' AS "buildingTypeUid",
+        jsonb_agg(
+          jsonb_build_object(
+            'docId', doc_id,
+            'data', data,
+            'updatedAt', updated_at
+          )
+          ORDER BY updated_at DESC
+        ) AS rows
+      FROM ${TABLE_NAME}
+      WHERE collection = $1
+        AND data ? 'buildingTypeUid'
+        AND data->>'buildingTypeUid' IS NOT NULL
+      GROUP BY data->>'buildingTypeUid'
+      HAVING COUNT(*) > 1`,
+    [RESULT_FACET_COLLECTION]
+  );
+
+  const duplicates: ResultFacetRow[][] = [];
+  for (const row of result.rows) {
+    const jsonRows = row.rows as Array<Record<string, unknown>> | undefined;
+    if (!Array.isArray(jsonRows)) {
+      continue;
+    }
+
+    const facets = jsonRows
+      .map(toResultFacetRow)
+      .filter((facet): facet is ResultFacetRow => facet !== null);
+
+    if (facets.length > 1) {
+      duplicates.push(facets);
+    }
+  }
+
+  return duplicates;
+}
+
+async function deduplicateResultFacets(client: PoolClient): Promise<void> {
+  const duplicates = await fetchDuplicateResultFacets(client);
+  if (duplicates.length === 0) {
+    return;
+  }
+
+  await client.query('BEGIN');
+  try {
+    for (const group of duplicates) {
+      const {primary, document} = mergeFacetRows(group);
+
+      const mergedData = {
+        buildingTypeUid: document.buildingTypeUid,
+        buildingTypeName: document.buildingTypeName,
+        scenario: document.scenario,
+        tags: document.tags,
+      };
+
+      await client.query(
+        `UPDATE ${TABLE_NAME}
+           SET data = $2::jsonb,
+               updated_at = now()
+         WHERE doc_id = $1`,
+        [primary.docId, mergedData]
+      );
+
+      const duplicatesToDelete = group
+        .map(row => row.docId)
+        .filter(docId => docId !== primary.docId);
+
+      if (duplicatesToDelete.length > 0) {
+        await client.query(
+          `DELETE FROM ${TABLE_NAME}
+           WHERE doc_id = ANY($1::uuid[])`,
+          [duplicatesToDelete]
+        );
+      }
+    }
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  }
+}
+
+async function createResultFacetIndex(client: PoolClient): Promise<void> {
+  await client.query(
+    `CREATE UNIQUE INDEX IF NOT EXISTS ${RESULT_FACET_UNIQUE_INDEX}
+       ON ${TABLE_NAME} ((data->>'buildingTypeUid'))
+       WHERE collection = '${RESULT_FACET_COLLECTION}';`
+  );
+}
+
+async function ensureResultFacetIndexInternal(pool: Pool): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await deduplicateResultFacets(client);
+    await createResultFacetIndex(client);
+  } finally {
+    client.release();
   }
 }
 

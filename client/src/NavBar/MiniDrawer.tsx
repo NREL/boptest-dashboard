@@ -90,8 +90,6 @@ const getTitleFromPath = (path: string): string => {
       return Title.ApiKey;
     case AppRoute.Dashboard:
       return Title.Dashboard;
-    case AppRoute.Docs:
-      return Title.Docs;
     case AppRoute.Results:
       return Title.Results;
     case AppRoute.Settings:
