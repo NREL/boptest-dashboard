@@ -323,33 +323,30 @@ export const Results: React.FC = () => {
         request.tags = payload.filters.tags;
       }
 
-      const includeRanges = payload.buildingTypeName && payload.buildingTypeName.length > 0;
-      if (includeRanges) {
-        const assignRange = (
-          range: {min: number; max: number} | undefined,
-          minKey: keyof ResultFilterRequest,
-          maxKey: keyof ResultFilterRequest
-        ) => {
-          if (!range) {
-            return;
-          }
-          if (range.min !== undefined && range.min !== null) {
-            request[minKey] = range.min;
-          }
-          if (range.max !== undefined && range.max !== null) {
-            request[maxKey] = range.max;
-          }
-        };
+      const assignRange = (
+        range: {min: number; max: number} | undefined,
+        minKey: keyof ResultFilterRequest,
+        maxKey: keyof ResultFilterRequest
+      ) => {
+        if (!range) {
+          return;
+        }
+        if (range.min !== undefined && range.min !== null) {
+          request[minKey] = range.min;
+        }
+        if (range.max !== undefined && range.max !== null) {
+          request[maxKey] = range.max;
+        }
+      };
 
-        assignRange(payload.filters.cost, 'costMin', 'costMax');
-        assignRange(payload.filters.energy, 'energyMin', 'energyMax');
-        assignRange(
-          payload.filters.thermalDiscomfort,
-          'thermalDiscomfortMin',
-          'thermalDiscomfortMax'
-        );
-        assignRange(payload.filters.aqDiscomfort, 'aqDiscomfortMin', 'aqDiscomfortMax');
-      }
+      assignRange(payload.filters.cost, 'costMin', 'costMax');
+      assignRange(payload.filters.energy, 'energyMin', 'energyMax');
+      assignRange(
+        payload.filters.thermalDiscomfort,
+        'thermalDiscomfortMin',
+        'thermalDiscomfortMax'
+      );
+      assignRange(payload.filters.aqDiscomfort, 'aqDiscomfortMin', 'aqDiscomfortMax');
 
       return request;
     },

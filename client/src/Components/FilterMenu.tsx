@@ -192,6 +192,46 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
     tags: false,
   });
 
+  type NumericFilterKey = 'cost' | 'thermalDiscomfort' | 'aqDiscomfort' | 'energy';
+
+  const formatDraftValue = (value: number | undefined): string =>
+    value === undefined || value === null ? '' : `${value}`;
+
+  const buildNumericDraft = (values: FilterValues) => ({
+    cost: {
+      min: formatDraftValue(values.cost?.min ?? filterRanges.costRange.min),
+      max: formatDraftValue(values.cost?.max ?? filterRanges.costRange.max),
+    },
+    thermalDiscomfort: {
+      min: formatDraftValue(
+        values.thermalDiscomfort?.min ?? filterRanges.thermalDiscomfortRange.min
+      ),
+      max: formatDraftValue(
+        values.thermalDiscomfort?.max ?? filterRanges.thermalDiscomfortRange.max
+      ),
+    },
+    aqDiscomfort: {
+      min: formatDraftValue(
+        values.aqDiscomfort?.min ?? filterRanges.aqDiscomfortRange.min
+      ),
+      max: formatDraftValue(
+        values.aqDiscomfort?.max ?? filterRanges.aqDiscomfortRange.max
+      ),
+    },
+    energy: {
+      min: formatDraftValue(values.energy?.min ?? filterRanges.energyRange.min),
+      max: formatDraftValue(values.energy?.max ?? filterRanges.energyRange.max),
+    },
+  });
+
+  const [numericDraft, setNumericDraft] = React.useState(() =>
+    buildNumericDraft(filterValues)
+  );
+
+  React.useEffect(() => {
+    setNumericDraft(buildNumericDraft(filterValues));
+  }, [filterValues, filterRanges]);
+
   const filters = Object.keys(open);
   const scenarioKeys = scenarioOptions ? Object.keys(scenarioOptions) : [];
 
@@ -208,15 +248,37 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
   };
 
   const onFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const filterType = event.target.id.split('-');
-    const newFilter = {
+    const {name, value} = event.target;
+    const [filterKey, bound] = name.split('-') as [
+      NumericFilterKey,
+      'min' | 'max'
+    ];
+
+    setNumericDraft(prev => ({
+      ...prev,
+      [filterKey]: {
+        ...prev[filterKey],
+        [bound]: value,
+      },
+    }));
+
+    if (value === '') {
+      return;
+    }
+
+    const parsedValue = Number(value);
+    if (Number.isNaN(parsedValue)) {
+      return;
+    }
+
+    const nextFilters = {
       ...filterValues,
-      [filterType[0]]: {
-        ...filterValues[filterType[0]],
-        [filterType[1]]: Number(event.target.value),
+      [filterKey]: {
+        ...filterValues[filterKey],
+        [bound]: parsedValue,
       },
     };
-    onRequestFilters(newFilter);
+    onRequestFilters(nextFilters);
   };
 
   const onScenarioFilterChange = event => {
@@ -263,25 +325,21 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
             <div className={popperClasses.rangeContainer}>
               <ColorTextField
                 className={popperClasses.textInput}
-                id="cost-min"
+                name="cost-min"
                 label="Min"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues && filterValues.cost && filterValues.cost.min
-                }
+                value={numericDraft.cost.min}
                 inputProps={costInputProps}
                 onChange={onFilterChange}
               />
               <ColorTextField
                 className={popperClasses.textInput}
-                id="cost-max"
+                name="cost-max"
                 label="Max"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues && filterValues.cost && filterValues.cost.max
-                }
+                value={numericDraft.cost.max}
                 inputProps={costInputProps}
                 onChange={onFilterChange}
               />
@@ -314,29 +372,21 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
             <div className={popperClasses.rangeContainer}>
               <ColorTextField
                 className={popperClasses.textInput}
-                id="thermalDiscomfort-min"
+                name="thermalDiscomfort-min"
                 label="Min"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues &&
-                  filterValues.thermalDiscomfort &&
-                  filterValues.thermalDiscomfort.min
-                }
+                value={numericDraft.thermalDiscomfort.min}
                 inputProps={thermalDiscomfortInputProps}
                 onChange={onFilterChange}
               />
               <ColorTextField
                 className={popperClasses.textInput}
-                id="thermalDiscomfort-max"
+                name="thermalDiscomfort-max"
                 label="Max"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues &&
-                  filterValues.thermalDiscomfort &&
-                  filterValues.thermalDiscomfort.max
-                }
+                value={numericDraft.thermalDiscomfort.max}
                 inputProps={thermalDiscomfortInputProps}
                 onChange={onFilterChange}
               />
@@ -347,29 +397,21 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
             <div className={popperClasses.rangeContainer}>
               <ColorTextField
                 className={popperClasses.textInput}
-                id="aqDiscomfort-min"
+                name="aqDiscomfort-min"
                 label="Min"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues &&
-                  filterValues.aqDiscomfort &&
-                  filterValues.aqDiscomfort.min
-                }
+                value={numericDraft.aqDiscomfort.min}
                 inputProps={aqDiscomfortInputProps}
                 onChange={onFilterChange}
               />
               <ColorTextField
                 className={popperClasses.textInput}
-                id="aqDiscomfort-max"
+                name="aqDiscomfort-max"
                 label="Max"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues &&
-                  filterValues.aqDiscomfort &&
-                  filterValues.aqDiscomfort.max
-                }
+                value={numericDraft.aqDiscomfort.max}
                 inputProps={aqDiscomfortInputProps}
                 onChange={onFilterChange}
               />
@@ -392,25 +434,21 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
             <div className={popperClasses.rangeContainer}>
               <ColorTextField
                 className={popperClasses.textInput}
-                id="energy-min"
+                name="energy-min"
                 label="Min"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues && filterValues.energy && filterValues.energy.min
-                }
+                value={numericDraft.energy.min}
                 inputProps={energyInputProps}
                 onChange={onFilterChange}
               />
               <ColorTextField
                 className={popperClasses.textInput}
-                id="energy-max"
+                name="energy-max"
                 label="Max"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues && filterValues.energy && filterValues.energy.max
-                }
+                value={numericDraft.energy.max}
                 inputProps={energyInputProps}
                 onChange={onFilterChange}
               />

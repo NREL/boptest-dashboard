@@ -41,7 +41,10 @@ const useStyles = makeStyles((theme: Theme) =>
     scrollArea: {
       flex: 1,
       overflowY: 'auto',
-      paddingRight: theme.spacing(1),
+      overflowX: 'hidden',
+      paddingRight: theme.spacing(3),
+      paddingBottom: theme.spacing(3),
+      boxSizing: 'border-box',
     },
     bold: {
       fontWeight: 'inherit',

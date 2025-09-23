@@ -128,62 +128,54 @@ export const getBuildingScenarios = (
 };
 
 export const getFilterRanges = (rows: Data[]): FilterRanges => {
-  return rows.reduce(
-    (acc, curr) => {
-      return {
-        costRange: {
-          min: acc.costRange.min < curr.cost ? acc.costRange.min : curr.cost,
-          max:
-            Math.ceil(
-              (acc.costRange.max > curr.cost ? acc.costRange.max : curr.cost) /
-                50
-            ) * 50,
-        },
-        thermalDiscomfortRange: {
-          min:
-            acc.thermalDiscomfortRange.min < curr.thermalDiscomfort
-              ? acc.thermalDiscomfortRange.min
-              : curr.thermalDiscomfort,
-          max:
-            Math.ceil(
-              (acc.thermalDiscomfortRange.max > curr.thermalDiscomfort
-                ? acc.thermalDiscomfortRange.max
-                : curr.thermalDiscomfort) / 50
-            ) * 50,
-        },
-        aqDiscomfortRange: {
-          min:
-            acc.aqDiscomfortRange.min < curr.aqDiscomfort
-              ? acc.aqDiscomfortRange.min
-              : curr.aqDiscomfort,
-          max:
-            Math.ceil(
-              (acc.aqDiscomfortRange.max > curr.aqDiscomfort
-                ? acc.aqDiscomfortRange.max
-                : curr.aqDiscomfort) / 50
-            ) * 50,
-        },
-        energyRange: {
-          min:
-            acc.energyRange.min < curr.energy
-              ? acc.energyRange.min
-              : curr.energy,
-          max:
-            Math.ceil(
-              (acc.energyRange.max > curr.energy
-                ? acc.energyRange.max
-                : curr.energy) / 50
-            ) * 50,
-        },
-      };
-    },
-    {
+  if (!rows || rows.length === 0) {
+    return {
       costRange: {min: 0, max: 0},
       thermalDiscomfortRange: {min: 0, max: 0},
       aqDiscomfortRange: {min: 0, max: 0},
       energyRange: {min: 0, max: 0},
-    }
-  );
+    };
+  }
+
+  const first = rows[0];
+  const roundUp = (value: number): number => Math.ceil(value / 50) * 50;
+
+  const initial: FilterRanges = {
+    costRange: {min: first.cost, max: roundUp(first.cost)},
+    thermalDiscomfortRange: {
+      min: first.thermalDiscomfort,
+      max: roundUp(first.thermalDiscomfort),
+    },
+    aqDiscomfortRange: {
+      min: first.aqDiscomfort,
+      max: roundUp(first.aqDiscomfort),
+    },
+    energyRange: {min: first.energy, max: roundUp(first.energy)},
+  };
+
+  return rows.slice(1).reduce((acc, curr) => {
+    const nextMax = (current: number, incoming: number) =>
+      roundUp(current > incoming ? current : incoming);
+
+    return {
+      costRange: {
+        min: Math.min(acc.costRange.min, curr.cost),
+        max: nextMax(acc.costRange.max, curr.cost),
+      },
+      thermalDiscomfortRange: {
+        min: Math.min(acc.thermalDiscomfortRange.min, curr.thermalDiscomfort),
+        max: nextMax(acc.thermalDiscomfortRange.max, curr.thermalDiscomfort),
+      },
+      aqDiscomfortRange: {
+        min: Math.min(acc.aqDiscomfortRange.min, curr.aqDiscomfort),
+        max: nextMax(acc.aqDiscomfortRange.max, curr.aqDiscomfort),
+      },
+      energyRange: {
+        min: Math.min(acc.energyRange.min, curr.energy),
+        max: nextMax(acc.energyRange.max, curr.energy),
+      },
+    };
+  }, initial);
 };
 
 export const setupFilters = (
@@ -232,42 +224,73 @@ export const filterRows = (
   buildingTypeFilter: string,
   filters: FilterValues
 ): Data[] => {
-  const filteredRows: Data[] = [];
-  const scenarioFilter: Scenario = filters.scenario;
-  const tagFilter: string[] = filters.tags;
-  if (rows.length <= 0 || buildingTypeFilter === '') {
+  if (!rows || rows.length === 0) {
     return rows;
   }
-  rows.forEach((row: any) => {
+
+  const {
+    cost,
+    energy,
+    thermalDiscomfort,
+    aqDiscomfort,
+    scenario: scenarioFilter,
+    tags: tagFilter,
+  } = filters;
+
+  return rows.filter(row => {
+    if (buildingTypeFilter && row.buildingTypeName !== buildingTypeFilter) {
+      return false;
+    }
+
     if (
-      row.buildingTypeName !== buildingTypeFilter ||
-      row.cost < filters.cost.min ||
-      row.cost > filters.cost.max ||
-      row.energy < filters.energy.min ||
-      row.energy > filters.energy.max ||
-      row.thermalDiscomfort < filters.thermalDiscomfort.min ||
-      row.thermalDiscomfort > filters.thermalDiscomfort.max ||
-      row.aqDiscomfort < filters.aqDiscomfort.min ||
-      row.aqDiscomfort > filters.aqDiscomfort.max
+      (cost?.min !== undefined && row.cost < cost.min) ||
+      (cost?.max !== undefined && row.cost > cost.max)
     ) {
-      return;
+      return false;
     }
-    for (const key in scenarioFilter) {
-      if (
-        scenarioFilter[key] !== '' &&
-        row.scenario[key] !== scenarioFilter[key]
-      ) {
-        return;
+
+    if (
+      (energy?.min !== undefined && row.energy < energy.min) ||
+      (energy?.max !== undefined && row.energy > energy.max)
+    ) {
+      return false;
+    }
+
+    if (
+      (thermalDiscomfort?.min !== undefined &&
+        row.thermalDiscomfort < thermalDiscomfort.min) ||
+      (thermalDiscomfort?.max !== undefined &&
+        row.thermalDiscomfort > thermalDiscomfort.max)
+    ) {
+      return false;
+    }
+
+    if (
+      (aqDiscomfort?.min !== undefined && row.aqDiscomfort < aqDiscomfort.min) ||
+      (aqDiscomfort?.max !== undefined && row.aqDiscomfort > aqDiscomfort.max)
+    ) {
+      return false;
+    }
+
+    if (scenarioFilter) {
+      for (const key of Object.keys(scenarioFilter)) {
+        const value = scenarioFilter[key];
+        if (value && row.scenario?.[key] !== value) {
+          return false;
+        }
       }
     }
-    for (const tag in tagFilter) {
-      if (!row.tags.includes(tagFilter[tag])) {
-        return;
+
+    if (tagFilter && tagFilter.length > 0) {
+      for (const tag of tagFilter) {
+        if (!row.tags.includes(tag)) {
+          return false;
+        }
       }
     }
-    filteredRows.push(row);
+
+    return true;
   });
-  return filteredRows;
 };
 
 export const createTagOptions = (rows: Data[]): string[] => {

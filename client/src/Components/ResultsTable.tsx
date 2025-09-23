@@ -783,7 +783,35 @@ export default function ResultsTable(props: ResultsTableProps) {
   }, [onFiltersChange, fallbackTagOptions, buildingFacets, buildingTypeFilter]);
 
   useEffect(() => {
-    setFilterRanges(computedFilterRanges);
+    if (rows.length === 0) {
+      return;
+    }
+
+    const expandRange = (
+      current: {min: number; max: number},
+      active: {min: number; max: number}
+    ) => ({
+      min: Math.min(current.min, active.min),
+      max: Math.max(current.max, active.max),
+    });
+
+    const expandedRanges: FilterRanges = {
+      costRange: expandRange(computedFilterRanges.costRange, filters.cost),
+      thermalDiscomfortRange: expandRange(
+        computedFilterRanges.thermalDiscomfortRange,
+        filters.thermalDiscomfort
+      ),
+      aqDiscomfortRange: expandRange(
+        computedFilterRanges.aqDiscomfortRange,
+        filters.aqDiscomfort
+      ),
+      energyRange: expandRange(
+        computedFilterRanges.energyRange,
+        filters.energy
+      ),
+    };
+
+    setFilterRanges(expandedRanges);
     const nextScenarioOptions: Record<string, string[]> = {};
 
     if (!onFiltersChange) {
@@ -841,7 +869,15 @@ export default function ResultsTable(props: ResultsTableProps) {
     }
 
     setScenarioOptions(nextScenarioOptions);
-  }, [computedFilterRanges, rows.length, buildingTypeFilter, buildingScenarios, buildingFacets, onFiltersChange]);
+  }, [
+    computedFilterRanges,
+    rows.length,
+    buildingTypeFilter,
+    buildingScenarios,
+    buildingFacets,
+    onFiltersChange,
+    filters,
+  ]);
 
   useEffect(() => {
     setFilters(prev => {
