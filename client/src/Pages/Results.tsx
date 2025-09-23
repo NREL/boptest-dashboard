@@ -361,6 +361,11 @@ export const Results: React.FC = () => {
     [buildFilterRequest, fetchResults]
   );
 
+  const handleResetFilters = React.useCallback(() => {
+    filtersRef.current = {};
+    fetchResults(undefined, false, {});
+  }, [fetchResults]);
+
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
@@ -374,6 +379,7 @@ export const Results: React.FC = () => {
             hasMoreResults={hasNext}
             onLoadMoreResults={handleLoadMore}
             isLoadingMoreResults={isLoadingMore}
+            onResetFilters={handleResetFilters}
           />
         </div>
 

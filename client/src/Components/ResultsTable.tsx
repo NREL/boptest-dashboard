@@ -367,6 +367,7 @@ interface EnhancedTableToolbarProps {
   totalResults: number;
   numSelected: number;
   updateBuildingFilter: (value: string) => void;
+  onClearFilters: () => void;
   enableSelection?: boolean;
   showDownloadButton?: boolean;
   onDownloadSelected?: () => void;
@@ -382,6 +383,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     totalResults,
     numSelected,
     updateBuildingFilter,
+    onClearFilters,
     enableSelection = false,
     showDownloadButton = false,
     onDownloadSelected,
@@ -454,7 +456,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
         </ColorSelect>
         <div className={classes.filterActions}>
           {displayClear && (
-            <ColorButton variant="outlined" onClick={() => updateBuildingFilter('')}>
+            <ColorButton variant="outlined" onClick={onClearFilters}>
               Clear
             </ColorButton>
           )}
@@ -698,6 +700,7 @@ interface ResultsTableProps {
   hasMoreResults?: boolean;
   onLoadMoreResults?: () => void;
   isLoadingMoreResults?: boolean;
+  onResetFilters?: () => void;
 }
 
 export default function ResultsTable(props: ResultsTableProps) {
@@ -714,6 +717,7 @@ export default function ResultsTable(props: ResultsTableProps) {
     hasMoreResults = false,
     onLoadMoreResults,
     isLoadingMoreResults = false,
+    onResetFilters,
   } = props;
 
   const {csrfToken} = useUser();
@@ -924,20 +928,33 @@ export default function ResultsTable(props: ResultsTableProps) {
     onFiltersChange?.({buildingTypeName: buildingTypeFilter, filters: requestedFilters});
   };
 
+  const handleClearFilters = () => {
+    setBuildingTypeFilter('');
+    setDisplayFilters(false);
+    const nextFilters = setupFilters(computedFilterRanges, []);
+    setFilters(nextFilters);
+    setFilterRanges(computedFilterRanges);
+    filtersInitialized.current = true;
+    onResetFilters?.();
+  };
+
   const handleUpdateBuildingFilter = (requestedBuilding: string) => {
+    if (requestedBuilding === '') {
+      handleClearFilters();
+      return;
+    }
+
     setBuildingTypeFilter(requestedBuilding);
     const scenarioKeys = Object.keys(buildingScenarios[requestedBuilding] || {});
-    if (requestedBuilding === '') {
-      setDisplayFilters(false);
-    } else {
-      setDisplayFilters(true);
-    }
+    setDisplayFilters(true);
     const nextFilters = setupFilters(
       computedFilterRanges,
       requestedBuilding === '' ? [] : scenarioKeys
     );
     setFilters(nextFilters);
-    setFilterRanges(prev => {
+    if (requestedBuilding === '') {
+      setFilterRanges(computedFilterRanges);
+    } else {
       const expandRange = (
         current: {min: number; max: number},
         active: {min: number; max: number}
@@ -946,7 +963,7 @@ export default function ResultsTable(props: ResultsTableProps) {
         max: Math.max(current.max, active.max),
       });
 
-      return {
+      setFilterRanges({
         costRange: expandRange(computedFilterRanges.costRange, nextFilters.cost),
         thermalDiscomfortRange: expandRange(
           computedFilterRanges.thermalDiscomfortRange,
@@ -960,8 +977,8 @@ export default function ResultsTable(props: ResultsTableProps) {
           computedFilterRanges.energyRange,
           nextFilters.energy
         ),
-      };
-    });
+      });
+    }
     filtersInitialized.current = true;
     onFiltersChange?.({buildingTypeName: requestedBuilding, filters: nextFilters});
   };
@@ -1116,6 +1133,7 @@ export default function ResultsTable(props: ResultsTableProps) {
           totalResults={filteredRows.length}
           numSelected={selectedIds.length}
           updateBuildingFilter={handleUpdateBuildingFilter}
+          onClearFilters={handleClearFilters}
           enableSelection={enableSelection}
           showDownloadButton={enableSelection && showDownloadButton}
           onDownloadSelected={downloadResultsToCSV}
