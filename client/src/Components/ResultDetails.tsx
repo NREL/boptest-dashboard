@@ -83,7 +83,7 @@ const useStyles = makeStyles(theme =>
     },
     footerBar: {
       margin: theme.spacing(0, -1.5, -1.5),
-      padding: theme.spacing(1.75, 1.5),
+      padding: theme.spacing(1.5, 1.5),
       background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
       color: theme.palette.primary.contrastText,
       display: 'flex',
@@ -95,7 +95,7 @@ const useStyles = makeStyles(theme =>
       fontSize: '0.75rem',
       [theme.breakpoints.down('sm')]: {
         margin: theme.spacing(0, -1, -1),
-        padding: theme.spacing(1.5, 1.25),
+        padding: theme.spacing(1.25, 1.25),
         fontSize: '0.7rem',
       },
     },
