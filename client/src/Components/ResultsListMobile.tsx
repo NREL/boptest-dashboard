@@ -18,13 +18,14 @@ const useStyles = makeStyles((theme: Theme) =>
     root: {
       display: 'flex',
       flexDirection: 'column',
-      gap: theme.spacing(2),
-      padding: theme.spacing(1.5, 1.5, 3),
+      gap: theme.spacing(1.5),
+      padding: theme.spacing(1.5, 1.2, 2.5),
       flex: 1,
       overflowY: 'auto',
       width: '100%',
+      backgroundColor: theme.palette.background.default,
       [theme.breakpoints.down('sm')]: {
-        padding: theme.spacing(0.75, 1, 2.25),
+        padding: theme.spacing(1.25, 1, 2.25),
       },
     },
     stateWrapper: {
@@ -78,6 +79,7 @@ const useStyles = makeStyles((theme: Theme) =>
       alignItems: 'flex-start',
       gap: theme.spacing(0.5),
       color: theme.palette.text.secondary,
+      marginTop: theme.spacing(0.25),
     },
     submittedBy: {
       display: 'block',
