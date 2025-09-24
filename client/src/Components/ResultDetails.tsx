@@ -81,6 +81,24 @@ const useStyles = makeStyles(theme =>
         padding: theme.spacing(1.25, 1, 1.75),
       },
     },
+    footerBar: {
+      margin: theme.spacing(0, -1.5, -1.5),
+      padding: theme.spacing(1.75, 1.5),
+      background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+      color: theme.palette.primary.contrastText,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontWeight: 600,
+      letterSpacing: 0.8,
+      textTransform: 'uppercase',
+      fontSize: '0.75rem',
+      [theme.breakpoints.down('sm')]: {
+        margin: theme.spacing(0, -1, -1),
+        padding: theme.spacing(1.5, 1.25),
+        fontSize: '0.7rem',
+      },
+    },
     headerActions: {
       display: 'flex',
       alignItems: 'center',
@@ -474,6 +492,7 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
           </Grid>
         )}
       </div>
+      <div className={classes.footerBar}>BOPTEST Result</div>
     </div>
   );
 };
