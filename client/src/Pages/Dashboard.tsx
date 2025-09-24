@@ -1,15 +1,19 @@
 import axios from 'axios';
-import React, {useEffect, useState} from 'react';
-import { useUser } from '../Context/user-context';
-import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
+import React, {useCallback, useEffect, useState} from 'react';
+import {useUser} from '../Context/user-context';
+import {makeStyles, createStyles, Theme} from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import ResultsTable from '../Components/ResultsTable';
 import {Modal} from '../Components/Modal';
 import {ResultDetails} from '../Components/ResultDetails';
 import {ResultFacet} from '../../common/interfaces';
+import {Data} from '../Lib/TableHelpers';
+import {useResultsApi} from '../Lib/useResultsApi';
+import {buildFilterRequest, FilterChangePayload} from '../Lib/resultFilters';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -51,44 +55,35 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-// Configure axios to include credentials with all requests
-axios.defaults.withCredentials = true;
-
 export const Dashboard: React.FC = () => {
   const classes = useStyles();
-  const { hashedIdentifier, authedId } = useUser();
-  const [results, setResults] = useState([]);
+  const {hashedIdentifier, authedId, loading: isUserLoading} = useUser();
   const [buildingFacets, setBuildingFacets] = useState<ResultFacet[]>([]);
   const [showResultModal, setShowResultModal] = useState(false);
-  const [selectedResult, setSelectedResult] = useState(null);
+  const [selectedResult, setSelectedResult] = useState<Data | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
-  // Check if user is logged in
-
-  const updateResults = () => {
-    // Only attempt to fetch results if we have authentication
-    if (hashedIdentifier && authedId) {
-      setError(null);
-      console.log('Fetching results for user:', authedId);
-      
-      axios.get('/api/results/my-results', {
-        withCredentials: true, // Include cookies in the request
-      })
-      .then(response => {
-        console.log('Results received:', response.data.length);
-        setResults(response.data);
-      })
-      .catch(err => {
-        console.error('Error fetching results:', err);
-        setError('Unable to load your results. Please try refreshing the page.');
-        setResults([]);
-      });
-    } else {
-      console.warn('No authenticated user, cannot fetch results');
-      setError('You must be logged in to view your results.');
-      setResults([]);
-    }
-  };
+  const {
+    results,
+    setResults,
+    isLoading: isLoadingResults,
+    isLoadingMore,
+    hasNext,
+    loadMore,
+    applyFilters,
+    resetFilters,
+    refresh,
+  } = useResultsApi({
+    endpoint: '/api/results/my-results',
+    pageSize: 200,
+    withCredentials: true,
+    onError: err => {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        setError('You must be logged in to view your results.');
+        return;
+      }
+      setError('Unable to load your results. Please try again.');
+    },
+  });
 
   const updateBuildingFacets = () => {
     axios.get('/api/results/facets', {
@@ -102,11 +97,24 @@ export const Dashboard: React.FC = () => {
     });
   };
 
-  // build out simple data fetcher straight in the useEffect for now
   useEffect(() => {
-    updateResults();
     updateBuildingFacets();
   }, []);
+
+  useEffect(() => {
+    if (isUserLoading) {
+      return;
+    }
+
+    if (!hashedIdentifier || !authedId) {
+      setResults([]);
+      setError('You must be logged in to view your results.');
+      return;
+    }
+
+    setError(null);
+    refresh();
+  }, [authedId, hashedIdentifier, isUserLoading, refresh, setResults]);
 
   // when we get a selected result, show the result modal
   useEffect(() => {
@@ -115,13 +123,33 @@ export const Dashboard: React.FC = () => {
     }
   }, [selectedResult]);
 
-  const handleChange = (result: any) => {
+  const handleChange = (result: Data) => {
     setSelectedResult(result);
   };
 
   const closeModal = () => setShowResultModal(false);
 
   // Handle toggle change
+
+  const isBusy = isUserLoading || isLoadingResults;
+  const showInitialSpinner = isBusy && results.length === 0;
+  const hasResults = results.length > 0;
+  const canRetry = Boolean(hashedIdentifier && authedId);
+  const errorTitle = error && error.toLowerCase().includes('logged in')
+    ? 'Authentication Error'
+    : 'Unable to Load Results';
+
+  const handleFiltersChange = useCallback(
+    (payload: FilterChangePayload) => {
+      const request = buildFilterRequest(payload, buildingFacets);
+      applyFilters(request);
+    },
+    [applyFilters, buildingFacets]
+  );
+
+  const handleResetFilters = useCallback(() => {
+    resetFilters();
+  }, [resetFilters]);
 
   return (
     <div className={classes.root}>
@@ -130,25 +158,36 @@ export const Dashboard: React.FC = () => {
           My Results
         </Typography>
         <Typography variant="body2" className={classes.subheader}>
-          Personal runs captured while you were signed in.
+          Results for this account.
         </Typography>
         {error ? (
           <Paper elevation={0} className={classes.noResults}>
             <Typography variant="h6" color="error" gutterBottom>
-              Authentication Error
+              {errorTitle}
             </Typography>
             <Typography variant="body1" paragraph>
               {error}
             </Typography>
-            <Button 
+            <Button
               variant="contained"
               color="primary"
-              onClick={() => updateResults()} 
+              onClick={() => {
+                if (!canRetry) {
+                  return;
+                }
+                setError(null);
+                refresh();
+              }}
+              disabled={!canRetry || isBusy}
             >
               Try Again
             </Button>
           </Paper>
-        ) : results.length === 0 ? (
+        ) : showInitialSpinner ? (
+          <Paper elevation={0} className={classes.noResults}>
+            <CircularProgress color="primary" />
+          </Paper>
+        ) : !hasResults ? (
           <Paper elevation={0} className={classes.noResults}>
             <Typography variant="body1">
               You don't have any test results yet.
@@ -164,7 +203,13 @@ export const Dashboard: React.FC = () => {
                 enableSelection
                 enableShareToggle
                 showDownloadButton
-                onShareToggleComplete={updateResults}
+                onShareToggleComplete={refresh}
+                isLoading={isLoadingResults && results.length === 0}
+                onFiltersChange={handleFiltersChange}
+                hasMoreResults={hasNext}
+                onLoadMoreResults={loadMore}
+                isLoadingMoreResults={isLoadingMore}
+                onResetFilters={handleResetFilters}
               />
             </div>
             {showResultModal && (

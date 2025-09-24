@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import axios from 'axios';
 import {
   createStyles,
@@ -11,7 +11,6 @@ import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
-import Switch from '@material-ui/core/Switch';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -22,8 +21,13 @@ import TableSortLabel from '@material-ui/core/TableSortLabel';
 import TextField from '@material-ui/core/TextField';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+import Tooltip from '@material-ui/core/Tooltip';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+import Menu from '@material-ui/core/Menu';
+import SettingsIcon from '@material-ui/icons/Settings';
+import PublicIcon from '@material-ui/icons/Public';
+import LockIcon from '@material-ui/icons/Lock';
 
 import {FilterMenu} from './FilterMenu';
 import {useUser} from '../Context/user-context';
@@ -153,7 +157,7 @@ const columnWidths: Partial<Record<keyof Data, string>> = {
   peakGas: '180px',
   peakDistrictHeating: '200px',
   compTimeRatio: '180px',
-  isShared: '120px',
+  isShared: '72px',
 };
 
 const numericColumnIds = [
@@ -341,11 +345,11 @@ const useToolbarStyles = makeStyles((theme: Theme) =>
       gap: theme.spacing(1),
       flexWrap: 'wrap',
     },
-    downloadButton: {
-      whiteSpace: 'nowrap',
-    },
     summary: {
       color: theme.palette.text.secondary,
+    },
+    actionButton: {
+      marginLeft: theme.spacing(1),
     },
   })
 );
@@ -393,6 +397,12 @@ const ColorSelect = withStyles(theme => ({
   },
 }))(TextField);
 
+interface ToolbarActionItem {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}
+
 interface EnhancedTableToolbarProps {
   buildingTypeFilterOptions: {[index: number]: string};
   displayClear: boolean;
@@ -400,15 +410,15 @@ interface EnhancedTableToolbarProps {
   updateBuildingFilter: (value: string) => void;
   onClearFilters: () => void;
   enableSelection?: boolean;
-  showDownloadButton?: boolean;
-  onDownloadSelected?: () => void;
-  downloadDisabled?: boolean;
+  actions?: ToolbarActionItem[];
+  actionsDisabled?: boolean;
   summaryText: string;
   summaryAction?: React.ReactNode;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   const classes = useToolbarStyles();
+  const [actionAnchorEl, setActionAnchorEl] = useState<null | HTMLElement>(null);
   const {
     buildingTypeFilterOptions,
     displayClear,
@@ -416,12 +426,21 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     updateBuildingFilter,
     onClearFilters,
     enableSelection = false,
-    showDownloadButton = false,
-    onDownloadSelected,
-    downloadDisabled = false,
+    actions,
+    actionsDisabled = false,
     summaryText,
     summaryAction,
   } = props;
+
+  const hasActions = Boolean(actions && actions.length > 0);
+  const allActionsDisabled =
+    !actions || actions.length === 0 || actions.every(action => action.disabled);
+
+  useEffect(() => {
+    if ((actionsDisabled || allActionsDisabled) && actionAnchorEl) {
+      setActionAnchorEl(null);
+    }
+  }, [actionsDisabled, allActionsDisabled, actionAnchorEl]);
 
   const selectProps = {
     classes: {icon: classes.selectIcon},
@@ -493,17 +512,39 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
           {summaryText}
         </Typography>
         {summaryAction}
-        {showDownloadButton && (
-          <Button
-            variant="contained"
-            color="primary"
-            size="small"
-            onClick={() => onDownloadSelected?.()}
-            disabled={downloadDisabled}
-            className={classes.downloadButton}
-          >
-            Download Selected (CSV)
-          </Button>
+        {hasActions && (
+          <>
+            <Button
+              variant="outlined"
+              color="primary"
+              size="small"
+              startIcon={<SettingsIcon fontSize="small" />}
+              onClick={event => setActionAnchorEl(event.currentTarget)}
+              disabled={actionsDisabled || allActionsDisabled}
+              className={classes.actionButton}
+            >
+              Actions
+            </Button>
+            <Menu
+              anchorEl={actionAnchorEl}
+              open={Boolean(actionAnchorEl)}
+              onClose={() => setActionAnchorEl(null)}
+              keepMounted
+            >
+              {(actions || []).map((action, index) => (
+                <MenuItem
+                  key={`toolbar-action-${index}`}
+                  onClick={() => {
+                    setActionAnchorEl(null);
+                    action.onClick();
+                  }}
+                  disabled={actionsDisabled || action.disabled}
+                >
+                  {action.label}
+                </MenuItem>
+              ))}
+            </Menu>
+          </>
         )}
       </div>
     </Toolbar>
@@ -670,6 +711,12 @@ const useStyles = makeStyles((theme: Theme) =>
         textDecoration: 'underline',
       },
     },
+    shareStatusWrapper: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: theme.spacing(5),
+    },
     tableRow: {
       '&$selected, &$selected:hover': {
         backgroundColor: theme.palette.primary.light,
@@ -761,6 +808,9 @@ interface ResultsTableProps {
   onLoadMoreResults?: () => void;
   isLoadingMoreResults?: boolean;
   onResetFilters?: () => void;
+  resetOnResultsChange?: boolean;
+  initialFilters?: FilterValues;
+  initialFilterRanges?: FilterRanges;
 }
 
 export default function ResultsTable(props: ResultsTableProps) {
@@ -778,6 +828,9 @@ export default function ResultsTable(props: ResultsTableProps) {
     onLoadMoreResults,
     isLoadingMoreResults = false,
     onResetFilters,
+    resetOnResultsChange = false,
+    initialFilters,
+    initialFilterRanges,
   } = props;
 
   const {csrfToken} = useUser();
@@ -803,20 +856,45 @@ export default function ResultsTable(props: ResultsTableProps) {
   const [buildingTypeFilter, setBuildingTypeFilter] = useState<string>('');
   const [scenarioOptions, setScenarioOptions] = useState<Record<string, string[]>>({});
   const filtersInitialized = useRef(false);
+  const [areFiltersReady, setAreFiltersReady] = useState(false);
   const [filters, setFilters] = useState<FilterValues>(() =>
     setupFilters(emptyFilterRanges, [])
   );
   const [filterRanges, setFilterRanges] = useState<FilterRanges>(emptyFilterRanges);
+  const [isUpdatingShare, setIsUpdatingShare] = useState(false);
 
   const rows = useMemo(() => createRows(results), [results]);
   const buildingScenarios = useMemo(() => getBuildingScenarios(buildingFacets), [buildingFacets]);
   const computedFilterRanges = useMemo(() => getFilterRanges(rows), [rows]);
   const filteredRows = useMemo(() => {
-    if (onFiltersChange) {
+    if (onFiltersChange || !areFiltersReady) {
       return rows;
     }
     return filterRows(rows, buildingTypeFilter, filters);
-  }, [onFiltersChange, rows, buildingTypeFilter, filters]);
+  }, [onFiltersChange, rows, buildingTypeFilter, filters, areFiltersReady]);
+
+  useEffect(() => {
+    if (!resetOnResultsChange) {
+      return;
+    }
+    filtersInitialized.current = false;
+    setAreFiltersReady(false);
+  }, [resetOnResultsChange, results]);
+
+  useEffect(() => {
+    if (onFiltersChange) {
+      return;
+    }
+    if (!initialFilters) {
+      return;
+    }
+    setFilters(initialFilters);
+    if (initialFilterRanges) {
+      setFilterRanges(initialFilterRanges);
+    }
+    filtersInitialized.current = true;
+    setAreFiltersReady(true);
+  }, [initialFilters, initialFilterRanges, onFiltersChange]);
   const xAxisOption = useMemo(() => {
     return numericColumnOptions.find(option => option.id === xAxisId) ?? fallbackAxisOption;
   }, [xAxisId]);
@@ -915,6 +993,7 @@ export default function ResultsTable(props: ResultsTableProps) {
           : [];
         setFilters(setupFilters(computedFilterRanges, scenarioKeys));
         filtersInitialized.current = true;
+        setAreFiltersReady(true);
       }
     } else {
       const addScenarioValue = (bucket: Map<string, string>, value: unknown) => {
@@ -993,12 +1072,15 @@ export default function ResultsTable(props: ResultsTableProps) {
   }, [filterRanges]);
 
   useEffect(() => {
-    setSelectedIds([]);
+    setSelectedIds(prev =>
+      prev.filter(id => filteredRows.some(row => row.id === id))
+    );
   }, [filteredRows]);
 
   const handleUpdateFilters = (requestedFilters: FilterValues) => {
     setFilters(requestedFilters);
     filtersInitialized.current = true;
+    setAreFiltersReady(true);
     onFiltersChange?.({buildingTypeName: buildingTypeFilter, filters: requestedFilters});
   };
 
@@ -1031,6 +1113,7 @@ export default function ResultsTable(props: ResultsTableProps) {
     setFilters(nextFilters);
     setFilterRanges(computedFilterRanges);
     filtersInitialized.current = true;
+    setAreFiltersReady(true);
     onResetFilters?.();
   };
 
@@ -1076,6 +1159,7 @@ export default function ResultsTable(props: ResultsTableProps) {
       });
     }
     filtersInitialized.current = true;
+    setAreFiltersReady(true);
     onFiltersChange?.({buildingTypeName: requestedBuilding, filters: nextFilters});
   };
 
@@ -1127,36 +1211,64 @@ export default function ResultsTable(props: ResultsTableProps) {
     setSelectedResult(result);
   };
 
-  const handleShareToggleClick = (
-    event: React.MouseEvent<unknown>,
-    result: Data
-  ) => {
-    event.stopPropagation();
-    if (!enableShareToggle) {
-      return;
-    }
-
-    axios
-      .patch(
-        '/api/results/share',
-        {id: result.id, share: !result.isShared},
-        {
-          headers: sessionHeaders,
-          withCredentials: true,
-        }
-      )
-      .then(() => {
-        onShareToggleComplete?.();
-      })
-      .catch(error => {
-        console.error('Unable to update sharing preference', error);
-      });
-  };
-
   const selectedRows = useMemo(
     () => filteredRows.filter(row => selectedIds.includes(row.id)),
     [filteredRows, selectedIds]
   );
+
+  const updateShareForSelection = useCallback(
+    async (share: boolean) => {
+      if (!enableShareToggle) {
+        return;
+      }
+
+      const targets = selectedRows.filter(row => row.isShared !== share);
+      if (targets.length === 0) {
+        return;
+      }
+
+      setIsUpdatingShare(true);
+      try {
+        const responses = await Promise.allSettled(
+          targets.map(target =>
+            axios.patch(
+              '/api/results/share',
+              {id: target.id, share},
+              {
+                headers: sessionHeaders,
+                withCredentials: true,
+              }
+            )
+          )
+        );
+
+        const rejected = responses.filter(
+          result => result.status === 'rejected'
+        );
+        if (rejected.length > 0) {
+          rejected.forEach(result => {
+            if (result.status === 'rejected') {
+              console.error('Unable to update sharing preference', result.reason);
+            }
+          });
+        }
+        onShareToggleComplete?.();
+      } catch (error) {
+        console.error('Unable to update sharing preference', error);
+      } finally {
+        setIsUpdatingShare(false);
+      }
+    },
+    [enableShareToggle, onShareToggleComplete, selectedRows, sessionHeaders]
+  );
+
+  const handleShareSelected = useCallback(() => {
+    updateShareForSelection(true);
+  }, [updateShareForSelection]);
+
+  const handleMakePrivateSelected = useCallback(() => {
+    updateShareForSelection(false);
+  }, [updateShareForSelection]);
 
   const downloadResultsToCSV = () => {
     if (!enableSelection || selectedRows.length === 0) {
@@ -1238,6 +1350,57 @@ export default function ResultsTable(props: ResultsTableProps) {
       </Button>
     ) : undefined;
 
+  const toolbarActions = useMemo<ToolbarActionItem[] | undefined>(() => {
+    const selectionEnabled = enableSelection && viewMode === 'table';
+    if (!selectionEnabled) {
+      return undefined;
+    }
+
+    const actions: ToolbarActionItem[] = [];
+    const selectedCount = selectedRows.length;
+    const allSelectedShared =
+      selectedCount > 0 && selectedRows.every(row => row.isShared);
+    const allSelectedPrivate =
+      selectedCount > 0 && selectedRows.every(row => !row.isShared);
+
+    if (enableShareToggle) {
+      actions.push(
+        {
+          label: 'Share selected',
+          onClick: handleShareSelected,
+          disabled:
+            isUpdatingShare || selectedCount === 0 || allSelectedShared,
+        },
+        {
+          label: 'Make selected private',
+          onClick: handleMakePrivateSelected,
+          disabled:
+            isUpdatingShare || selectedCount === 0 || allSelectedPrivate,
+        }
+      );
+    }
+
+    if (showDownloadButton) {
+      actions.push({
+        label: 'Download selected',
+        onClick: downloadResultsToCSV,
+        disabled: selectedCount === 0,
+      });
+    }
+
+    return actions.length > 0 ? actions : undefined;
+  }, [
+    downloadResultsToCSV,
+    enableSelection,
+    enableShareToggle,
+    handleMakePrivateSelected,
+    handleShareSelected,
+    isUpdatingShare,
+    selectedRows,
+    showDownloadButton,
+    viewMode,
+  ]);
+
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
@@ -1250,11 +1413,7 @@ export default function ResultsTable(props: ResultsTableProps) {
           updateBuildingFilter={handleUpdateBuildingFilter}
           onClearFilters={handleClearFilters}
           enableSelection={enableSelection && viewMode === 'table'}
-          showDownloadButton={
-            enableSelection && showDownloadButton && viewMode === 'table'
-          }
-          onDownloadSelected={downloadResultsToCSV}
-          downloadDisabled={selectedIds.length === 0}
+          actions={toolbarActions}
           summaryText={summaryTextValue}
           summaryAction={summaryAction}
         />
@@ -1343,7 +1502,13 @@ export default function ResultsTable(props: ResultsTableProps) {
               {!isLoading && tableRows.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={columnCount} align="center">
-                    No results available.
+                    <div className={classes.loadMoreContainer}>
+                      <div className={classes.loadMoreInner}>
+                        <Typography variant="body2" color="textSecondary">
+                          No results available.
+                        </Typography>
+                      </div>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
@@ -1493,14 +1658,21 @@ export default function ResultsTable(props: ResultsTableProps) {
                         align="center"
                         style={{width: getColumnWidth('isShared')}}
                       >
-                        <Switch
-                          checked={row.isShared}
-                          onClick={event => handleShareToggleClick(event, row)}
-                          name="share switch"
-                          inputProps={{'aria-label': 'toggle shared'}}
-                          color="primary"
-                          size="small"
-                        />
+                        <div className={classes.shareStatusWrapper}>
+                          <Tooltip
+                            title={
+                              row.isShared
+                                ? 'Shared publicly'
+                                : 'Private to your account'
+                            }
+                          >
+                            {row.isShared ? (
+                              <PublicIcon color="primary" fontSize="small" />
+                            ) : (
+                              <LockIcon color="disabled" fontSize="small" />
+                            )}
+                          </Tooltip>
+                        </div>
                       </TableCell>
                     )}
                   </TableRow>

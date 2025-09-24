@@ -6,9 +6,11 @@ import {Modal} from '../Components/Modal';
 import {ResultDetails} from '../Components/ResultDetails';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
-import {Result, ResultFacet, FilterValues} from '../../common/interfaces';
+import {Result, ResultFacet} from '../../common/interfaces';
 import {AppRoute} from '../enums';
 import {createDataFromResult, Data} from '../Lib/TableHelpers';
+import {useResultsApi} from '../Lib/useResultsApi';
+import {buildFilterRequest, FilterChangePayload} from '../Lib/resultFilters';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -42,27 +44,6 @@ const endpointResults = '/api/results';
 const endpointFacets = '/api/results/facets';
 const pageSize = 50;
 
-interface ResultFilterRequest {
-  buildingTypeUid?: string;
-  tags?: string[];
-  scenario?: Record<string, string>;
-  costMin?: number;
-  costMax?: number;
-  energyMin?: number;
-  energyMax?: number;
-  thermalDiscomfortMin?: number;
-  thermalDiscomfortMax?: number;
-  aqDiscomfortMin?: number;
-  aqDiscomfortMax?: number;
-  emissionsMin?: number;
-  emissionsMax?: number;
-}
-
-interface FilterChangePayload {
-  buildingTypeName: string;
-  filters: FilterValues;
-}
-
 interface RouteParams {
   resultUid?: string;
 }
@@ -72,128 +53,21 @@ export const Results: React.FC = () => {
   const history = useHistory();
   const {resultUid} = useParams<RouteParams>();
 
-  const [results, setResults] = useState<Result[]>([]);
+  const {
+    results,
+    setResults,
+    isLoading: isLoadingResults,
+    isLoadingMore,
+    hasNext,
+    loadMore,
+    applyFilters,
+    resetFilters,
+    refresh,
+  } = useResultsApi({endpoint: endpointResults, pageSize});
   const [buildingFacets, setBuildingFacets] = useState<ResultFacet[]>([]);
   const [showResultModal, setShowResultModal] = useState(false);
   const [selectedResult, setSelectedResult] = useState<Data | null>(null);
-  const [isLoadingResults, setIsLoadingResults] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [nextCursor, setNextCursor] = useState<number | null>(null);
-  const [hasNext, setHasNext] = useState(false);
-  const filtersRef = React.useRef<ResultFilterRequest>({});
-  const requestIdRef = React.useRef(0);
   // build out simple data fetcher straight in the useEffect for now
-  const mergeResults = React.useCallback((current: Result[], incoming: Result[]) => {
-    const existing = new Map(current.map(item => [item.uid, item]));
-    incoming.forEach(item => {
-      existing.set(item.uid, item);
-    });
-    return Array.from(existing.values()).sort(
-      (a, b) => new Date(b.dateRun).getTime() - new Date(a.dateRun).getTime()
-    );
-  }, []);
-
-  const serializeFilters = React.useCallback((filters: ResultFilterRequest) => {
-    const params: Record<string, any> = {};
-    if (filters.buildingTypeUid) {
-      params.buildingTypeUid = filters.buildingTypeUid;
-    }
-    if (filters.tags && filters.tags.length > 0) {
-      params.tags = filters.tags.join(',');
-    }
-    if (filters.scenario) {
-      Object.entries(filters.scenario).forEach(([key, value]) => {
-        if (value) {
-          params[`scenario.${key}`] = value;
-        }
-      });
-    }
-
-    const assignRange = (
-      minValue: number | undefined,
-      maxValue: number | undefined,
-      minKey: string,
-      maxKey: string
-    ) => {
-      if (minValue !== undefined) {
-        params[minKey] = minValue;
-      }
-      if (maxValue !== undefined) {
-        params[maxKey] = maxValue;
-      }
-    };
-
-    assignRange(filters.costMin, filters.costMax, 'costMin', 'costMax');
-    assignRange(filters.energyMin, filters.energyMax, 'energyMin', 'energyMax');
-    assignRange(
-      filters.thermalDiscomfortMin,
-      filters.thermalDiscomfortMax,
-      'thermalDiscomfortMin',
-      'thermalDiscomfortMax'
-    );
-    assignRange(filters.aqDiscomfortMin, filters.aqDiscomfortMax, 'aqDiscomfortMin', 'aqDiscomfortMax');
-    assignRange(filters.emissionsMin, filters.emissionsMax, 'emissionsMin', 'emissionsMax');
-
-    return params;
-  }, []);
-
-  const fetchResults = React.useCallback(
-    async (cursor?: number, append = false, overrides?: ResultFilterRequest) => {
-      if (append) {
-        if (isLoadingMore) {
-          return;
-        }
-      } else if (isLoadingResults && !overrides) {
-        return;
-      }
-
-      const effectiveFilters = overrides ?? filtersRef.current;
-      if (!append && overrides) {
-        filtersRef.current = overrides;
-      }
-
-      const requestId = ++requestIdRef.current;
-      append ? setIsLoadingMore(true) : setIsLoadingResults(true);
-
-      try {
-        const params: Record<string, any> = {
-          limit: pageSize,
-          ...serializeFilters(effectiveFilters),
-        };
-        if (cursor !== undefined) {
-          params.cursor = cursor;
-        }
-
-        const response = await axios.get(endpointResults, {
-          params,
-        });
-
-        const payload = response.data as {
-          results: Result[];
-          pageInfo: {
-            hasNext: boolean;
-            nextCursor: number | null;
-          };
-        };
-
-        if (requestId !== requestIdRef.current) {
-          return;
-        }
-
-        setResults(prev =>
-          append ? mergeResults(prev, payload.results) : payload.results
-        );
-        setHasNext(payload.pageInfo?.hasNext ?? false);
-        setNextCursor(payload.pageInfo?.nextCursor ?? null);
-      } catch (err) {
-        console.error('Unable to load shared results', err);
-      } finally {
-        append ? setIsLoadingMore(false) : setIsLoadingResults(false);
-      }
-    },
-    [isLoadingResults, isLoadingMore, mergeResults, serializeFilters]
-  );
-
   const initialLoadRef = React.useRef(false);
 
   useEffect(() => {
@@ -202,12 +76,12 @@ export const Results: React.FC = () => {
     }
     initialLoadRef.current = true;
 
-    fetchResults(undefined, false, filtersRef.current);
+    refresh();
 
     axios.get(endpointFacets).then(response => {
       setBuildingFacets(response.data);
     });
-  }, [fetchResults]);
+  }, [refresh]);
 
   // when we get a selected result, show the result modal
   useEffect(() => {
@@ -290,81 +164,20 @@ export const Results: React.FC = () => {
   };
 
   const handleLoadMore = () => {
-    if (hasNext && nextCursor !== null) {
-      fetchResults(nextCursor, true);
-    }
+    loadMore();
   };
-
-  const buildFilterRequest = React.useCallback(
-    (payload: FilterChangePayload): ResultFilterRequest => {
-      const request: ResultFilterRequest = {};
-
-      if (payload.buildingTypeName) {
-        const facet = buildingFacets.find(
-          item => item.buildingTypeName === payload.buildingTypeName
-        );
-        if (facet) {
-          request.buildingTypeUid = facet.buildingTypeUid;
-        }
-      }
-
-      const scenarioEntries = Object.entries(payload.filters.scenario || {}).filter(
-        ([, value]) => value !== undefined && value !== null && value !== ''
-      );
-      if (scenarioEntries.length > 0) {
-        const scenarioObject: Record<string, string> = {};
-        scenarioEntries.forEach(([key, value]) => {
-          scenarioObject[key] = value;
-        });
-        request.scenario = scenarioObject;
-      }
-
-      if (payload.filters.tags && payload.filters.tags.length > 0) {
-        request.tags = payload.filters.tags;
-      }
-
-      const assignRange = (
-        range: {min: number; max: number} | undefined,
-        minKey: keyof ResultFilterRequest,
-        maxKey: keyof ResultFilterRequest
-      ) => {
-        if (!range) {
-          return;
-        }
-        if (range.min !== undefined && range.min !== null) {
-          request[minKey] = range.min;
-        }
-        if (range.max !== undefined && range.max !== null) {
-          request[maxKey] = range.max;
-        }
-      };
-
-      assignRange(payload.filters.cost, 'costMin', 'costMax');
-      assignRange(payload.filters.energy, 'energyMin', 'energyMax');
-      assignRange(
-        payload.filters.thermalDiscomfort,
-        'thermalDiscomfortMin',
-        'thermalDiscomfortMax'
-      );
-      assignRange(payload.filters.aqDiscomfort, 'aqDiscomfortMin', 'aqDiscomfortMax');
-
-      return request;
-    },
-    [buildingFacets]
-  );
 
   const handleFiltersChange = React.useCallback(
     (payload: FilterChangePayload) => {
-      const request = buildFilterRequest(payload);
-      fetchResults(undefined, false, request);
+      const request = buildFilterRequest(payload, buildingFacets);
+      applyFilters(request);
     },
-    [buildFilterRequest, fetchResults]
+    [applyFilters, buildingFacets]
   );
 
   const handleResetFilters = React.useCallback(() => {
-    filtersRef.current = {};
-    fetchResults(undefined, false, {});
-  }, [fetchResults]);
+    resetFilters();
+  }, [resetFilters]);
 
   return (
     <div className={classes.root}>

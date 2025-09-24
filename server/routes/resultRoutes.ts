@@ -2,12 +2,12 @@ import {SignatureDetails, Account} from './../../common/interfaces';
 import express from 'express';
 
 import {
-  getAllResultsForUser,
   getSharedResultByUid,
   getSignatureDetailsForResult,
   createResults,
   toggleShared,
   getSharedResultsPage,
+  getUserResultsPage,
 } from '../controllers/result';
 import {listResultFacets} from '../models/ResultFacet';
 import {SharedResultFilters} from '../models/Result';
@@ -20,27 +20,25 @@ type PrivilegedAccount = Account & {
 
 export const resultRouter = express.Router();
 
-resultRouter.get('/', async (req: express.Request, res: express.Response) => {
-  const {limit, cursor, sortDirection} = req.query;
+const parseNumber = (value: unknown): number | undefined => {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+  const parsed = parseFloat(value);
+  return Number.isNaN(parsed) ? undefined : parsed;
+};
 
-  const parsedLimit = typeof limit === 'string' ? parseInt(limit, 10) : undefined;
-  const parsedCursor = typeof cursor === 'string' ? parseInt(cursor, 10) : undefined;
-
+const buildSharedResultFilters = (query: express.Request['query']): SharedResultFilters | undefined => {
   const filters: SharedResultFilters = {};
 
-  const parseNumber = (value: unknown): number | undefined => {
-    if (typeof value !== 'string') {
-      return undefined;
-    }
-    const parsed = parseFloat(value);
-    return Number.isNaN(parsed) ? undefined : parsed;
-  };
-
-  if (typeof req.query.buildingTypeUid === 'string' && req.query.buildingTypeUid.trim().length > 0) {
-    filters.buildingTypeUid = req.query.buildingTypeUid.trim();
+  if (typeof query.buildingTypeUid === 'string' && query.buildingTypeUid.trim().length > 0) {
+    filters.buildingTypeUid = query.buildingTypeUid.trim();
+  }
+  if (typeof query.buildingTypeName === 'string' && query.buildingTypeName.trim().length > 0) {
+    filters.buildingTypeName = query.buildingTypeName.trim();
   }
 
-  const tagsParam = req.query.tags;
+  const tagsParam = query.tags;
   if (typeof tagsParam === 'string') {
     const parsedTags = tagsParam
       .split(',')
@@ -59,7 +57,7 @@ resultRouter.get('/', async (req: express.Request, res: express.Response) => {
   }
 
   const scenarioFilters: Record<string, string> = {};
-  Object.entries(req.query).forEach(([key, value]) => {
+  Object.entries(query).forEach(([key, value]) => {
     if (key.startsWith('scenario.') && typeof value === 'string' && value.length > 0) {
       const scenarioKey = key.substring('scenario.'.length);
       if (scenarioKey.length > 0) {
@@ -76,8 +74,8 @@ resultRouter.get('/', async (req: express.Request, res: express.Response) => {
     minKey: string,
     maxKey: string
   ) => {
-    const minValue = parseNumber(req.query[minKey]);
-    const maxValue = parseNumber(req.query[maxKey]);
+    const minValue = parseNumber(query[minKey]);
+    const maxValue = parseNumber(query[maxKey]);
     if (minValue !== undefined || maxValue !== undefined) {
       filters[targetKey] = {
         ...(minValue !== undefined ? {min: minValue} : {}),
@@ -92,9 +90,22 @@ resultRouter.get('/', async (req: express.Request, res: express.Response) => {
   assignRange('aqDiscomfort', 'aqDiscomfortMin', 'aqDiscomfortMax');
   assignRange('emissions', 'emissionsMin', 'emissionsMax');
 
-  const sanitizedFilters = Object.values(filters).some(value => value !== undefined)
-    ? filters
-    : undefined;
+  return Object.values(filters).some(value => value !== undefined) ? filters : undefined;
+};
+
+resultRouter.get('/', async (req: express.Request, res: express.Response) => {
+  const {limit, cursor, sortDirection} = req.query;
+
+  const parsedLimit = typeof limit === 'string' ? parseInt(limit, 10) : undefined;
+  const parsedCursor = typeof cursor === 'string' ? parseInt(cursor, 10) : undefined;
+
+  const sanitizedFilters = buildSharedResultFilters(req.query);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('My results filters', sanitizedFilters);
+  }
+  if (process.env.NODE_ENV !== 'production' && sanitizedFilters?.buildingTypeUid) {
+    console.log('Shared results filter buildingTypeUid', sanitizedFilters.buildingTypeUid);
+  }
 
   try {
     const page = await getSharedResultsPage({
@@ -114,20 +125,35 @@ resultRouter.get('/', async (req: express.Request, res: express.Response) => {
   }
 });
 
-resultRouter.get('/my-results', authorizer, (req: express.Request, res: express.Response) => {
+resultRouter.get('/my-results', authorizer, async (req: express.Request, res: express.Response) => {
   const user = req.user as PrivilegedAccount | undefined;
   if (!user) {
     return res.status(401).json({error: 'Not authenticated'});
   }
 
-  getAllResultsForUser(user.id.toString())
-    .then(results => {
-      res.json(results);
-    })
-    .catch(err => {
-      console.error(`Unable to get results for user ID ${user.id}`, err);
-      res.status(500).json({error: 'Failed to retrieve results'});
+  const {limit, cursor, sortDirection} = req.query;
+
+  const parsedLimit = typeof limit === 'string' ? parseInt(limit, 10) : undefined;
+  const parsedCursor = typeof cursor === 'string' ? parseInt(cursor, 10) : undefined;
+  const sanitizedFilters = buildSharedResultFilters(req.query);
+
+  try {
+    const page = await getUserResultsPage({
+      accountId: Number(user.id),
+      limit: parsedLimit && !Number.isNaN(parsedLimit) ? parsedLimit : 50,
+      cursor: parsedCursor && !Number.isNaN(parsedCursor) ? parsedCursor : undefined,
+      filters: sanitizedFilters,
+      sortDirection:
+        typeof sortDirection === 'string' && sortDirection.toLowerCase() === 'asc'
+          ? 'asc'
+          : 'desc',
     });
+
+    res.json(page);
+  } catch (err) {
+    console.error(`Unable to get results for user ID ${user.id}`, err);
+    res.status(500).json({error: 'Failed to retrieve results'});
+  }
 });
 
 resultRouter.get('/facets', (req: express.Request, res: express.Response) => {

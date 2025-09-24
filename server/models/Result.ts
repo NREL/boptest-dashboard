@@ -206,6 +206,7 @@ interface RangeFilter {
 
 export interface SharedResultFilters {
   buildingTypeUid?: string;
+  buildingTypeName?: string;
   tags?: string[];
   scenario?: Record<string, string>;
   cost?: RangeFilter;
@@ -213,6 +214,7 @@ export interface SharedResultFilters {
   thermalDiscomfort?: RangeFilter;
   aqDiscomfort?: RangeFilter;
   emissions?: RangeFilter;
+  accountId?: number;
 }
 
 export interface SharedResultQueryOptions {
@@ -248,36 +250,36 @@ export interface SharedResultQueryOutput {
   hasNext: boolean;
 }
 
-export async function querySharedResultDocuments(
-  options: SharedResultQueryOptions
-): Promise<SharedResultQueryOutput> {
-  const {limit, cursor, filters, sortDirection = 'desc'} = options;
-  const store = await getDocumentStore();
-  const pool = store.getPool();
-
-  const params: Array<number | string | number[]> = [];
-  const conditions: string[] = [`collection = 'results'`, `(data->>'deleted')::boolean = false`];
-
-  if (typeof cursor === 'number' && Number.isFinite(cursor)) {
-    params.push(cursor);
-    if (sortDirection === 'asc') {
-      conditions.push(`numeric_id > $${params.length}`);
-    } else {
-      conditions.push(`numeric_id < $${params.length}`);
-    }
+function applyFilterConditions(
+  filters: SharedResultFilters | undefined,
+  params: Array<number | string | number[]>,
+  conditions: string[]
+) {
+  if (!filters) {
+    return;
   }
 
-  if (filters?.buildingTypeUid) {
-    params.push(filters.buildingTypeUid);
-    conditions.push(`data->>'buildingTypeUid' = $${params.length}`);
+  if (filters.buildingTypeUid) {
+    params.push(String(filters.buildingTypeUid).toLowerCase());
+    conditions.push(`LOWER(data->>'buildingTypeUid') = $${params.length}`);
   }
 
-  if (filters?.tags && filters.tags.length > 0) {
+  if (filters.buildingTypeName) {
+    params.push(filters.buildingTypeName.toLowerCase());
+    conditions.push(`LOWER(data->>'buildingTypeName') = $${params.length}`);
+  }
+
+  if (filters.tags && filters.tags.length > 0) {
     params.push(JSON.stringify(filters.tags));
     conditions.push(`(data->'tags') @> $${params.length}::jsonb`);
   }
 
-  if (filters?.scenario) {
+  if (typeof filters.accountId === 'number' && Number.isFinite(filters.accountId)) {
+    params.push(filters.accountId);
+    conditions.push(`(data->>'accountId')::bigint = $${params.length}::bigint`);
+  }
+
+  if (filters.scenario) {
     const scenarioEntries = Object.entries(filters.scenario)
       .filter(([, value]) => value !== undefined && value !== null && value !== '')
       .map(([key, value]) => [key, value as string]);
@@ -305,11 +307,33 @@ export async function querySharedResultDocuments(
     }
   };
 
-  pushRange('cost', filters?.cost);
-  pushRange('energyUse', filters?.energy);
-  pushRange('thermalDiscomfort', filters?.thermalDiscomfort);
-  pushRange('iaq', filters?.aqDiscomfort);
-  pushRange('emissions', filters?.emissions);
+  pushRange('cost', filters.cost);
+  pushRange('energyUse', filters.energy);
+  pushRange('thermalDiscomfort', filters.thermalDiscomfort);
+  pushRange('iaq', filters.aqDiscomfort);
+  pushRange('emissions', filters.emissions);
+}
+
+export async function querySharedResultDocuments(
+  options: SharedResultQueryOptions
+): Promise<SharedResultQueryOutput> {
+  const {limit, cursor, filters, sortDirection = 'desc'} = options;
+  const store = await getDocumentStore();
+  const pool = store.getPool();
+
+  const params: Array<number | string | number[]> = [];
+  const conditions: string[] = [`collection = 'results'`, `(data->>'deleted')::boolean = false`];
+
+  if (typeof cursor === 'number' && Number.isFinite(cursor)) {
+    params.push(cursor);
+    if (sortDirection === 'asc') {
+      conditions.push(`numeric_id > $${params.length}`);
+    } else {
+      conditions.push(`numeric_id < $${params.length}`);
+    }
+  }
+
+  applyFilterConditions(filters, params, conditions);
 
   const accountIdsSharingAll = (await listAccounts())
     .filter(account => account.shareAllResults === true)
@@ -324,6 +348,66 @@ export async function querySharedResultDocuments(
   } else {
     conditions.push(`(data->>'isShared')::boolean = true`);
   }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  const safeLimit = Math.min(Math.max(limit || 0, 1), 100);
+  const orderDirection = sortDirection === 'asc' ? 'ASC' : 'DESC';
+  const sql = `
+    SELECT doc_id, collection, numeric_id, data, created_at, updated_at
+    FROM documents
+    ${whereClause}
+    ORDER BY numeric_id ${orderDirection}
+    LIMIT ${safeLimit + 1}
+  `;
+
+  const {rows} = await pool.query(sql, params);
+  const mapped = rows.map(row => mapQueryRowToRecord(row as unknown as QueryRow));
+
+  const hasNext = mapped.length > safeLimit;
+  const trimmed = hasNext ? mapped.slice(0, safeLimit) : mapped;
+  const nextCursor = hasNext ? trimmed[trimmed.length - 1].numericId : null;
+
+  return {
+    records: trimmed,
+    nextCursor,
+    hasNext,
+  };
+}
+
+export interface UserResultQueryOptions extends SharedResultQueryOptions {
+  accountId: number;
+}
+
+export async function queryUserResultDocuments(
+  options: UserResultQueryOptions
+): Promise<SharedResultQueryOutput> {
+  const {limit, cursor, filters, sortDirection = 'desc', accountId} = options;
+  const store = await getDocumentStore();
+  const pool = store.getPool();
+
+  const params: Array<number | string | number[]> = [accountId];
+  const conditions: string[] = [
+    `collection = 'results'`,
+    `(data->>'deleted')::boolean = false`,
+    `(data->>'accountId')::bigint = $1::bigint`,
+  ];
+
+  const effectiveFilters: SharedResultFilters = {
+    ...(filters || {}),
+    accountId,
+  };
+
+  if (typeof cursor === 'number' && Number.isFinite(cursor)) {
+    params.push(cursor);
+    const placeholder = `$${params.length}`;
+    if (sortDirection === 'asc') {
+      conditions.push(`numeric_id > ${placeholder}`);
+    } else {
+      conditions.push(`numeric_id < ${placeholder}`);
+    }
+  }
+
+  applyFilterConditions(effectiveFilters, params, conditions);
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
   const safeLimit = Math.min(Math.max(limit || 0, 1), 100);

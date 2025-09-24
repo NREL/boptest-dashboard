@@ -19,6 +19,8 @@ import {
   ResultDocument,
   querySharedResultDocuments,
   SharedResultQueryOptions,
+  queryUserResultDocuments,
+  UserResultQueryOptions,
 } from '../models/Result';
 import {upsertResultFacet} from '../models/ResultFacet';
 import {DocumentRecord, JsonObject} from '../datastore/documentStore';
@@ -189,6 +191,43 @@ export async function getSharedResultsPage(
 
   return {
     results: sanitized,
+    pageInfo: {
+      hasNext,
+      nextCursor,
+    },
+  };
+}
+
+export async function getUserResultsPage(
+  options: UserResultQueryOptions
+): Promise<SharedResultsPage> {
+  const {records, hasNext, nextCursor} = await queryUserResultDocuments(options);
+  let hydrated = await hydrateResults(records);
+
+  const {filters} = options;
+  if (filters) {
+    hydrated = hydrated.filter(result => {
+      const {buildingType} = result;
+      if (filters.buildingTypeUid) {
+        const targetUid = String(filters.buildingTypeUid).toLowerCase();
+        const resultUid = String(buildingType?.uid ?? '').toLowerCase();
+        if (targetUid && !resultUid.includes(targetUid)) {
+          return false;
+        }
+      }
+      if (filters.buildingTypeName) {
+        const targetName = String(filters.buildingTypeName).toLowerCase();
+        const resultName = String(buildingType?.name ?? '').toLowerCase();
+        if (targetName && !resultName.includes(targetName)) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }
+
+  return {
+    results: hydrated,
     pageInfo: {
       hasNext,
       nextCursor,
