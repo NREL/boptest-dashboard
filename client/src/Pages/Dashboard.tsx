@@ -1,7 +1,9 @@
 import axios from 'axios';
 import React, {useCallback, useEffect, useState} from 'react';
+import clsx from 'clsx';
 import {useUser} from '../Context/user-context';
-import {makeStyles, createStyles, Theme} from '@material-ui/core/styles';
+import {makeStyles, createStyles, Theme, useTheme} from '@material-ui/core/styles';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
@@ -14,6 +16,7 @@ import {ResultFacet} from '../../common/interfaces';
 import {Data} from '../Lib/TableHelpers';
 import {useResultsApi} from '../Lib/useResultsApi';
 import {buildFilterRequest, FilterChangePayload} from '../Lib/resultFilters';
+import {ResultsListMobile} from '../Components/ResultsListMobile';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -25,6 +28,9 @@ const useStyles = makeStyles((theme: Theme) =>
       flex: 1,
       minHeight: 0,
       overflow: 'hidden',
+      [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(1, 0, 2),
+      },
     },
     paper: {
       padding: theme.spacing(0),
@@ -34,6 +40,11 @@ const useStyles = makeStyles((theme: Theme) =>
       flexDirection: 'column',
       boxSizing: 'border-box',
       minHeight: 0,
+    },
+    paperMobile: {
+      background: 'transparent',
+      boxShadow: 'none',
+      borderRadius: 0,
     },
     noResults: {
       padding: theme.spacing(5),
@@ -57,6 +68,8 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export const Dashboard: React.FC = () => {
   const classes = useStyles();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const {hashedIdentifier, authedId, loading: isUserLoading} = useUser();
   const [buildingFacets, setBuildingFacets] = useState<ResultFacet[]>([]);
   const [showResultModal, setShowResultModal] = useState(false);
@@ -153,7 +166,7 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className={classes.root}>
-      <Paper className={classes.paper}>
+      <Paper className={clsx(classes.paper, isMobile && classes.paperMobile)} elevation={isMobile ? 0 : undefined}>
         <Typography variant="h5" className={classes.header}>
           My Results
         </Typography>
@@ -193,6 +206,17 @@ export const Dashboard: React.FC = () => {
               You don't have any test results yet.
             </Typography>
           </Paper>
+        ) : isMobile ? (
+          <div className={classes.tableWrapper}>
+            <ResultsListMobile
+              results={results}
+              onSelectResult={handleChange}
+              isLoading={isLoadingResults && results.length === 0}
+              hasMore={hasNext}
+              onLoadMore={loadMore}
+              isLoadingMore={isLoadingMore}
+            />
+          </div>
         ) : (
           <>
             <div className={classes.tableWrapper}>
@@ -212,10 +236,12 @@ export const Dashboard: React.FC = () => {
                 onResetFilters={handleResetFilters}
               />
             </div>
-            {showResultModal && (
+            {showResultModal && selectedResult && (
               <Modal
                 closeModal={closeModal}
-                renderProp={<ResultDetails result={selectedResult} />}
+                renderProp={
+                  <ResultDetails result={selectedResult} onClose={closeModal} />
+                }
               />
             )}
           </>

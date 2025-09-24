@@ -1,16 +1,19 @@
 import axios from 'axios';
 import React, {useEffect, useState} from 'react';
 import {useHistory, useParams} from 'react-router-dom';
+import clsx from 'clsx';
 import ResultsTable from '../Components/ResultsTable';
 import {Modal} from '../Components/Modal';
 import {ResultDetails} from '../Components/ResultDetails';
-import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
+import {makeStyles, createStyles, Theme, useTheme} from '@material-ui/core/styles';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Paper from '@material-ui/core/Paper';
 import {Result, ResultFacet} from '../../common/interfaces';
 import {AppRoute} from '../enums';
 import {createDataFromResult, Data} from '../Lib/TableHelpers';
 import {useResultsApi} from '../Lib/useResultsApi';
 import {buildFilterRequest, FilterChangePayload} from '../Lib/resultFilters';
+import {ResultsListMobile} from '../Components/ResultsListMobile';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -22,6 +25,9 @@ const useStyles = makeStyles((theme: Theme) =>
       flex: 1,
       minHeight: 0,
       overflow: 'hidden',
+      [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(1, 0, 2),
+      },
     },
     paper: {
       padding: theme.spacing(0),
@@ -31,6 +37,11 @@ const useStyles = makeStyles((theme: Theme) =>
       flexDirection: 'column',
       boxSizing: 'border-box',
       minHeight: 0,
+    },
+    paperMobile: {
+      background: 'transparent',
+      boxShadow: 'none',
+      borderRadius: 0,
     },
     tableWrapper: {
       flex: 1,
@@ -52,6 +63,8 @@ export const Results: React.FC = () => {
   const classes = useStyles();
   const history = useHistory();
   const {resultUid} = useParams<RouteParams>();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const {
     results,
@@ -181,25 +194,44 @@ export const Results: React.FC = () => {
 
   return (
     <div className={classes.root}>
-      <Paper className={classes.paper}>
+      <Paper className={clsx(classes.paper, isMobile && classes.paperMobile)} elevation={isMobile ? 0 : undefined}>
         <div className={classes.tableWrapper}>
-          <ResultsTable
-            results={results}
-            buildingFacets={buildingFacets}
-            setSelectedResult={handleChange}
-            isLoading={isLoadingResults && results.length === 0}
-            onFiltersChange={handleFiltersChange}
-            hasMoreResults={hasNext}
-            onLoadMoreResults={handleLoadMore}
-            isLoadingMoreResults={isLoadingMore}
-            onResetFilters={handleResetFilters}
-          />
+          {isMobile ? (
+            <ResultsListMobile
+              results={results}
+              onSelectResult={handleChange}
+              isLoading={isLoadingResults && results.length === 0}
+              hasMore={hasNext}
+              onLoadMore={handleLoadMore}
+              isLoadingMore={isLoadingMore}
+              showShareStatus={false}
+              showAccountName
+            />
+          ) : (
+            <ResultsTable
+              results={results}
+              buildingFacets={buildingFacets}
+              setSelectedResult={handleChange}
+              isLoading={isLoadingResults && results.length === 0}
+              onFiltersChange={handleFiltersChange}
+              hasMoreResults={hasNext}
+              onLoadMoreResults={handleLoadMore}
+              isLoadingMoreResults={isLoadingMore}
+              onResetFilters={handleResetFilters}
+            />
+          )}
         </div>
 
         {showResultModal && selectedResult && (
           <Modal
             closeModal={closeModal}
-            renderProp={<ResultDetails result={selectedResult} />}
+            renderProp={
+              <ResultDetails
+                result={selectedResult}
+                showShareStatus={false}
+                onClose={closeModal}
+              />
+            }
           />
         )}
       </Paper>

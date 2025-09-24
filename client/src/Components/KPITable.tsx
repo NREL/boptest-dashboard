@@ -3,7 +3,8 @@ import React, {useEffect, useState} from 'react';
 import {Table, TableBody, TableCell, TableRow, CircularProgress} from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import {SignatureDetails, Result} from '../../common/interfaces';
+import {SignatureDetails} from '../../common/interfaces';
+import {Data} from '../Lib/TableHelpers';
 import {KPIBarChart} from './KPIBarChart';
 
 const numberOfResultsToShowChart = 3;
@@ -60,12 +61,8 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface KPITableProps {
-  result: Result;
+  result: Data;
 }
-
-const getSignatureEndpoint = (resultId: string) => {
-  return `/api/results/${resultId}/signature`;
-};
 
 export const KPITable: React.FC<KPITableProps> = props => {
   const classes = useStyles();
@@ -87,7 +84,7 @@ export const KPITable: React.FC<KPITableProps> = props => {
     setDetails(undefined);
 
     axios
-      .get(getSignatureEndpoint(props.result.uid))
+      .get(`/api/results/${props.result.uid}/signature`)
       .then(response => {
         if (!isActive) {
           return;
