@@ -22,6 +22,8 @@ import TableSortLabel from '@material-ui/core/TableSortLabel';
 import TextField from '@material-ui/core/TextField';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 
 import {FilterMenu} from './FilterMenu';
 import {useUser} from '../Context/user-context';
@@ -44,6 +46,7 @@ import {
   setupFilters,
   stableSort,
 } from '../Lib/TableHelpers';
+import {ResultsScatterPlot, NumericColumnKey} from './ResultsScatterPlot';
 
 const emptyFilterRanges: FilterRanges = {
   costRange: {min: 0, max: 0},
@@ -152,6 +155,36 @@ const columnWidths: Partial<Record<keyof Data, string>> = {
   compTimeRatio: '180px',
   isShared: '120px',
 };
+
+const numericColumnIds = [
+  'totalEnergy',
+  'thermalDiscomfort',
+  'aqDiscomfort',
+  'cost',
+  'emissions',
+  'peakElectricity',
+  'peakGas',
+  'peakDistrictHeating',
+  'compTimeRatio',
+] as const;
+
+const numericColumnOptions: Array<{id: NumericColumnKey; label: string}> = numericColumnIds.map(
+  id => {
+    const headCell = baseHeadCells.find(cell => cell.id === id);
+    return {
+      id,
+      label: headCell ? headCell.label : id,
+    };
+  }
+);
+
+const fallbackAxisOption: {id: NumericColumnKey; label: string} =
+  numericColumnOptions[0] ?? {
+    id: 'totalEnergy',
+    label:
+      baseHeadCells.find(cell => cell.id === 'totalEnergy')?.label ||
+      'Total Energy [kWh/m^2]',
+  };
 
 function buildHeadCells(includeShareColumn: boolean): HeadCell[] {
   if (!includeShareColumn) {
@@ -364,14 +397,14 @@ interface EnhancedTableToolbarProps {
   buildingTypeFilterOptions: {[index: number]: string};
   displayClear: boolean;
   buildingFilterValue: string;
-  totalResults: number;
-  numSelected: number;
   updateBuildingFilter: (value: string) => void;
   onClearFilters: () => void;
   enableSelection?: boolean;
   showDownloadButton?: boolean;
   onDownloadSelected?: () => void;
   downloadDisabled?: boolean;
+  summaryText: string;
+  summaryAction?: React.ReactNode;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
@@ -380,14 +413,14 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     buildingTypeFilterOptions,
     displayClear,
     buildingFilterValue,
-    totalResults,
-    numSelected,
     updateBuildingFilter,
     onClearFilters,
     enableSelection = false,
     showDownloadButton = false,
     onDownloadSelected,
     downloadDisabled = false,
+    summaryText,
+    summaryAction,
   } = props;
 
   const selectProps = {
@@ -408,14 +441,6 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     const value = event.target.value as string;
     updateBuildingFilter(value === 'all' ? '' : value);
   };
-
-  const selectionSummary = enableSelection && numSelected > 0
-    ? `${numSelected.toLocaleString()} selected`
-    : null;
-
-  const summaryText = selectionSummary
-    ? selectionSummary
-    : `Showing ${totalResults.toLocaleString()} results`;
 
   return (
     <Toolbar className={classes.root}>
@@ -467,6 +492,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
         <Typography variant="body2" className={classes.summary}>
           {summaryText}
         </Typography>
+        {summaryAction}
         {showDownloadButton && (
           <Button
             variant="contained"
@@ -621,11 +647,20 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     footer: {
       display: 'flex',
-      justifyContent: 'center',
       alignItems: 'center',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: theme.spacing(2),
       padding: theme.spacing(3),
       borderTop: '1px solid rgba(0, 0, 0, 0.08)',
       marginTop: 'auto',
+    },
+    footerText: {
+      flexGrow: 1,
+      textAlign: 'center',
+    },
+    footerToggle: {
+      marginLeft: 'auto',
     },
     link: {
       color: theme.palette.primary.main,
@@ -684,6 +719,31 @@ const useStyles = makeStyles((theme: Theme) =>
       background: `linear-gradient(to left, ${theme.palette.background.paper} 0%, rgba(255,255,255,0) 100%)`,
       pointerEvents: 'none',
     },
+    scatterControls: {
+      display: 'flex',
+      gap: theme.spacing(2),
+      padding: theme.spacing(1, 3, 0, 3),
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      minHeight: 56,
+    },
+    axisSelect: {
+      marginRight: theme.spacing(2),
+      '& .MuiInputBase-root': {
+        height: '40px',
+      },
+      '&:last-child': {
+        marginRight: 0,
+      },
+    },
+    scatterWrapper: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      padding: theme.spacing(0, 3, 0, 3),
+      minHeight: 0,
+    },
   })
 );
 
@@ -727,11 +787,19 @@ export default function ResultsTable(props: ResultsTableProps) {
   );
 
   const classes = useStyles();
+  const toolbarClasses = useToolbarStyles();
   const getColumnWidth = (column: keyof Data) => columnWidths[column];
   const [order, setOrder] = useState<Order>('desc');
   const [orderBy, setOrderBy] = useState<keyof Data>('dateRun');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [displayFilters, setDisplayFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<'table' | 'scatter'>('table');
+  const [xAxisId, setXAxisId] = useState<NumericColumnKey>(
+    numericColumnOptions[0]?.id ?? 'totalEnergy'
+  );
+  const [yAxisId, setYAxisId] = useState<NumericColumnKey>(
+    numericColumnOptions[1]?.id ?? numericColumnOptions[0]?.id ?? 'thermalDiscomfort'
+  );
   const [buildingTypeFilter, setBuildingTypeFilter] = useState<string>('');
   const [scenarioOptions, setScenarioOptions] = useState<Record<string, string[]>>({});
   const filtersInitialized = useRef(false);
@@ -749,6 +817,12 @@ export default function ResultsTable(props: ResultsTableProps) {
     }
     return filterRows(rows, buildingTypeFilter, filters);
   }, [onFiltersChange, rows, buildingTypeFilter, filters]);
+  const xAxisOption = useMemo(() => {
+    return numericColumnOptions.find(option => option.id === xAxisId) ?? fallbackAxisOption;
+  }, [xAxisId]);
+  const yAxisOption = useMemo(() => {
+    return numericColumnOptions.find(option => option.id === yAxisId) ?? fallbackAxisOption;
+  }, [yAxisId]);
   const fallbackTagOptions = useMemo(() => createTagOptions(filteredRows), [filteredRows]);
   const tagOptions = useMemo(() => {
     if (!onFiltersChange) {
@@ -926,6 +1000,28 @@ export default function ResultsTable(props: ResultsTableProps) {
     setFilters(requestedFilters);
     filtersInitialized.current = true;
     onFiltersChange?.({buildingTypeName: buildingTypeFilter, filters: requestedFilters});
+  };
+
+  const handleViewModeChange = (
+    _event: React.MouseEvent<HTMLElement>,
+    nextView: 'table' | 'scatter' | null
+  ) => {
+    if (!nextView) {
+      return;
+    }
+    setViewMode(nextView);
+  };
+
+  const handleXAxisChange = (
+    event: React.ChangeEvent<{name?: string; value: unknown}>
+  ) => {
+    setXAxisId(event.target.value as NumericColumnKey);
+  };
+
+  const handleYAxisChange = (
+    event: React.ChangeEvent<{name?: string; value: unknown}>
+  ) => {
+    setYAxisId(event.target.value as NumericColumnKey);
   };
 
   const handleClearFilters = () => {
@@ -1120,6 +1216,27 @@ export default function ResultsTable(props: ResultsTableProps) {
   const headCells = buildHeadCells(includeShareColumn);
   const columnCount = headCells.length + (enableSelection ? 1 : 0);
   const displayClear = buildingTypeFilter !== '';
+  const selectionSummary =
+    enableSelection && viewMode === 'table' && selectedIds.length > 0
+      ? `${selectedIds.length.toLocaleString()} selected`
+      : null;
+  const resultCountLabel = filteredRows.length.toLocaleString();
+  const defaultSummary = hasMoreResults
+    ? `Newest ${resultCountLabel} results`
+    : `All ${resultCountLabel} results`;
+  const summaryTextValue = selectionSummary ?? defaultSummary;
+  const summaryAction =
+    viewMode === 'scatter' && hasMoreResults && onLoadMoreResults ? (
+      <Button
+        variant="outlined"
+        color="primary"
+        size="small"
+        onClick={onLoadMoreResults}
+        disabled={isLoadingMoreResults}
+      >
+        {isLoadingMoreResults ? 'Loading...' : 'Load more results'}
+      </Button>
+    ) : undefined;
 
   return (
     <div className={classes.root}>
@@ -1130,14 +1247,16 @@ export default function ResultsTable(props: ResultsTableProps) {
           }
           displayClear={displayClear}
           buildingFilterValue={buildingTypeFilter}
-          totalResults={filteredRows.length}
-          numSelected={selectedIds.length}
           updateBuildingFilter={handleUpdateBuildingFilter}
           onClearFilters={handleClearFilters}
-          enableSelection={enableSelection}
-          showDownloadButton={enableSelection && showDownloadButton}
+          enableSelection={enableSelection && viewMode === 'table'}
+          showDownloadButton={
+            enableSelection && showDownloadButton && viewMode === 'table'
+          }
           onDownloadSelected={downloadResultsToCSV}
           downloadDisabled={selectedIds.length === 0}
+          summaryText={summaryTextValue}
+          summaryAction={summaryAction}
         />
         {displayFilters && (
           <FilterToolbar
@@ -1154,7 +1273,44 @@ export default function ResultsTable(props: ResultsTableProps) {
             updateFilters={handleUpdateFilters}
           />
         )}
-        <TableContainer className={classes.tableContainer}>
+        {viewMode === 'scatter' && (
+          <Toolbar className={classes.scatterControls}>
+            <ColorSelect
+              className={`${toolbarClasses.select} ${classes.axisSelect}`}
+              label="X Axis"
+              select
+              value={xAxisId}
+              onChange={handleXAxisChange}
+              variant="outlined"
+              size="small"
+              InputLabelProps={{shrink: true}}
+            >
+              {numericColumnOptions.map(option => (
+                <MenuItem key={`x-axis-${option.id}`} value={option.id}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </ColorSelect>
+            <ColorSelect
+              className={`${toolbarClasses.select} ${classes.axisSelect}`}
+              label="Y Axis"
+              select
+              value={yAxisId}
+              onChange={handleYAxisChange}
+              variant="outlined"
+              size="small"
+              InputLabelProps={{shrink: true}}
+            >
+              {numericColumnOptions.map(option => (
+                <MenuItem key={`y-axis-${option.id}`} value={option.id}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </ColorSelect>
+          </Toolbar>
+        )}
+        {viewMode === 'table' ? (
+          <TableContainer className={classes.tableContainer}>
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
@@ -1376,9 +1532,20 @@ export default function ResultsTable(props: ResultsTableProps) {
               )}
             </TableBody>
           </Table>
-        </TableContainer>
+          </TableContainer>
+        ) : (
+          <div className={classes.scatterWrapper}>
+            <ResultsScatterPlot
+              rows={filteredRows}
+              xAxis={xAxisOption}
+              yAxis={yAxisOption}
+              onPointClick={setSelectedResult}
+              isLoading={isLoading}
+            />
+          </div>
+        )}
         <div className={classes.footer}>
-          <Typography variant="body2">
+          <Typography variant="body2" className={classes.footerText}>
             These results are made with BOPTEST. Please visit the{' '}
             <a
               href="https://ibpsa.github.io/project1-boptest/"
@@ -1390,6 +1557,21 @@ export default function ResultsTable(props: ResultsTableProps) {
             </a>{' '}
             to learn more.
           </Typography>
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={handleViewModeChange}
+            size="small"
+            className={classes.footerToggle}
+            aria-label="results view"
+          >
+            <ToggleButton value="table" aria-label="table view">
+              Table
+            </ToggleButton>
+            <ToggleButton value="scatter" aria-label="scatter view">
+              Scatter
+            </ToggleButton>
+          </ToggleButtonGroup>
         </div>
       </Paper>
     </div>
