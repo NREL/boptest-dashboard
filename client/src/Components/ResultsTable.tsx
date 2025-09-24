@@ -82,7 +82,7 @@ const baseHeadCells: HeadCell[] = [
     id: 'buildingTypeName',
     numeric: false,
     disablePadding: false,
-    label: 'Building Type',
+    label: 'Test Case',
   },
   {id: 'dateRun', numeric: false, disablePadding: false, label: 'Date Run'},
   {
