@@ -8,10 +8,10 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import IconButton from '@material-ui/core/IconButton';
 import ShareIcon from '@material-ui/icons/Share';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
-import PublicIcon from '@material-ui/icons/Public';
-import LockIcon from '@material-ui/icons/Lock';
+import CloseIcon from '@material-ui/icons/Close';
 
 import {ResultsListMobile} from '../../Components/ResultsListMobile';
 import {ResultDetails} from '../../Components/ResultDetails';
@@ -41,17 +41,18 @@ export const DashboardMobile: React.FC = () => {
   } = useDashboardViewModel();
   const {setOptions, reset} = useMobileHeader();
   const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
-
   const canUseWebShare =
     typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
-  const handleSelect = (result: Data) => {
+  useEffect(() => () => reset(), [reset]);
+
+  const handleSelect = useCallback((result: Data) => {
     onSelectResult(result);
-  };
+  }, [onSelectResult]);
 
   const handleCloseDetails = useCallback(() => {
-    setShareAnchor(null);
     clearSelection();
+    setShareAnchor(null);
   }, [clearSelection]);
 
   const handleOpenShareMenu = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -71,7 +72,7 @@ export const DashboardMobile: React.FC = () => {
     (result: Data) => {
       handleCloseShareMenu();
       navigator.clipboard.writeText(formatShareUrl(result)).catch(() => {
-        // ignore clipboard failures on mobile completely
+        /* ignore clipboard failures */
       });
     },
     [formatShareUrl, handleCloseShareMenu]
@@ -90,53 +91,66 @@ export const DashboardMobile: React.FC = () => {
           url: formatShareUrl(result),
         });
       } catch (error) {
-        // ignore share cancellation/errors
+        /* ignore share cancellation */
       }
     },
     [canUseWebShare, formatShareUrl, handleCloseShareMenu]
   );
 
   const headerRightExtras = useMemo(() => {
-    if (!selectedResult || selectedResult.isShared !== true) {
+    if (!selectedResult) {
       return null;
     }
 
     return (
-      <>
-        <Button
-          size="small"
-          variant="outlined"
+      <div className={classes.detailHeaderActions}>
+        {selectedResult.isShared ? (
+          <>
+            <Button
+              size="small"
+              variant="outlined"
+              color="primary"
+              onClick={handleOpenShareMenu}
+            >
+              Share
+            </Button>
+            <Menu
+              anchorEl={shareAnchor}
+              keepMounted
+              open={Boolean(shareAnchor)}
+              onClose={handleCloseShareMenu}
+            >
+              {canUseWebShare ? (
+                <MenuItem onClick={() => handleNativeShare(selectedResult)}>
+                  <ListItemIcon>
+                    <ShareIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary="Share with device" />
+                </MenuItem>
+              ) : null}
+              <MenuItem onClick={() => handleCopyShareLink(selectedResult)}>
+                <ListItemIcon>
+                  <FileCopyIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Copy link" />
+              </MenuItem>
+            </Menu>
+          </>
+        ) : null}
+        <IconButton
           color="inherit"
-          onClick={handleOpenShareMenu}
-          className={classes.headerShareButton}
+          aria-label="Close details"
+          onClick={handleCloseDetails}
+          size="small"
         >
-          Share
-        </Button>
-        <Menu
-          anchorEl={shareAnchor}
-          keepMounted
-          open={Boolean(shareAnchor)}
-          onClose={handleCloseShareMenu}
-        >
-          {canUseWebShare ? (
-            <MenuItem onClick={() => handleNativeShare(selectedResult)}>
-              <ListItemIcon>
-                <ShareIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary="Share with device" />
-            </MenuItem>
-          ) : null}
-          <MenuItem onClick={() => handleCopyShareLink(selectedResult)}>
-            <ListItemIcon>
-              <FileCopyIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="Copy link" />
-          </MenuItem>
-        </Menu>
-      </>
+          <CloseIcon />
+        </IconButton>
+      </div>
     );
   }, [
     canUseWebShare,
+    classes.detailHeaderActions,
+    handleCloseDetails,
     handleCloseShareMenu,
     handleCopyShareLink,
     handleNativeShare,
@@ -147,20 +161,13 @@ export const DashboardMobile: React.FC = () => {
 
   useEffect(() => {
     if (selectedResult) {
-      const statusLabel = selectedResult.isShared
-        ? 'Shared publicly'
-        : 'Private result';
+      const statusLabel = selectedResult.isShared ? 'Shared publicly' : 'Private result';
       setOptions({
-        leftAction: 'back',
-        onBack: handleCloseDetails,
+        leftAction: 'none',
         title: `Test Case: ${selectedResult.buildingTypeName}`,
         subtitle: `Result ID: ${selectedResult.uid}`,
         status: {
-          icon: selectedResult.isShared ? (
-            <PublicIcon fontSize="small" />
-          ) : (
-            <LockIcon fontSize="small" />
-          ),
+          state: selectedResult.isShared ? 'public' : 'private',
           label: statusLabel,
         },
         rightExtras: headerRightExtras,
@@ -168,21 +175,17 @@ export const DashboardMobile: React.FC = () => {
       });
       return;
     }
+
+    setShareAnchor(null);
     setOptions({
       leftAction: 'none',
       title: 'My Results',
       subtitle: 'Results for this account.',
       rightExtras: null,
+      status: undefined,
       hideAuthControl: false,
     });
-  }, [
-    handleCloseDetails,
-    headerRightExtras,
-    selectedResult,
-    setOptions,
-  ]);
-
-  useEffect(() => () => reset(), [reset]);
+  }, [headerRightExtras, selectedResult, setOptions]);
 
   return (
     <div className={classes.root}>

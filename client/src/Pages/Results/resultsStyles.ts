@@ -33,5 +33,10 @@ export const useResultsLayoutStyles = makeStyles((theme: Theme) =>
       minHeight: 0,
       display: 'flex',
     },
+    detailHeaderActions: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(1),
+    },
   })
 );

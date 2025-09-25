@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {useHistory, useLocation} from 'react-router-dom';
+import React, {useCallback, useState} from 'react';
+import {useHistory} from 'react-router-dom';
 import {
   IconButton,
   Typography,
@@ -13,10 +13,10 @@ import {
   Button,
 } from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
-import MenuIcon from '@material-ui/icons/Menu';
 import CloseIcon from '@material-ui/icons/Close';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import PublicIcon from '@material-ui/icons/Public';
+import LockIcon from '@material-ui/icons/Lock';
 
 import {useUser} from '../Context/user-context';
 import {ContentMobile} from '../Content';
@@ -29,6 +29,44 @@ import {
   MobileHeaderContext,
   MobileHeaderOptions,
 } from './MobileHeaderContext';
+
+const defaultHeaderOptions: MobileHeaderOptions = {leftAction: 'none'};
+
+const areHeaderOptionsEqual = (
+  a: MobileHeaderOptions = defaultHeaderOptions,
+  b: MobileHeaderOptions = defaultHeaderOptions
+) => {
+  if ((a.leftAction ?? 'none') !== (b.leftAction ?? 'none')) {
+    return false;
+  }
+  if (a.onBack !== b.onBack) {
+    return false;
+  }
+  if (a.title !== b.title) {
+    return false;
+  }
+  if (a.subtitle !== b.subtitle) {
+    return false;
+  }
+  if (!!a.hideAuthControl !== !!b.hideAuthControl) {
+    return false;
+  }
+  if (!!a.status !== !!b.status) {
+    return false;
+  }
+  if (a.status && b.status) {
+    if (a.status.state !== b.status.state) {
+      return false;
+    }
+    if (a.status.label !== b.status.label) {
+      return false;
+    }
+  }
+  if (a.rightExtras !== b.rightExtras) {
+    return false;
+  }
+  return true;
+};
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -63,33 +101,52 @@ const useStyles = makeStyles((theme: Theme) =>
       minWidth: 0,
       flex: 1,
     },
-    headerIconButton: {
-      color: theme.palette.primary.contrastText,
-      padding: theme.spacing(0.75),
-    },
     logo: {
       height: 38,
       width: 'auto',
       flexShrink: 0,
     },
-    headerBody: {
+    secondaryBar: {
+      backgroundColor: theme.palette.grey[100],
+      color: theme.palette.text.primary,
+      padding: theme.spacing(0.85, 0),
+      margin: theme.spacing(0, -2.25, -1.25, -2.25),
+      borderBottom: `1px solid ${theme.palette.action.hover}`,
+      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
+    },
+    secondaryInner: {
+      padding: theme.spacing(0, 2.25),
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: theme.spacing(1.5),
+    },
+    secondaryText: {
       display: 'flex',
       flexDirection: 'column',
-      gap: theme.spacing(0.5),
+      gap: 2,
       minWidth: 0,
+      flex: 1,
     },
-    headerTitle: {
+    secondaryTitle: {
       fontWeight: 600,
       lineHeight: 1.2,
     },
-    headerSubtitle: {
-      color: 'rgba(255, 255, 255, 0.8)',
+    secondarySubtitle: {
+      color: theme.palette.text.secondary,
+    },
+    secondaryActions: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(1),
+      flexWrap: 'wrap',
+      justifyContent: 'flex-end',
     },
     statusRow: {
       display: 'flex',
       alignItems: 'center',
       gap: theme.spacing(0.75),
-      color: 'rgba(255, 255, 255, 0.85)',
+      color: theme.palette.text.secondary,
     },
     statusText: {
       fontWeight: 500,
@@ -98,7 +155,7 @@ const useStyles = makeStyles((theme: Theme) =>
     controls: {
       display: 'flex',
       alignItems: 'center',
-      gap: theme.spacing(1),
+      gap: theme.spacing(1.25),
     },
     content: {
       flex: 1,
@@ -111,7 +168,6 @@ const useStyles = makeStyles((theme: Theme) =>
       height: theme.spacing(4.5),
       backgroundColor: theme.palette.primary.dark,
       fontWeight: 600,
-      marginLeft: theme.spacing(1),
     },
     drawerPaper: {
       width: 280,
@@ -152,6 +208,16 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     loginButton: {
       marginLeft: theme.spacing(1),
+      border: '1px solid rgba(255, 255, 255, 0.45)',
+      borderRadius: theme.spacing(0.5),
+      textTransform: 'none',
+      padding: theme.spacing(0.5, 1.75),
+      fontWeight: 600,
+      color: theme.palette.primary.contrastText,
+      '&:hover': {
+        borderColor: '#ffffff',
+        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+      },
     },
   })
 );
@@ -159,9 +225,8 @@ const useStyles = makeStyles((theme: Theme) =>
 export const MobileMainLayout: React.FC = () => {
   const classes = useStyles();
   const history = useHistory();
-  const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [headerOptions, setHeaderOptions] = useState<MobileHeaderOptions>({});
+  const [headerOptions, setHeaderOptions] = useState<MobileHeaderOptions>(defaultHeaderOptions);
   const {displayName, hashedIdentifier, loading} = useUser();
   const logout = useLogout();
 
@@ -197,87 +262,88 @@ export const MobileMainLayout: React.FC = () => {
 
     if (loggedIn) {
       return (
-        <Avatar className={classes.avatar} onClick={() => setDrawerOpen(true)}>
-          {getAvatarInitials(displayName)}
-        </Avatar>
+        <IconButton
+          color="inherit"
+          onClick={() => setDrawerOpen(true)}
+          aria-label="open navigation"
+        >
+          <Avatar className={classes.avatar}>{getAvatarInitials(displayName)}</Avatar>
+        </IconButton>
       );
     }
 
     return (
-      <Button color="inherit" className={classes.loginButton} onClick={handleAuthClick}>
+      <Button
+        className={classes.loginButton}
+        onClick={handleAuthClick}
+        variant="outlined"
+        color="inherit"
+      >
         Sign In
       </Button>
     );
   };
 
-  useEffect(() => {
-    const path = location.pathname;
-    if (path === AppRoute.Results || path.startsWith(AppRoute.Dashboard)) {
-      setHeaderOptions({leftAction: 'none'});
-      return;
-    }
-    setHeaderOptions({leftAction: 'menu'});
-  }, [location.pathname]);
+  const applyHeaderOptions = useCallback((next: MobileHeaderOptions) => {
+    const normalized: MobileHeaderOptions = {
+      ...next,
+      leftAction: 'none',
+    };
+    setHeaderOptions(prev =>
+      areHeaderOptionsEqual(prev, normalized) ? prev : normalized
+    );
+  }, []);
 
-  const leftAction = headerOptions.leftAction ?? 'none';
-
-  const handleLeftAction = () => {
-    if (leftAction === 'back') {
-      if (headerOptions.onBack) {
-        headerOptions.onBack();
-        return;
-      }
-      history.goBack();
-      return;
-    }
-    if (leftAction === 'menu') {
-      setDrawerOpen(true);
-    }
-  };
+  const resetHeaderOptions = useCallback(() => {
+    setHeaderOptions(prev =>
+      areHeaderOptionsEqual(prev, defaultHeaderOptions) ? prev : defaultHeaderOptions
+    );
+  }, []);
 
   return (
     <div className={classes.root}>
       <header className={classes.header}>
         <div className={classes.headerTop}>
           <div className={classes.headerStart}>
-            {leftAction !== 'none' ? (
-              <IconButton
-                className={classes.headerIconButton}
-                onClick={handleLeftAction}
-                aria-label={leftAction === 'back' ? 'go back' : 'open navigation'}
-              >
-                {leftAction === 'back' ? <ArrowBackIcon /> : <MenuIcon />}
-              </IconButton>
-            ) : null}
             <Logo className={classes.logo} />
           </div>
           <div className={classes.controls}>
-            {headerOptions.rightExtras}
             {!headerOptions.hideAuthControl ? renderAuthControl() : null}
           </div>
         </div>
-        {(headerOptions.title || headerOptions.subtitle || headerOptions.status) && (
-          <div className={classes.headerBody}>
-            {headerOptions.title ? (
-              <Typography variant="h6" className={classes.headerTitle} noWrap>
-                {headerOptions.title}
-              </Typography>
-            ) : null}
-            {headerOptions.subtitle ? (
-              <Typography variant="body2" className={classes.headerSubtitle} noWrap>
-                {headerOptions.subtitle}
-              </Typography>
-            ) : null}
-            {headerOptions.status ? (
-              <div className={classes.statusRow}>
-                {headerOptions.status.icon || null}
-                <Typography variant="body2" className={classes.statusText} noWrap>
-                  {headerOptions.status.label}
+        {(headerOptions.title || headerOptions.subtitle || headerOptions.status || headerOptions.rightExtras) ? (
+          <div className={classes.secondaryBar}>
+            <div className={classes.secondaryInner}>
+            <div className={classes.secondaryText}>
+              {headerOptions.title ? (
+                <Typography variant="subtitle1" className={classes.secondaryTitle} noWrap>
+                  {headerOptions.title}
                 </Typography>
-              </div>
-            ) : null}
+              ) : null}
+              {headerOptions.subtitle ? (
+                <Typography variant="body2" className={classes.secondarySubtitle} noWrap>
+                  {headerOptions.subtitle}
+                </Typography>
+              ) : null}
+            </div>
+            <div className={classes.secondaryActions}>
+              {headerOptions.status ? (
+                <div className={classes.statusRow}>
+                  {headerOptions.status.state === 'public' ? (
+                    <PublicIcon fontSize="small" />
+                  ) : (
+                    <LockIcon fontSize="small" />
+                  )}
+                  <Typography variant="body2" className={classes.statusText} noWrap>
+                    {headerOptions.status.label}
+                  </Typography>
+                </div>
+              ) : null}
+              {headerOptions.rightExtras}
+            </div>
+            </div>
           </div>
-        )}
+        ) : null}
       </header>
 
       <Drawer
@@ -353,8 +419,8 @@ export const MobileMainLayout: React.FC = () => {
         <MobileHeaderContext.Provider
           value={{
             options: headerOptions,
-            setOptions: setHeaderOptions,
-            reset: () => setHeaderOptions({}),
+            setOptions: applyHeaderOptions,
+            reset: resetHeaderOptions,
           }}
         >
           <ContentMobile />

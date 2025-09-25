@@ -1,7 +1,7 @@
 import React from 'react';
 
 export interface MobileHeaderStatus {
-  icon?: React.ReactNode;
+  state: 'public' | 'private';
   label: React.ReactNode;
 }
 
