@@ -35,6 +35,14 @@ export const useDashboardLayoutStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(0, 3, 2),
       color: theme.palette.text.secondary,
     },
+    headerShareButton: {
+      color: theme.palette.primary.contrastText,
+      borderColor: 'rgba(255, 255, 255, 0.45)',
+      '&:hover': {
+        borderColor: '#ffffff',
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+      },
+    },
     statusContainer: {
       padding: theme.spacing(5),
       textAlign: 'center',

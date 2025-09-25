@@ -219,10 +219,16 @@ interface ResultDetailsProps {
   result: Data;
   showShareStatus?: boolean;
   onClose?: () => void;
+  showMobileHeader?: boolean;
 }
 
 export const ResultDetails: React.FC<ResultDetailsProps> = props => {
-  const {result, showShareStatus = true, onClose} = props;
+  const {
+    result,
+    showShareStatus = true,
+    onClose,
+    showMobileHeader = true,
+  } = props;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -373,60 +379,66 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
 
   if (isMobile) {
     const classes = useMobileStyles();
+    const headerSummary = (
+      <>
+        <Typography variant="h6" className={classes.mobileTitle}>
+          {`Test Case: ${result.buildingTypeName}`}
+        </Typography>
+        <Typography variant="body2" className={classes.mobileSubtitle}>
+          Result ID: {result.uid}
+        </Typography>
+        {showShareStatus && (
+          <div className={classes.statusRow}>
+            <Tooltip title={statusLabel}>
+              {result.isShared ? (
+                <PublicIcon fontSize="small" />
+              ) : (
+                <LockIcon fontSize="small" />
+              )}
+            </Tooltip>
+            <Typography variant="body2" className={classes.statusText}>
+              {statusLabel}
+            </Typography>
+          </div>
+        )}
+      </>
+    );
+
     return (
       <div className={classes.root}>
-        <div className={classes.header}>
-          <div className={classes.headerTop}>
-            <img src={BoptestLogo} alt="BOPTEST" className={classes.logo} />
-            <div className={classes.controls}>
-              {canShare && (
-                <>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={openShareMenu}
-                    className={classes.shareButton}
-                  >
-                    Share
-                  </Button>
-                  {shareMenu}
-                </>
-              )}
-              {onClose && (
-                <IconButton
-                  aria-label="Close details"
-                  onClick={onClose}
-                  size="small"
-                  style={{color: 'inherit'}}
-                >
-                  <CloseIcon />
-                </IconButton>
-              )}
-            </div>
-          </div>
-          <div className={classes.headerBody}>
-            <Typography variant="h6" className={classes.mobileTitle}>
-              {`Test Case: ${result.buildingTypeName}`}
-            </Typography>
-            <Typography variant="body2" className={classes.mobileSubtitle}>
-              Result ID: {result.uid}
-            </Typography>
-          </div>
-          {showShareStatus && (
-            <div className={classes.statusRow}>
-              <Tooltip title={statusLabel}>
-                {result.isShared ? (
-                  <PublicIcon fontSize="small" />
-                ) : (
-                  <LockIcon fontSize="small" />
+        {showMobileHeader ? (
+          <div className={classes.header}>
+            <div className={classes.headerTop}>
+              <img src={BoptestLogo} alt="BOPTEST" className={classes.logo} />
+              <div className={classes.controls}>
+                {canShare && (
+                  <>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={openShareMenu}
+                      className={classes.shareButton}
+                    >
+                      Share
+                    </Button>
+                    {shareMenu}
+                  </>
                 )}
-              </Tooltip>
-              <Typography variant="body2" className={classes.statusText}>
-                {statusLabel}
-              </Typography>
+                {onClose && (
+                  <IconButton
+                    aria-label="Close details"
+                    onClick={onClose}
+                    size="small"
+                    style={{color: 'inherit'}}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                )}
+              </div>
             </div>
-          )}
-        </div>
+            <div className={classes.headerBody}>{headerSummary}</div>
+          </div>
+        ) : null}
 
         <div className={classes.content}>
           <div className={classes.section}>

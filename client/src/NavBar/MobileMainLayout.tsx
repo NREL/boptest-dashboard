@@ -1,8 +1,6 @@
-import React, {useState} from 'react';
-import {useHistory} from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {useHistory, useLocation} from 'react-router-dom';
 import {
-  AppBar,
-  Toolbar,
   IconButton,
   Typography,
   Drawer,
@@ -18,6 +16,7 @@ import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import MenuIcon from '@material-ui/icons/Menu';
 import CloseIcon from '@material-ui/icons/Close';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 
 import {useUser} from '../Context/user-context';
 import {ContentMobile} from '../Content';
@@ -26,6 +25,10 @@ import {ReactComponent as Logo} from '../static/assets/boptest-logo.svg';
 import {useLogout} from './useLogout';
 import {navLinks} from './navLinks';
 import {getAvatarInitials} from './userDisplay';
+import {
+  MobileHeaderContext,
+  MobileHeaderOptions,
+} from './MobileHeaderContext';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -35,32 +38,73 @@ const useStyles = makeStyles((theme: Theme) =>
       minHeight: '100vh',
       backgroundColor: theme.palette.background.default,
     },
-    appBar: {
-      zIndex: theme.zIndex.drawer + 1,
+    header: {
+      position: 'sticky',
+      top: 0,
+      zIndex: theme.zIndex.appBar,
+      backgroundColor: theme.palette.primary.main,
+      color: theme.palette.primary.contrastText,
+      padding: theme.spacing(1.5, 2.25, 1.5),
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(1),
+      boxShadow: '0 8px 24px rgba(13, 108, 133, 0.2)',
     },
-    toolbar: {
+    headerTop: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: theme.spacing(0, 1.5),
-      minHeight: 64,
+      gap: theme.spacing(1.5),
     },
-    branding: {
+    headerStart: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(1.25),
+      minWidth: 0,
+      flex: 1,
+    },
+    headerIconButton: {
+      color: theme.palette.primary.contrastText,
+      padding: theme.spacing(0.75),
+    },
+    logo: {
+      height: 38,
+      width: 'auto',
+      flexShrink: 0,
+    },
+    headerBody: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(0.5),
+      minWidth: 0,
+    },
+    headerTitle: {
+      fontWeight: 600,
+      lineHeight: 1.2,
+    },
+    headerSubtitle: {
+      color: 'rgba(255, 255, 255, 0.8)',
+    },
+    statusRow: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(0.75),
+      color: 'rgba(255, 255, 255, 0.85)',
+    },
+    statusText: {
+      fontWeight: 500,
+      letterSpacing: 0.2,
+    },
+    controls: {
       display: 'flex',
       alignItems: 'center',
       gap: theme.spacing(1),
-      cursor: 'pointer',
-    },
-    logo: {
-      height: 28,
-      width: 'auto',
     },
     content: {
       flex: 1,
       display: 'flex',
       flexDirection: 'column',
       minHeight: 0,
-      paddingTop: 64,
     },
     avatar: {
       width: theme.spacing(4.5),
@@ -115,7 +159,9 @@ const useStyles = makeStyles((theme: Theme) =>
 export const MobileMainLayout: React.FC = () => {
   const classes = useStyles();
   const history = useHistory();
+  const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [headerOptions, setHeaderOptions] = useState<MobileHeaderOptions>({});
   const {displayName, hashedIdentifier, loading} = useUser();
   const logout = useLogout();
 
@@ -164,22 +210,75 @@ export const MobileMainLayout: React.FC = () => {
     );
   };
 
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === AppRoute.Results || path.startsWith(AppRoute.Dashboard)) {
+      setHeaderOptions({leftAction: 'none'});
+      return;
+    }
+    setHeaderOptions({leftAction: 'menu'});
+  }, [location.pathname]);
+
+  const leftAction = headerOptions.leftAction ?? 'none';
+
+  const handleLeftAction = () => {
+    if (leftAction === 'back') {
+      if (headerOptions.onBack) {
+        headerOptions.onBack();
+        return;
+      }
+      history.goBack();
+      return;
+    }
+    if (leftAction === 'menu') {
+      setDrawerOpen(true);
+    }
+  };
+
   return (
     <div className={classes.root}>
-      <AppBar position="fixed" color="primary" className={classes.appBar}>
-        <Toolbar className={classes.toolbar}>
-          <IconButton edge="start" color="inherit" onClick={() => setDrawerOpen(true)} aria-label="open navigation">
-            <MenuIcon />
-          </IconButton>
-          <div className={classes.branding} onClick={() => handleNavigate(AppRoute.Results)}>
+      <header className={classes.header}>
+        <div className={classes.headerTop}>
+          <div className={classes.headerStart}>
+            {leftAction !== 'none' ? (
+              <IconButton
+                className={classes.headerIconButton}
+                onClick={handleLeftAction}
+                aria-label={leftAction === 'back' ? 'go back' : 'open navigation'}
+              >
+                {leftAction === 'back' ? <ArrowBackIcon /> : <MenuIcon />}
+              </IconButton>
+            ) : null}
             <Logo className={classes.logo} />
-            <Typography variant="subtitle1" component="span">
-              BOPTEST
-            </Typography>
           </div>
-          {renderAuthControl()}
-        </Toolbar>
-      </AppBar>
+          <div className={classes.controls}>
+            {headerOptions.rightExtras}
+            {!headerOptions.hideAuthControl ? renderAuthControl() : null}
+          </div>
+        </div>
+        {(headerOptions.title || headerOptions.subtitle || headerOptions.status) && (
+          <div className={classes.headerBody}>
+            {headerOptions.title ? (
+              <Typography variant="h6" className={classes.headerTitle} noWrap>
+                {headerOptions.title}
+              </Typography>
+            ) : null}
+            {headerOptions.subtitle ? (
+              <Typography variant="body2" className={classes.headerSubtitle} noWrap>
+                {headerOptions.subtitle}
+              </Typography>
+            ) : null}
+            {headerOptions.status ? (
+              <div className={classes.statusRow}>
+                {headerOptions.status.icon || null}
+                <Typography variant="body2" className={classes.statusText} noWrap>
+                  {headerOptions.status.label}
+                </Typography>
+              </div>
+            ) : null}
+          </div>
+        )}
+      </header>
 
       <Drawer
         anchor="left"
@@ -251,7 +350,15 @@ export const MobileMainLayout: React.FC = () => {
       </Drawer>
 
       <main className={classes.content}>
-        <ContentMobile />
+        <MobileHeaderContext.Provider
+          value={{
+            options: headerOptions,
+            setOptions: setHeaderOptions,
+            reset: () => setHeaderOptions({}),
+          }}
+        >
+          <ContentMobile />
+        </MobileHeaderContext.Provider>
       </main>
     </div>
   );
