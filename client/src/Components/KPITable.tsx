@@ -147,7 +147,6 @@ export const KPITable: React.FC<KPITableProps> = props => {
       value: props.result.energy,
       digits: 2,
       range: details.energyUse,
-      show: true,
     },
     {
       key: 'thermalDiscomfort',
@@ -155,7 +154,6 @@ export const KPITable: React.FC<KPITableProps> = props => {
       value: props.result.thermalDiscomfort,
       digits: 2,
       range: details.thermalDiscomfort,
-      show: true,
     },
     {
       key: 'cost',
@@ -163,7 +161,6 @@ export const KPITable: React.FC<KPITableProps> = props => {
       value: props.result.cost,
       digits: 2,
       range: details.cost,
-      show: true,
     },
     {
       key: 'emissions',
@@ -171,7 +168,6 @@ export const KPITable: React.FC<KPITableProps> = props => {
       value: props.result.emissions,
       digits: 2,
       range: details.emissions,
-      show: true,
     },
     {
       key: 'aqDiscomfort',
@@ -179,7 +175,6 @@ export const KPITable: React.FC<KPITableProps> = props => {
       value: props.result.aqDiscomfort,
       digits: 2,
       range: details.iaq,
-      show: true,
     },
     {
       key: 'compTimeRatio',
@@ -187,7 +182,6 @@ export const KPITable: React.FC<KPITableProps> = props => {
       value: props.result.compTimeRatio,
       digits: 2,
       range: details.timeRatio,
-      show: true,
     },
     {
       key: 'peakElectricity',
@@ -195,27 +189,29 @@ export const KPITable: React.FC<KPITableProps> = props => {
       value: props.result.peakElectricity,
       digits: 2,
       range: details.peakElectricity,
-      show: true,
     },
     {
       key: 'peakGas',
       label: 'Peak Gas Demand [kW/m²]',
       value: props.result.peakGas,
       digits: 2,
-      range: details.peakGas,
-      show: props.result.peakGas !== null && props.result.peakGas !== undefined,
+      range:
+        props.result.peakGas !== null && props.result.peakGas !== undefined
+          ? details.peakGas
+          : undefined,
     },
     {
       key: 'peakDistrictHeating',
       label: 'Peak District Heating Demand [kW/m²]',
       value: props.result.peakDistrictHeating,
       digits: 2,
-      range: details.peakDistrictHeating,
-      show:
+      range:
         props.result.peakDistrictHeating !== null &&
-        props.result.peakDistrictHeating !== undefined,
+        props.result.peakDistrictHeating !== undefined
+          ? details.peakDistrictHeating
+          : undefined,
     },
-  ].filter(metric => metric.show);
+  ];
 
   if (metrics.length === 0) {
     return null;

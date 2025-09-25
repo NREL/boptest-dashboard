@@ -300,47 +300,42 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
 
   const mobileMetrics = [
     {
-      label: 'Total Energy',
-      value: formatWithUnit(result.totalEnergy, 'kWh/m²'),
+      label: 'Total Energy [kWh/m²]',
+      value: formatWithUnit(result.energy ?? result.totalEnergy, 'kWh/m²'),
     },
     {
-      label: 'Thermal Discomfort',
+      label: 'Thermal Discomfort [Kh/zone]',
       value: formatWithUnit(result.thermalDiscomfort, 'Kh/zone'),
     },
     {
-      label: 'IAQ Discomfort',
+      label: 'Indoor Air Quality Discomfort [ppmh/zone]',
       value: formatWithUnit(result.aqDiscomfort, 'ppmh/zone'),
     },
     {
-      label: 'Operations Cost',
+      label: 'Total Operations Cost [$ or € /m²]',
       value: formatNumberValue(result.cost),
     },
     {
-      label: 'CO₂ Emissions',
+      label: 'Total CO₂ Emissions [kgCO₂/m²]',
       value: formatWithUnit(result.emissions, 'kgCO₂/m²'),
     },
     {
-      label: 'Comp Time Ratio',
-      value: formatNumberValue(result.compTimeRatio),
+      label: 'Time Ratio',
+      value: formatNumberValue(result.compTimeRatio ?? result.timeRatio),
     },
     {
-      label: 'Peak Electricity',
+      label: 'Peak Electrical Demand [kW/m²]',
       value: formatWithUnit(result.peakElectricity, 'kW/m²'),
     },
-    result.peakGas !== null && result.peakGas !== undefined
-      ? {
-          label: 'Peak Gas',
-          value: formatWithUnit(result.peakGas, 'kW/m²'),
-        }
-      : null,
-    result.peakDistrictHeating !== null &&
-    result.peakDistrictHeating !== undefined
-      ? {
-          label: 'Peak District Heat',
-          value: formatWithUnit(result.peakDistrictHeating, 'kW/m²'),
-        }
-      : null,
-  ].filter((metric): metric is {label: string; value: string} => Boolean(metric));
+    {
+      label: 'Peak Gas Demand [kW/m²]',
+      value: formatWithUnit(result.peakGas, 'kW/m²'),
+    },
+    {
+      label: 'Peak District Heating Demand [kW/m²]',
+      value: formatWithUnit(result.peakDistrictHeating, 'kW/m²'),
+    },
+  ];
 
   const mobileScenarioEntries = [
     {label: 'Time Period', value: result.timePeriod},
