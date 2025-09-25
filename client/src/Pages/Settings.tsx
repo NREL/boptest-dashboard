@@ -16,9 +16,12 @@ import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import {useUser} from '../Context/user-context';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
+import {AlertProps} from '@material-ui/lab/Alert';
 import RefreshIcon from '@material-ui/icons/Refresh';
 
-const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;
+const Alert = (props: AlertProps) => (
+  <MuiAlert elevation={6} variant="filled" {...props} />
+);
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -129,7 +132,10 @@ export const Settings: React.FC = () => {
   const [isCheckingName, setIsCheckingName] = useState(false);
   const [nameError, setNameError] = useState('');
   const [snackMessageOpen, setSnackMessageOpen] = React.useState(false);
-  const [snackMessage, setSnackMessage] = React.useState(['msg', 'success']);
+  const [snackMessage, setSnackMessage] = React.useState<[
+    string,
+    AlertProps['severity']
+  ]>(['', 'success']);
   
   // API Key section states
   const [apiKey, setApiKey] = React.useState('');
@@ -198,12 +204,17 @@ export const Settings: React.FC = () => {
     }
   }, [hashedIdentifier, csrfToken]);
 
-  const handleUserNameChange = event => {
+  const handleUserNameChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setUsername(event.target.value);
     setNameError(''); // Clear error when user types
   };
 
-  const handleSnackMessageClose = (_, reason) => {
+  const handleSnackMessageClose = (
+    _: React.SyntheticEvent,
+    reason?: string
+  ) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -212,7 +223,7 @@ export const Settings: React.FC = () => {
 
   const getShareResults = () => shareAllResults || 'default';
 
-  const setShareResults = event => {
+  const setShareResults = (event: React.ChangeEvent<HTMLInputElement>) => {
     let shareValue: boolean | null;
     if (event.target.value === 'yes') {
       shareValue = true;

@@ -1,7 +1,7 @@
 import {useCallback, useRef, useState} from 'react';
 import axios, {AxiosRequestConfig, CancelTokenSource} from 'axios';
 
-import {Result} from '../../common/interfaces';
+import {Result} from '../../../common/interfaces';
 import {ResultFilterRequest} from './resultFilters';
 
 interface UseResultsApiOptions {

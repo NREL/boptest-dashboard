@@ -5,12 +5,14 @@ import {Button, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
-import {SignupData} from '../../../common/interfaces';
+import {AlertProps} from '@material-ui/lab/Alert';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 
-const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;
+const Alert = (props: AlertProps) => (
+  <MuiAlert elevation={6} variant="filled" {...props} />
+);
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -61,7 +63,7 @@ const useStyles = makeStyles(() =>
 
 const registerEndpoint = '/api/auth/signup';
 
-export const Signup: React.FC = props => {
+export const Signup: React.FC = () => {
   const classes = useStyles();
 
   const history = useHistory();
@@ -76,30 +78,41 @@ export const Signup: React.FC = props => {
   const [snackMessageOpen, setSnackMessageOpen] = React.useState(false);
   const [snackMessage, setSnackMessage] = React.useState('');
 
-  const handleUsernameChange = e => {
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
   };
-  const handleEmailChange = e => {
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
   };
-  const handlePasswordChange = e => {
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
   };
-  const handleConfirmPasswordChange = e => {
+  const handleConfirmPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setConfirmPassword(e.target.value);
   };
 
-  const handleSnackMessageClose = (_, reason) => {
+  const handleSnackMessageClose = (
+    _: React.SyntheticEvent,
+    reason?: string
+  ) => {
     if (reason === 'clickaway') {
       return;
     }
     setSnackMessageOpen(false);
   };
 
+  interface SignupPayload {
+    username: string;
+    email: string;
+    password: string;
+  }
+
   const registerAccount = () => {
     setIsLoading(true);
 
-    const signupData: SignupData = {
+    const signupData: SignupPayload = {
       username,
       email,
       password,
@@ -116,14 +129,13 @@ export const Signup: React.FC = props => {
   };
 
   useEffect(() => {
-    // custom rule will have name 'isPasswordMatch'
-    ValidatorForm.addValidationRule('isPasswordMatch', value => {
-      if (value !== password) {
-        return false;
-      }
-      return true;
+    ValidatorForm.addValidationRule('isPasswordMatch', (value: string) => {
+      return value === password;
     });
-  });
+    return () => {
+      ValidatorForm.removeValidationRule('isPasswordMatch');
+    };
+  }, [password]);
 
   return (
     <div className={classes.root}>

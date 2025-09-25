@@ -9,6 +9,8 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
+import {Result} from '../../../common/interfaces';
+
 const useStyles = makeStyles(() =>
   createStyles({
     table: {},
@@ -24,9 +26,11 @@ const endpoint = '/api/results';
 export const ResultsQuickView: React.FC = () => {
   const classes = useStyles();
 
-  const [results, setResults] = useState<
-    Array<{dateRun: string; buildingType: {name: string}; energyUse: number}>
-  >([]);
+  type QuickViewResult = Pick<Result, 'dateRun' | 'energyUse' | 'buildingType'> & {
+    buildingTypeName?: string;
+  };
+
+  const [results, setResults] = useState<QuickViewResult[]>([]);
   const [rows, setRows] = useState<Array<{buildingType: string; energyUse: number}>>([]);
 
   // build out simple data fetcher straight in the useEffect for now
@@ -34,9 +38,7 @@ export const ResultsQuickView: React.FC = () => {
     axios
       .get(endpoint, {params: {limit: 10}})
       .then(response => {
-        const payload = response.data as {
-          results: Array<{dateRun: string; buildingType: {name: string}; energyUse: number}>;
-        };
+        const payload = response.data as {results: QuickViewResult[]};
 
         const sortedData = [...(payload.results || [])].sort(
           (a, b) =>
@@ -54,7 +56,10 @@ export const ResultsQuickView: React.FC = () => {
     if (!results) return;
 
     const newRowSet = results.map(result => {
-      const buildingName = result.buildingType?.name || result.buildingType?.uid || 'Unknown Building';
+      const buildingName =
+        result.buildingType?.name ||
+        result.buildingTypeName ||
+        'Unknown Building';
       return createData(buildingName, result.energyUse);
     });
 

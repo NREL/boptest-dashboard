@@ -5,7 +5,6 @@ import {Button, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
-import {ForgotPasswordData} from '../../../common/interfaces';
 import {AppRoute} from '../../enums';
 
 const useStyles = makeStyles(() =>
@@ -64,12 +63,16 @@ export const ForgotPassword: React.FC = () => {
   const [email, setEmail] = React.useState('');
   const history = useHistory();
 
-  const handleEmailChange = e => {
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
   };
 
+  interface ForgotPasswordPayload {
+    email: string;
+  }
+
   const beginPasswordReset = () => {
-    const forgotPasswordData: ForgotPasswordData = {
+    const forgotPasswordData: ForgotPasswordPayload = {
       email: email,
     };
 

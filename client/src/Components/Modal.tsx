@@ -69,14 +69,30 @@ export const Modal: React.FC<ModalProps> = props => {
   const classes = useStyles();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const appElement =
-    typeof document !== 'undefined' ? document.getElementById('app') : null;
+  const getDocument = (): {getElementById(id: string): HTMLElement | null} | null => {
+    if (typeof globalThis !== 'object' || !globalThis || !('document' in globalThis)) {
+      return null;
+    }
+    const maybeDoc = (globalThis as Record<string, unknown>).document;
+    if (
+      maybeDoc &&
+      typeof maybeDoc === 'object' &&
+      'getElementById' in maybeDoc &&
+      typeof (maybeDoc as {getElementById: unknown}).getElementById === 'function'
+    ) {
+      return maybeDoc as {getElementById(id: string): HTMLElement | null};
+    }
+    return null;
+  };
+
+  const doc = getDocument();
+  const appElement = doc ? doc.getElementById('app') : null;
 
   useEffect(() => {
-    if (typeof document !== 'undefined') {
+    if (doc) {
       ReactModal.setAppElement('#app');
     }
-  }, []);
+  }, [doc]);
 
   return (
     <ReactModal

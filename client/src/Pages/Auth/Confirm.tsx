@@ -5,7 +5,6 @@ import {Button, Typography} from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
-import {ConfirmData} from '../../../common/interfaces';
 import {useUser} from './../../Context/user-context';
 
 const useStyles = makeStyles(() =>
@@ -56,19 +55,26 @@ export const Confirm: React.FC = () => {
 
   const history = useHistory();
 
-  const {setAuthedEmail, setAuthedName} = useUser();
+  const {refreshAuthStatus} = useUser();
 
   const {username} = useParams<ConfirmParams>();
 
   // state values for all the text fields
   const [confirmationCode, setConfirmationCode] = React.useState('');
 
-  const handleConfirmationCodeChange = e => {
+  const handleConfirmationCodeChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setConfirmationCode(e.target.value);
   };
 
+  interface ConfirmPayload {
+    username: string;
+    verificationCode: string;
+  }
+
   const confirmUser = () => {
-    const confirmData: ConfirmData = {
+    const confirmData: ConfirmPayload = {
       username: username,
       verificationCode: confirmationCode,
     };
@@ -76,11 +82,7 @@ export const Confirm: React.FC = () => {
     axios
       .post(confirmEndpoint, confirmData)
       .then(res => {
-        // need to set the user as logged in via context
-        setAuthedEmail(res.data.email);
-        setAuthedName(res.data.name);
-
-        // redirect to home page
+        refreshAuthStatus();
         history.push('/');
       })
       .catch(err => console.log('could not confirm the user', err)); // TODO

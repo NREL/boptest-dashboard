@@ -134,6 +134,10 @@ const useMobileStyles = makeStyles((theme: Theme) =>
       marginTop: theme.spacing(1),
       color: 'rgba(255, 255, 255, 0.85)',
     },
+    statusText: {
+      fontWeight: 500,
+      letterSpacing: 0.2,
+    },
     content: {
       flexGrow: 1,
       overflowY: 'auto',

@@ -36,7 +36,8 @@ import {
   FilterValues,
   ResultFacet,
   BuildingScenarios,
-} from '../../common/interfaces';
+} from '../../../common/interfaces';
+import type {SelectProps} from '@material-ui/core/Select';
 import {
   createRows,
   createTagOptions,
@@ -404,7 +405,7 @@ interface ToolbarActionItem {
 }
 
 interface EnhancedTableToolbarProps {
-  buildingTypeFilterOptions: {[index: number]: string};
+  buildingTypeFilterOptions: string[];
   displayClear: boolean;
   buildingFilterValue: string;
   updateBuildingFilter: (value: string) => void;
@@ -442,12 +443,12 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     }
   }, [actionsDisabled, allActionsDisabled, actionAnchorEl]);
 
-  const selectProps = {
+  const baseSelectProps: Partial<SelectProps> = {
     classes: {icon: classes.selectIcon},
     MenuProps: {
       anchorOrigin: {
-        vertical: 'bottom',
-        horizontal: 'left',
+        vertical: 'bottom' as const,
+        horizontal: 'left' as const,
       },
       getContentAnchorEl: null,
     },
@@ -475,7 +476,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
           defaultValue="all"
           variant="outlined"
           SelectProps={{
-            ...selectProps,
+            ...baseSelectProps,
             renderValue: value =>
               value && value !== 'all' ? (value as string) : 'All Test Cases',
           }}
@@ -487,16 +488,13 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
           }}
         >
           <MenuItem value="all">All Test Cases</MenuItem>
-          {buildingTypeFilterOptions.map(option => {
-            if (option === 'All Test Cases') {
-              return null;
-            }
-            return (
+          {buildingTypeFilterOptions
+            .filter(option => option !== 'All Test Cases')
+            .map(option => (
               <MenuItem key={`${option}-option`} value={option}>
                 {option}
               </MenuItem>
-            );
-          })}
+            ))}
         </ColorSelect>
         <div className={classes.filterActions}>
           {displayClear && (
@@ -863,6 +861,16 @@ export default function ResultsTable(props: ResultsTableProps) {
   const [filterRanges, setFilterRanges] = useState<FilterRanges>(emptyFilterRanges);
   const [isUpdatingShare, setIsUpdatingShare] = useState(false);
 
+  const formatMetric = (
+    value: number | null | undefined,
+    fractionDigits = 4
+  ): string => {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      return 'N/A';
+    }
+    return value.toFixed(fractionDigits);
+  };
+
   const rows = useMemo(() => createRows(results), [results]);
   const buildingScenarios = useMemo(() => getBuildingScenarios(buildingFacets), [buildingFacets]);
   const computedFilterRanges = useMemo(() => getFilterRanges(rows), [rows]);
@@ -913,7 +921,7 @@ export default function ResultsTable(props: ResultsTableProps) {
       );
       if (facet?.tags?.length) {
         const store = new Map<string, string>();
-        facet.tags.forEach(tag => {
+        facet.tags.forEach((tag: string) => {
           if (typeof tag !== 'string') {
             return;
           }
@@ -935,7 +943,7 @@ export default function ResultsTable(props: ResultsTableProps) {
 
     const store = new Map<string, string>();
     buildingFacets.forEach(facet => {
-      (facet.tags || []).forEach(tag => {
+      (facet.tags || []).forEach((tag: string) => {
         if (typeof tag !== 'string') {
           return;
         }
@@ -996,11 +1004,11 @@ export default function ResultsTable(props: ResultsTableProps) {
         setAreFiltersReady(true);
       }
     } else {
-      const addScenarioValue = (bucket: Map<string, string>, value: unknown) => {
-        if (typeof value !== 'string') {
+      const addScenarioValue = (bucket: Map<string, string>, rawValue: unknown) => {
+        if (typeof rawValue !== 'string') {
           return;
         }
-        const normalized = value.trim();
+        const normalized = rawValue.trim();
         if (!normalized) {
           return;
         }
@@ -1015,9 +1023,9 @@ export default function ResultsTable(props: ResultsTableProps) {
           item => item.buildingTypeName === buildingTypeFilter
         );
         if (facet && facet.scenario) {
-          Object.entries(facet.scenario).forEach(([key, values]) => {
+          Object.entries(facet.scenario as Record<string, unknown[] | undefined>).forEach(([key, values]) => {
             const bucket = new Map<string, string>();
-            values.forEach(value => addScenarioValue(bucket, value));
+            (values || []).forEach(value => addScenarioValue(bucket, value));
             nextScenarioOptions[key] = Array.from(bucket.values()).sort((a, b) =>
               a.localeCompare(b, undefined, {sensitivity: 'base'})
             );
@@ -1026,11 +1034,11 @@ export default function ResultsTable(props: ResultsTableProps) {
       } else {
         const scenarioBuckets: Record<string, Map<string, string>> = {};
         buildingFacets.forEach(facet => {
-          Object.entries(facet.scenario || {}).forEach(([key, values]) => {
+          Object.entries((facet.scenario || {}) as Record<string, unknown[] | undefined>).forEach(([key, values]) => {
             if (!scenarioBuckets[key]) {
               scenarioBuckets[key] = new Map<string, string>();
             }
-            values.forEach(value => addScenarioValue(scenarioBuckets[key], value));
+            (values || []).forEach(value => addScenarioValue(scenarioBuckets[key], value));
           });
         });
         Object.entries(scenarioBuckets).forEach(([key, bucket]) => {
@@ -1053,7 +1061,7 @@ export default function ResultsTable(props: ResultsTableProps) {
   ]);
 
   useEffect(() => {
-    setFilters(prev => {
+    setFilters((prev: FilterValues) => {
       const clamped = clampFiltersToRanges(prev, filterRanges);
       const rangesMatch =
         prev.cost.min === clamped.cost.min &&
@@ -1323,7 +1331,7 @@ export default function ResultsTable(props: ResultsTableProps) {
     URL.revokeObjectURL(url);
   };
 
-  const tableRows = stableSort(filteredRows, getComparator(order, orderBy));
+  const tableRows: Data[] = stableSort(filteredRows, getComparator(order, orderBy));
   const includeShareColumn = enableShareToggle;
   const headCells = buildHeadCells(includeShareColumn);
   const columnCount = headCells.length + (enableSelection ? 1 : 0);
@@ -1584,7 +1592,7 @@ export default function ResultsTable(props: ResultsTableProps) {
                       style={{width: getColumnWidth('totalEnergy')}}
                     >
                       <Typography variant="body1">
-                        {row.totalEnergy.toFixed(4)}
+                        {formatMetric(row.totalEnergy)}
                       </Typography>
                     </TableCell>
                     <TableCell
@@ -1592,7 +1600,7 @@ export default function ResultsTable(props: ResultsTableProps) {
                       style={{width: getColumnWidth('thermalDiscomfort')}}
                     >
                       <Typography variant="body1">
-                        {row.thermalDiscomfort.toFixed(4)}
+                        {formatMetric(row.thermalDiscomfort)}
                       </Typography>
                     </TableCell>
                     <TableCell
@@ -1600,7 +1608,7 @@ export default function ResultsTable(props: ResultsTableProps) {
                       style={{width: getColumnWidth('aqDiscomfort')}}
                     >
                       <Typography variant="body1">
-                        {row.aqDiscomfort.toFixed(4)}
+                        {formatMetric(row.aqDiscomfort)}
                       </Typography>
                     </TableCell>
                     <TableCell
@@ -1608,7 +1616,7 @@ export default function ResultsTable(props: ResultsTableProps) {
                       style={{width: getColumnWidth('cost')}}
                     >
                       <Typography variant="body1">
-                        {row.cost.toFixed(2)}
+                        {formatMetric(row.cost, 2)}
                       </Typography>
                     </TableCell>
                     <TableCell
@@ -1616,7 +1624,7 @@ export default function ResultsTable(props: ResultsTableProps) {
                       style={{width: getColumnWidth('emissions')}}
                     >
                       <Typography variant="body1">
-                        {row.emissions.toFixed(4)}
+                        {formatMetric(row.emissions)}
                       </Typography>
                     </TableCell>
                     <TableCell
@@ -1624,7 +1632,7 @@ export default function ResultsTable(props: ResultsTableProps) {
                       style={{width: getColumnWidth('peakElectricity')}}
                     >
                       <Typography variant="body1">
-                        {row.peakElectricity.toFixed(4)}
+                        {formatMetric(row.peakElectricity)}
                       </Typography>
                     </TableCell>
                     <TableCell
@@ -1632,7 +1640,7 @@ export default function ResultsTable(props: ResultsTableProps) {
                       style={{width: getColumnWidth('peakGas')}}
                     >
                       <Typography variant="body1">
-                        {row.peakGas !== null ? row.peakGas.toFixed(4) : 'N/A'}
+                        {formatMetric(row.peakGas)}
                       </Typography>
                     </TableCell>
                     <TableCell
@@ -1640,9 +1648,7 @@ export default function ResultsTable(props: ResultsTableProps) {
                       style={{width: getColumnWidth('peakDistrictHeating')}}
                     >
                       <Typography variant="body1">
-                        {row.peakDistrictHeating !== null
-                          ? row.peakDistrictHeating.toFixed(4)
-                          : 'N/A'}
+                        {formatMetric(row.peakDistrictHeating)}
                       </Typography>
                     </TableCell>
                     <TableCell
@@ -1650,7 +1656,7 @@ export default function ResultsTable(props: ResultsTableProps) {
                       style={{width: getColumnWidth('compTimeRatio')}}
                     >
                       <Typography variant="body1">
-                        {row.compTimeRatio.toFixed(4)}
+                        {formatMetric(row.compTimeRatio)}
                       </Typography>
                     </TableCell>
                     {includeShareColumn && (

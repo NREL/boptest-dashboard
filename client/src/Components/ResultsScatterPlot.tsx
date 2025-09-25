@@ -270,7 +270,6 @@ export const ResultsScatterPlot: React.FC<ResultsScatterPlotProps> = props => {
             yScale={{type: 'linear', min: 'auto', max: 'auto'}}
             yFormat={value => yFormatter(Number(value))}
             axisBottom={{
-              orient: 'bottom',
               legend: xAxis.label,
               legendOffset: 58,
               legendPosition: 'middle',
@@ -278,7 +277,6 @@ export const ResultsScatterPlot: React.FC<ResultsScatterPlotProps> = props => {
               tickPadding: 7,
             }}
             axisLeft={{
-              orient: 'left',
               legend: yAxis.label,
               legendOffset: -70,
               legendPosition: 'middle',

@@ -5,7 +5,7 @@ import {
   Result,
   ResultFacet,
   Scenario,
-} from '../../common/interfaces';
+} from '../../../common/interfaces';
 
 export interface Data {
   id: number;
@@ -13,7 +13,7 @@ export interface Data {
   isShared: boolean;
   accountUsername: string;
   buildingTypeName: string;
-  dateRun: Date;
+  dateRun: string;
   totalEnergy: number;
   thermalDiscomfort: number;
   aqDiscomfort: number; //indoor air quality discomfort
@@ -42,7 +42,10 @@ export const createDataFromResult = (result: Result): Data => {
     isShared: result.isShared,
     accountUsername: result.account.displayName,
     buildingTypeName: result.buildingType?.name || result.buildingType?.uid || 'Unknown Building',
-    dateRun: result.dateRun,
+    dateRun:
+      result.dateRun instanceof Date
+        ? result.dateRun.toISOString()
+        : new Date(result.dateRun).toISOString(),
     totalEnergy: result.energyUse,
     thermalDiscomfort: result.thermalDiscomfort,
     aqDiscomfort: result.iaq,
@@ -76,11 +79,34 @@ export const createRows = (results: Result[]): Data[] => {
   return rows;
 };
 
-export function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
+const normalizeForCompare = (value: unknown): number | string => {
+  if (value === undefined || value === null) {
+    return '';
+  }
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (typeof value === 'boolean') {
+    return value ? 1 : 0;
+  }
+  return String(value);
+};
+
+export function descendingComparator(a: Data, b: Data, orderBy: keyof Data) {
+  const aVal = normalizeForCompare(a[orderBy]);
+  const bVal = normalizeForCompare(b[orderBy]);
+
+  if (bVal === '') {
     return -1;
   }
-  if (b[orderBy] > a[orderBy]) {
+  if (aVal === '') {
+    return 1;
+  }
+
+  if (bVal < aVal) {
+    return -1;
+  }
+  if (bVal > aVal) {
     return 1;
   }
   return 0;
@@ -88,13 +114,10 @@ export function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
 
 export type Order = 'asc' | 'desc';
 
-export function getComparator<Key extends keyof any>(
+export function getComparator(
   order: Order,
-  orderBy: Key
-): (
-  a: {[key in Key]: number | string},
-  b: {[key in Key]: number | string}
-) => number {
+  orderBy: keyof Data
+): (a: Data, b: Data) => number {
   return order === 'desc'
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);

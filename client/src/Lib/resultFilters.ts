@@ -1,4 +1,4 @@
-import {FilterValues, ResultFacet} from '../../common/interfaces';
+import {FilterValues, ResultFacet} from '../../../common/interfaces';
 
 export interface ResultFilterRequest {
   buildingTypeUid?: string;
@@ -38,13 +38,13 @@ export const buildFilterRequest = (
     request.buildingTypeName = payload.buildingTypeName;
   }
 
-  const scenarioEntries = Object.entries(payload.filters.scenario || {}).filter(
-    ([, value]) => value !== undefined && value !== null && value !== ''
-  );
+  const scenarioEntries = Object.entries(
+    payload.filters.scenario || {}
+  ).filter(([, value]) => value !== undefined && value !== null && value !== '');
   if (scenarioEntries.length > 0) {
     const scenarioObject: Record<string, string> = {};
     scenarioEntries.forEach(([key, value]) => {
-      scenarioObject[key] = value;
+      scenarioObject[key] = String(value);
     });
     request.scenario = scenarioObject;
   }

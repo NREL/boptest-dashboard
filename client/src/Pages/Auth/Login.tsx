@@ -6,6 +6,8 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Button from '@material-ui/core/Button';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
+import {AlertProps} from '@material-ui/lab/Alert';
+import {SvgIconProps} from '@material-ui/core/SvgIcon';
 import { useUser } from './../../Context/user-context';
 import { useHistory, useLocation } from 'react-router-dom';
 
@@ -16,10 +18,12 @@ import SecurityIcon from '@material-ui/icons/Security';
 // Adding Google icon
 import SvgIcon from '@material-ui/core/SvgIcon';
 
-const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;
+const Alert = (props: AlertProps) => (
+  <MuiAlert elevation={6} variant="filled" {...props} />
+);
 
 // Custom Google icon component
-const GoogleIcon = (props) => (
+const GoogleIcon: React.FC<SvgIconProps> = props => (
   <SvgIcon {...props}>
     <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
   </SvgIcon>
@@ -141,7 +145,10 @@ export const Login: React.FC = () => {
 
   const {setDisplayName} = useUser();
 
-  const handleSnackMessageClose = (_, reason) => {
+  const handleSnackMessageClose = (
+    _: React.SyntheticEvent,
+    reason?: string
+  ) => {
     if (reason === 'clickaway') {
       return;
     }

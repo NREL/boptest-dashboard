@@ -7,8 +7,10 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import Popper from '@material-ui/core/Popper';
+import type {PopperProps} from '@material-ui/core/Popper';
 import TextField from '@material-ui/core/TextField';
-import {FilterRanges, FilterValues} from '../../common/interfaces';
+import type {SelectProps} from '@material-ui/core/Select';
+import {FilterRanges, FilterValues} from '../../../common/interfaces';
 
 const useMenuStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -182,7 +184,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
     scenarioOptions,
     tagOptions,
   } = props;
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
+  const [anchorEl, setAnchorEl] = React.useState<PopperProps['anchorEl']>(
     null
   );
   const [open, setOpen] = React.useState({
@@ -232,23 +234,24 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
     setNumericDraft(buildNumericDraft(filterValues));
   }, [filterValues, filterRanges]);
 
-  const filters = Object.keys(open);
+  type FilterKey = keyof typeof open;
+  const filters = Object.keys(open) as FilterKey[];
   const scenarioKeys = scenarioOptions ? Object.keys(scenarioOptions) : [];
 
   // EVENTS
 
   const handleOpenPopper =
-    filter => (event: React.MouseEvent<HTMLButtonElement>) => {
-      setAnchorEl(event.currentTarget);
+    (filter: FilterKey) => (event: React.MouseEvent<HTMLButtonElement>) => {
+      setAnchorEl(event.currentTarget as PopperProps['anchorEl']);
       setOpen({...open, [filter]: true});
     };
 
-  const handleClosePopper = filter => () => {
+  const handleClosePopper = (filter: FilterKey) => () => {
     setOpen({...open, [filter]: false});
   };
 
   const onFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const {name, value} = event.target;
+    const {name, value} = event.target as {name: string; value: string};
     const [filterKey, bound] = name.split('-') as [
       NumericFilterKey,
       'min' | 'max'
@@ -281,32 +284,45 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
     onRequestFilters(nextFilters);
   };
 
-  const onScenarioFilterChange = event => {
+  const onScenarioFilterChange = (
+    event: React.ChangeEvent<{name?: string; value: unknown}>
+  ) => {
+    const {name, value} = event.target;
+    if (!name) {
+      return;
+    }
+
+    const nextValue = typeof value === 'string' ? value : '';
+
     const newFilter = {
       ...filterValues,
       scenario: {
         ...filterValues.scenario,
-        [event.target.name]: event.target.value,
+        [name]: nextValue,
       },
     };
     onRequestFilters(newFilter);
   };
 
   const onTagFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const {name, checked} = event.target as {
+      name: string;
+      checked: boolean;
+    };
     const newFilter = {
       ...filterValues,
     };
-    event.target.checked
-      ? newFilter.tags.push(event.target.name)
+    checked
+      ? newFilter.tags.push(name)
       : (newFilter.tags = newFilter.tags.filter(
-          tag => tag !== event.target.name
+          (tag: string) => tag !== name
         ));
     onRequestFilters(newFilter);
   };
 
   // RENDERS
 
-  const renderPopperContents = filter => {
+  const renderPopperContents = (filter: FilterKey) => {
     switch (filter) {
       case 'cost': {
         const costInputProps = {
@@ -522,20 +538,18 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
   };
 
   const renderScenarioFilters = () => {
-    const selectProps = {
+    const baseSelectProps: Partial<SelectProps> = {
       classes: {icon: menuClasses.selectIcon},
       MenuProps: {
         anchorOrigin: {
-          vertical: 'bottom',
-          horizontal: 'left',
+          vertical: 'bottom' as const,
+          horizontal: 'left' as const,
         },
         getContentAnchorEl: null,
         PaperProps: {
-          style: { 
-            maxWidth: '400px' 
-          }
-        }
-      }
+          style: {maxWidth: '400px'},
+        },
+      },
     };
 
     return (
@@ -559,14 +573,16 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                 defaultValue="" /* Always show "All" option by default */
                 variant="outlined"
                 SelectProps={{
-                  ...selectProps,
+                  ...baseSelectProps,
                   displayEmpty: true,
-                  renderValue: (value) => {
+                  renderValue: (value: unknown): React.ReactNode => {
                     if (!value || value === '') {
-                      if (key === 'weatherForecastUncertainty') return 'All Weather Forecasts';
+                      if (key === 'weatherForecastUncertainty') {
+                        return 'All Weather Forecasts';
+                      }
                       return `All ${key.split(/(?=[A-Z])/).join(' ')}s`;
                     }
-                    return value;
+                    return String(value);
                   }
                 }}
                 size="small"
@@ -597,7 +613,6 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                   return (
                     <MenuItem
                       key={`${option}-option`}
-                      size="small"
                       value={option}
                     >
                       {option}

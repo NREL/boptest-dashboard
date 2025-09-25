@@ -7,10 +7,12 @@ import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
 import {ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
-import {ConfirmNewPasswordData} from '../../../common/interfaces';
+import {AlertProps} from '@material-ui/lab/Alert';
 import {AppRoute} from '../../enums';
 
-const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;
+const Alert = (props: AlertProps) => (
+  <MuiAlert elevation={6} variant="filled" {...props} />
+);
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -73,28 +75,41 @@ export const ConfirmPassword: React.FC = () => {
   const [snackMessageOpen, setSnackMessageOpen] = React.useState(false);
   const history = useHistory();
 
-  const handleConfirmationCodeChange = e => {
+  const handleConfirmationCodeChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setConfirmationCode(e.target.value);
   };
-  const handleEmailChange = e => {
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
   };
-  const handlePasswordChange = e => {
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
   };
-  const handleConfirmPasswordChange = e => {
+  const handleConfirmPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setConfirmPassword(e.target.value);
   };
 
-  const handleSnackMessageClose = (_, reason) => {
+  const handleSnackMessageClose = (
+    _: React.SyntheticEvent,
+    reason?: string
+  ) => {
     if (reason === 'clickaway') {
       return;
     }
     setSnackMessageOpen(false);
   };
 
+  interface ConfirmNewPasswordPayload {
+    username: string;
+    verificationCode: string;
+    newPassword: string;
+  }
+
   const confirmNewPassword = () => {
-    const confirmNewPassData: ConfirmNewPasswordData = {
+    const confirmNewPassData: ConfirmNewPasswordPayload = {
       username: email,
       verificationCode: confirmationCode,
       newPassword: password,
@@ -115,14 +130,13 @@ export const ConfirmPassword: React.FC = () => {
   const title = 'CONFIRM PASSWORD';
 
   useEffect(() => {
-    // custom rule will have name 'isPasswordMatch'
-    ValidatorForm.addValidationRule('isPasswordMatch', value => {
-      if (value !== password) {
-        return false;
-      }
-      return true;
+    ValidatorForm.addValidationRule('isPasswordMatch', (value: string) => {
+      return value === password;
     });
-  });
+    return () => {
+      ValidatorForm.removeValidationRule('isPasswordMatch');
+    };
+  }, [password]);
 
   return (
     <div className={classes.root}>

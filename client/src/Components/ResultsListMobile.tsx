@@ -10,7 +10,7 @@ import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import PublicIcon from '@material-ui/icons/Public';
 import LockIcon from '@material-ui/icons/Lock';
 
-import {Result} from '../../common/interfaces';
+import {Result} from '../../../common/interfaces';
 import {createRows, Data} from '../Lib/TableHelpers';
 
 const useStyles = makeStyles((theme: Theme) =>
