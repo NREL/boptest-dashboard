@@ -82,17 +82,17 @@ const useStyles = makeStyles((theme: Theme) =>
       zIndex: theme.zIndex.appBar,
       backgroundColor: theme.palette.primary.main,
       color: theme.palette.primary.contrastText,
-      padding: theme.spacing(1.5, 2.25, 1.5),
+      padding: theme.spacing(1.5, 0, 0),
       display: 'flex',
       flexDirection: 'column',
-      gap: theme.spacing(1),
-      boxShadow: '0 8px 24px rgba(13, 108, 133, 0.2)',
+      borderBottom: `1px solid rgba(255, 255, 255, 0.2)`,
     },
     headerTop: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       gap: theme.spacing(1.5),
+      padding: theme.spacing(0, 2.25, 1.5),
     },
     headerStart: {
       display: 'flex',
@@ -107,19 +107,11 @@ const useStyles = makeStyles((theme: Theme) =>
       flexShrink: 0,
     },
     secondaryBar: {
-      backgroundColor: theme.palette.grey[100],
+      backgroundColor: theme.palette.grey[200],
       color: theme.palette.text.primary,
-      padding: theme.spacing(0.85, 0),
-      margin: theme.spacing(0, -2.25, -1.25, -2.25),
+      padding: theme.spacing(0.85, 2.25),
       borderBottom: `1px solid ${theme.palette.action.hover}`,
       boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
-    },
-    secondaryInner: {
-      padding: theme.spacing(0, 2.25),
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: theme.spacing(1.5),
     },
     secondaryText: {
       display: 'flex',
@@ -313,7 +305,6 @@ export const MobileMainLayout: React.FC = () => {
         </div>
         {(headerOptions.title || headerOptions.subtitle || headerOptions.status || headerOptions.rightExtras) ? (
           <div className={classes.secondaryBar}>
-            <div className={classes.secondaryInner}>
             <div className={classes.secondaryText}>
               {headerOptions.title ? (
                 <Typography variant="subtitle1" className={classes.secondaryTitle} noWrap>
@@ -340,7 +331,6 @@ export const MobileMainLayout: React.FC = () => {
                 </div>
               ) : null}
               {headerOptions.rightExtras}
-            </div>
             </div>
           </div>
         ) : null}
