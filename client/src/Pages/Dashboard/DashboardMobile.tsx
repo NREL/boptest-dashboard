@@ -12,6 +12,7 @@ import IconButton from '@material-ui/core/IconButton';
 import ShareIcon from '@material-ui/icons/Share';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import CloseIcon from '@material-ui/icons/Close';
+import DashboardIcon from '@material-ui/icons/Dashboard';
 
 import {ResultsListMobile} from '../../Components/ResultsListMobile';
 import {ResultDetails} from '../../Components/ResultDetails';
@@ -43,6 +44,7 @@ export const DashboardMobile: React.FC = () => {
   const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
   const canUseWebShare =
     typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+  const leadingIcon = useMemo(() => <DashboardIcon fontSize="small" />, []);
 
   useEffect(() => () => reset(), [reset]);
 
@@ -164,14 +166,13 @@ export const DashboardMobile: React.FC = () => {
       const statusLabel = selectedResult.isShared ? 'Shared publicly' : 'Private result';
       setOptions({
         leftAction: 'none',
-        title: `Test Case: ${selectedResult.buildingTypeName}`,
-        subtitle: `Result ID: ${selectedResult.uid}`,
+        subtitle: `Result: ${selectedResult.uid}`,
         status: {
           state: selectedResult.isShared ? 'public' : 'private',
           label: statusLabel,
         },
         rightExtras: headerRightExtras,
-        hideAuthControl: true,
+        leadingIcon,
       });
       return;
     }
@@ -179,13 +180,11 @@ export const DashboardMobile: React.FC = () => {
     setShareAnchor(null);
     setOptions({
       leftAction: 'none',
-      title: 'My Results',
-      subtitle: 'Results for this account.',
+      subtitle: 'My Results',
       rightExtras: null,
-      status: undefined,
-      hideAuthControl: false,
+      leadingIcon,
     });
-  }, [headerRightExtras, selectedResult, setOptions]);
+  }, [headerRightExtras, leadingIcon, selectedResult, setOptions]);
 
   return (
     <div className={classes.root}>

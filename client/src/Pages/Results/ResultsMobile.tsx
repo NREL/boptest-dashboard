@@ -10,6 +10,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ShareIcon from '@material-ui/icons/Share';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import CloseIcon from '@material-ui/icons/Close';
+import HomeIcon from '@material-ui/icons/Home';
 
 import {ResultsListMobile} from '../../Components/ResultsListMobile';
 import {ResultDetails} from '../../Components/ResultDetails';
@@ -34,6 +35,7 @@ export const ResultsMobile: React.FC = () => {
   const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
   const canUseWebShare =
     typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+  const leadingIcon = useMemo(() => <HomeIcon fontSize="small" />, []);
 
   useEffect(() => () => reset(), [reset]);
 
@@ -154,10 +156,9 @@ export const ResultsMobile: React.FC = () => {
     if (selectedResult) {
       setOptions({
         leftAction: 'none',
-        title: `Test Case: ${selectedResult.buildingTypeName}`,
-        subtitle: `Result ID: ${selectedResult.uid}`,
+        subtitle: `Result: ${selectedResult.uid}`,
         rightExtras: headerRightExtras,
-        hideAuthControl: true,
+        leadingIcon,
       });
       return;
     }
@@ -165,12 +166,11 @@ export const ResultsMobile: React.FC = () => {
     setShareAnchor(null);
     setOptions({
       leftAction: 'none',
-      title: 'Explore Results',
-      subtitle: 'Community shared results',
+      subtitle: 'Latest Results',
       rightExtras: null,
-      hideAuthControl: false,
+      leadingIcon,
     });
-  }, [headerRightExtras, selectedResult, setOptions]);
+  }, [headerRightExtras, leadingIcon, selectedResult, setOptions]);
 
   return (
     <div className={classes.root}>

@@ -13,6 +13,7 @@ export interface MobileHeaderOptions {
   status?: MobileHeaderStatus;
   rightExtras?: React.ReactNode;
   hideAuthControl?: boolean;
+  leadingIcon?: React.ReactNode;
 }
 
 const defaultOptions: MobileHeaderOptions = {};

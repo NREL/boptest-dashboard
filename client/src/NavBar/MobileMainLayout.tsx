@@ -65,6 +65,9 @@ const areHeaderOptionsEqual = (
   if (a.rightExtras !== b.rightExtras) {
     return false;
   }
+  if (a.leadingIcon !== b.leadingIcon) {
+    return false;
+  }
   return true;
 };
 
@@ -82,7 +85,7 @@ const useStyles = makeStyles((theme: Theme) =>
       zIndex: theme.zIndex.appBar,
       backgroundColor: theme.palette.primary.main,
       color: theme.palette.primary.contrastText,
-      padding: theme.spacing(1.5, 0, 0),
+      padding: theme.spacing(0.75, 0, 0),
       display: 'flex',
       flexDirection: 'column',
       borderBottom: `1px solid rgba(255, 255, 255, 0.2)`,
@@ -92,7 +95,8 @@ const useStyles = makeStyles((theme: Theme) =>
       alignItems: 'center',
       justifyContent: 'space-between',
       gap: theme.spacing(1.5),
-      padding: theme.spacing(0, 2.25, 1.5),
+      padding: theme.spacing(0.5, 2.25, 1.25),
+      height: 60,
     },
     headerStart: {
       display: 'flex',
@@ -109,22 +113,29 @@ const useStyles = makeStyles((theme: Theme) =>
     secondaryBar: {
       backgroundColor: theme.palette.grey[200],
       color: theme.palette.text.primary,
-      padding: theme.spacing(0.85, 2.25),
+      padding: theme.spacing(0.6, 2.25, 0.6),
       borderBottom: `1px solid ${theme.palette.action.hover}`,
       boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
+      height: 56,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
     },
     secondaryText: {
       display: 'flex',
-      flexDirection: 'column',
-      gap: 2,
+      alignItems: 'center',
       minWidth: 0,
       flex: 1,
+      fontWeight: 600,
+      gap: theme.spacing(1),
     },
     secondaryTitle: {
       fontWeight: 600,
       lineHeight: 1.2,
     },
-    secondarySubtitle: {
+    secondaryIcon: {
+      display: 'flex',
+      alignItems: 'center',
       color: theme.palette.text.secondary,
     },
     secondaryActions: {
@@ -148,6 +159,8 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       alignItems: 'center',
       gap: theme.spacing(1.25),
+      height: 40,
+      flexShrink: 0,
     },
     content: {
       flex: 1,
@@ -160,6 +173,11 @@ const useStyles = makeStyles((theme: Theme) =>
       height: theme.spacing(4.5),
       backgroundColor: theme.palette.primary.dark,
       fontWeight: 600,
+    },
+    avatarButton: {
+      height: 40,
+      width: 40,
+      padding: theme.spacing(0.5),
     },
     drawerPaper: {
       width: 280,
@@ -206,6 +224,10 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(0.5, 1.75),
       fontWeight: 600,
       color: theme.palette.primary.contrastText,
+      height: 40,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       '&:hover': {
         borderColor: '#ffffff',
         backgroundColor: 'rgba(255, 255, 255, 0.12)',
@@ -257,6 +279,7 @@ export const MobileMainLayout: React.FC = () => {
         <IconButton
           color="inherit"
           onClick={() => setDrawerOpen(true)}
+          className={classes.avatarButton}
           aria-label="open navigation"
         >
           <Avatar className={classes.avatar}>{getAvatarInitials(displayName)}</Avatar>
@@ -303,16 +326,14 @@ export const MobileMainLayout: React.FC = () => {
             {!headerOptions.hideAuthControl ? renderAuthControl() : null}
           </div>
         </div>
-        {(headerOptions.title || headerOptions.subtitle || headerOptions.status || headerOptions.rightExtras) ? (
+        {(headerOptions.subtitle || headerOptions.status || headerOptions.rightExtras) ? (
           <div className={classes.secondaryBar}>
             <div className={classes.secondaryText}>
-              {headerOptions.title ? (
-                <Typography variant="subtitle1" className={classes.secondaryTitle} noWrap>
-                  {headerOptions.title}
-                </Typography>
+              {headerOptions.leadingIcon ? (
+                <span className={classes.secondaryIcon}>{headerOptions.leadingIcon}</span>
               ) : null}
               {headerOptions.subtitle ? (
-                <Typography variant="body2" className={classes.secondarySubtitle} noWrap>
+                <Typography variant="subtitle1" className={classes.secondaryTitle} noWrap>
                   {headerOptions.subtitle}
                 </Typography>
               ) : null}
