@@ -11,8 +11,9 @@ import ListItemText from '@material-ui/core/ListItemText';
 import IconButton from '@material-ui/core/IconButton';
 import ShareIcon from '@material-ui/icons/Share';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
-import CloseIcon from '@material-ui/icons/Close';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import DashboardIcon from '@material-ui/icons/Dashboard';
+import AssignmentIcon from '@material-ui/icons/Assignment';
 
 import {ResultsListMobile} from '../../Components/ResultsListMobile';
 import {ResultDetails} from '../../Components/ResultDetails';
@@ -44,7 +45,8 @@ export const DashboardMobile: React.FC = () => {
   const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
   const canUseWebShare =
     typeof navigator !== 'undefined' && typeof navigator.share === 'function';
-  const leadingIcon = useMemo(() => <DashboardIcon fontSize="small" />, []);
+  const listIcon = useMemo(() => <DashboardIcon fontSize="small" />, []);
+  const detailIcon = useMemo(() => <AssignmentIcon fontSize="small" />, []);
 
   useEffect(() => () => reset(), [reset]);
 
@@ -104,8 +106,16 @@ export const DashboardMobile: React.FC = () => {
       return null;
     }
 
-    return (
+        return (
       <div className={classes.detailHeaderActions}>
+        <IconButton
+          color="inherit"
+          aria-label="Go back"
+          onClick={handleCloseDetails}
+          size="small"
+        >
+          <ArrowBackIcon />
+        </IconButton>
         {selectedResult.isShared ? (
           <>
             <Button
@@ -139,14 +149,6 @@ export const DashboardMobile: React.FC = () => {
             </Menu>
           </>
         ) : null}
-        <IconButton
-          color="inherit"
-          aria-label="Close details"
-          onClick={handleCloseDetails}
-          size="small"
-        >
-          <CloseIcon />
-        </IconButton>
       </div>
     );
   }, [
@@ -166,13 +168,13 @@ export const DashboardMobile: React.FC = () => {
       const statusLabel = selectedResult.isShared ? 'Shared publicly' : 'Private result';
       setOptions({
         leftAction: 'none',
-        subtitle: `Result: ${selectedResult.uid}`,
+        subtitle: selectedResult.buildingTypeName ?? 'Result',
         status: {
           state: selectedResult.isShared ? 'public' : 'private',
           label: statusLabel,
         },
         rightExtras: headerRightExtras,
-        leadingIcon,
+        leadingIcon: detailIcon,
       });
       return;
     }
@@ -182,9 +184,9 @@ export const DashboardMobile: React.FC = () => {
       leftAction: 'none',
       subtitle: 'My Results',
       rightExtras: null,
-      leadingIcon,
+      leadingIcon: listIcon,
     });
-  }, [headerRightExtras, leadingIcon, selectedResult, setOptions]);
+  }, [detailIcon, headerRightExtras, listIcon, selectedResult, setOptions]);
 
   return (
     <div className={classes.root}>
