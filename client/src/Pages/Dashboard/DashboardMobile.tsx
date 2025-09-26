@@ -1,4 +1,5 @@
 import React, {useCallback, useEffect, useMemo} from 'react';
+import axios from 'axios';
 import clsx from 'clsx';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -15,6 +16,7 @@ import {useDashboardLayoutStyles} from './dashboardStyles';
 import {useDashboardViewModel} from './useDashboardViewModel';
 import {Data} from '../../Lib/TableHelpers';
 import {useMobileHeader} from '../../NavBar/MobileHeaderContext';
+import {useUser} from '../../Context/user-context';
 
 export const DashboardMobile: React.FC = () => {
   const classes = useDashboardLayoutStyles();
@@ -37,6 +39,7 @@ export const DashboardMobile: React.FC = () => {
     updateResultShareStatus,
   } = useDashboardViewModel();
   const {setOptions, reset} = useMobileHeader();
+  const {csrfToken} = useUser();
   const listIcon = useMemo(() => <DashboardIcon fontSize="small" />, []);
   const detailIcon = useMemo(() => <AssignmentIcon fontSize="small" />, []);
 
@@ -77,6 +80,27 @@ export const DashboardMobile: React.FC = () => {
       updateResultShareStatus(selectedResult.uid, share);
     },
     [selectedResult, updateResultShareStatus]
+  );
+
+  const handleToggleShareStatusFromList = useCallback(
+    async (result: Data, share: boolean) => {
+      const headers: Record<string, string> = {};
+      if (csrfToken) {
+        headers['X-CSRF-Token'] = csrfToken;
+      }
+
+      await axios.patch(
+        '/api/results/share',
+        {id: result.id, share},
+        {
+          withCredentials: true,
+          headers,
+        }
+      );
+
+      updateResultShareStatus(result.uid, share);
+    },
+    [csrfToken, updateResultShareStatus]
   );
 
   useEffect(() => {
@@ -146,6 +170,7 @@ export const DashboardMobile: React.FC = () => {
                   hasMore={hasNext}
                   onLoadMore={loadMore}
                   isLoadingMore={isLoadingMore}
+                  onToggleShareStatus={handleToggleShareStatusFromList}
                 />
               </div>
             )}

@@ -1,10 +1,11 @@
-import React, {useMemo} from 'react';
+import React, {useMemo, useState} from 'react';
 import {
   Paper,
   Typography,
   CircularProgress,
   Tooltip,
   Button,
+  IconButton,
 } from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import PublicIcon from '@material-ui/icons/Public';
@@ -124,6 +125,9 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       alignItems: 'center',
     },
+    toggleButton: {
+      padding: theme.spacing(0.5),
+    },
     loadMoreWrapper: {
       paddingTop: theme.spacing(1),
       display: 'flex',
@@ -142,6 +146,7 @@ interface ResultsListMobileProps {
   maxItems?: number;
   showShareStatus?: boolean;
   showAccountName?: boolean;
+  onToggleShareStatus?: (result: Data, share: boolean) => Promise<void> | void;
 }
 
 const formatNumber = (value: number | undefined | null, fractionDigits = 2) => {
@@ -165,6 +170,7 @@ export const ResultsListMobile: React.FC<ResultsListMobileProps> = props => {
     maxItems,
     showShareStatus = true,
     showAccountName = false,
+    onToggleShareStatus,
   } = props;
 
   const classes = useStyles();
@@ -172,6 +178,39 @@ export const ResultsListMobile: React.FC<ResultsListMobileProps> = props => {
   const displayRows = typeof maxItems === 'number'
     ? dataRows.slice(0, maxItems)
     : dataRows;
+  const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
+
+  const isUpdating = (uid: string) => updatingIds.has(uid);
+
+  const handleStatusToggle = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+    row: Data
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!onToggleShareStatus || isUpdating(row.uid)) {
+      return;
+    }
+
+    const nextShared = !row.isShared;
+    setUpdatingIds(prev => {
+      const next = new Set(prev);
+      next.add(row.uid);
+      return next;
+    });
+
+    try {
+      await onToggleShareStatus(row, nextShared);
+    } catch (error) {
+      console.error('Unable to toggle share status', error);
+    } finally {
+      setUpdatingIds(prev => {
+        const next = new Set(prev);
+        next.delete(row.uid);
+        return next;
+      });
+    }
+  };
 
   if (isLoading && dataRows.length === 0) {
     return (
@@ -249,11 +288,24 @@ export const ResultsListMobile: React.FC<ResultsListMobileProps> = props => {
                         : 'Private to your account'
                     }
                   >
-                    {row.isShared ? (
-                      <PublicIcon color="primary" fontSize="small" />
-                    ) : (
-                      <LockIcon color="disabled" fontSize="small" />
-                    )}
+                    <span>
+                      <IconButton
+                        size="small"
+                        className={classes.toggleButton}
+                        aria-label={row.isShared ? 'Make result private' : 'Share result publicly'}
+                        aria-pressed={row.isShared}
+                        onClick={event => handleStatusToggle(event, row)}
+                        disabled={!onToggleShareStatus || isUpdating(row.uid)}
+                      >
+                        {isUpdating(row.uid) ? (
+                          <CircularProgress size={16} thickness={5} />
+                        ) : row.isShared ? (
+                          <PublicIcon color="primary" fontSize="small" />
+                        ) : (
+                          <LockIcon color="disabled" fontSize="small" />
+                        )}
+                      </IconButton>
+                    </span>
                   </Tooltip>
                 </div>
               )}

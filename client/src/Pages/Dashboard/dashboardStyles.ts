@@ -11,7 +11,7 @@ export const useDashboardLayoutStyles = makeStyles((theme: Theme) =>
       minHeight: 0,
       overflow: 'hidden',
       [theme.breakpoints.down('sm')]: {
-        padding: theme.spacing(1, 0, 2),
+        padding: theme.spacing(0.5, 0, 2),
       },
     },
     paper: {
