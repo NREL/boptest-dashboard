@@ -40,6 +40,7 @@ export const DashboardMobile: React.FC = () => {
     onSelectResult,
     selectedResult,
     clearSelection,
+    updateResultShareStatus,
   } = useDashboardViewModel();
   const {setOptions, reset} = useMobileHeader();
   const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
@@ -106,16 +107,8 @@ export const DashboardMobile: React.FC = () => {
       return null;
     }
 
-        return (
+    return (
       <div className={classes.detailHeaderActions}>
-        <IconButton
-          color="inherit"
-          aria-label="Go back"
-          onClick={handleCloseDetails}
-          size="small"
-        >
-          <ArrowBackIcon />
-        </IconButton>
         {selectedResult.isShared ? (
           <>
             <Button
@@ -149,6 +142,14 @@ export const DashboardMobile: React.FC = () => {
             </Menu>
           </>
         ) : null}
+        <IconButton
+          color="inherit"
+          aria-label="Go back"
+          onClick={handleCloseDetails}
+          size="small"
+        >
+          <ArrowBackIcon />
+        </IconButton>
       </div>
     );
   }, [
@@ -163,16 +164,22 @@ export const DashboardMobile: React.FC = () => {
     shareAnchor,
   ]);
 
+  const handleShareStatusChange = useCallback(
+    (share: boolean) => {
+      if (!selectedResult) {
+        return;
+      }
+      updateResultShareStatus(selectedResult.uid, share);
+      setShareAnchor(null);
+    },
+    [selectedResult, updateResultShareStatus]
+  );
+
   useEffect(() => {
     if (selectedResult) {
-      const statusLabel = selectedResult.isShared ? 'Shared publicly' : 'Private result';
       setOptions({
         leftAction: 'none',
         subtitle: selectedResult.buildingTypeName ?? 'Result',
-        status: {
-          state: selectedResult.isShared ? 'public' : 'private',
-          label: statusLabel,
-        },
         rightExtras: headerRightExtras,
         leadingIcon: detailIcon,
       });
@@ -196,6 +203,7 @@ export const DashboardMobile: React.FC = () => {
             result={selectedResult}
             onClose={handleCloseDetails}
             showMobileHeader={false}
+            onShareStatusChange={handleShareStatusChange}
           />
         ) : (
           <>

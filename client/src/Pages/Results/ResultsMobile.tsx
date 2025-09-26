@@ -97,16 +97,8 @@ export const ResultsMobile: React.FC = () => {
       return null;
     }
 
-        return (
+    return (
       <div className={classes.detailHeaderActions}>
-        <IconButton
-          color="inherit"
-          aria-label="Go back"
-          onClick={handleCloseDetails}
-          size="small"
-        >
-          <ArrowBackIcon />
-        </IconButton>
         {selectedResult.isShared ? (
           <>
             <Button
@@ -140,6 +132,14 @@ export const ResultsMobile: React.FC = () => {
             </Menu>
           </>
         ) : null}
+        <IconButton
+          color="inherit"
+          aria-label="Go back"
+          onClick={handleCloseDetails}
+          size="small"
+        >
+          <ArrowBackIcon />
+        </IconButton>
       </div>
     );
   }, [

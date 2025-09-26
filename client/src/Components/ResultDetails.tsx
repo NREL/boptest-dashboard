@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 import Typography from '@material-ui/core/Typography';
 import {
   Button,
@@ -15,6 +16,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import {useTheme} from '@material-ui/core/styles';
 import Tooltip from '@material-ui/core/Tooltip';
 import IconButton from '@material-ui/core/IconButton';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import CloseIcon from '@material-ui/icons/Close';
 import ShareIcon from '@material-ui/icons/Share';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
@@ -26,6 +28,7 @@ import BoptestLogo from '../static/assets/boptest-logo.svg';
 import {KPITable} from './KPITable';
 import {ResultInfoTable} from './ResultInfoTable';
 import {Data} from '../Lib/TableHelpers';
+import {useUser} from '../Context/user-context';
 
 const useDesktopStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -127,17 +130,6 @@ const useMobileStyles = makeStyles((theme: Theme) =>
     mobileSubtitle: {
       color: 'rgba(255, 255, 255, 0.75)',
     },
-    statusRow: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: theme.spacing(1),
-      marginTop: theme.spacing(1),
-      color: 'rgba(255, 255, 255, 0.85)',
-    },
-    statusText: {
-      fontWeight: 500,
-      letterSpacing: 0.2,
-    },
     content: {
       flexGrow: 1,
       overflowY: 'auto',
@@ -153,6 +145,12 @@ const useMobileStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(1.4, 1.4, 1.7),
       boxShadow: '0 6px 18px rgba(15, 30, 84, 0.08)',
     },
+    sectionHeaderRow: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: theme.spacing(1),
+    },
     sectionTitle: {
       fontWeight: 600,
       textTransform: 'uppercase',
@@ -160,6 +158,14 @@ const useMobileStyles = makeStyles((theme: Theme) =>
       letterSpacing: 0.6,
       color: theme.palette.text.secondary,
       marginBottom: theme.spacing(1),
+    },
+    visibilityToggleWrapper: {
+      display: 'flex',
+      alignItems: 'center',
+      minHeight: 32,
+    },
+    visibilityToggleButton: {
+      padding: theme.spacing(0.5),
     },
     overviewRow: {
       display: 'flex',
@@ -220,6 +226,7 @@ interface ResultDetailsProps {
   showShareStatus?: boolean;
   onClose?: () => void;
   showMobileHeader?: boolean;
+  onShareStatusChange?: (isShared: boolean) => void;
 }
 
 export const ResultDetails: React.FC<ResultDetailsProps> = props => {
@@ -228,16 +235,21 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
     showShareStatus = true,
     onClose,
     showMobileHeader = true,
+    onShareStatusChange,
   } = props;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const {csrfToken} = useUser();
 
-  const canShare = result.isShared === true;
+  const [isShared, setIsShared] = React.useState(result.isShared === true);
+  const [isShareUpdating, setIsShareUpdating] = React.useState(false);
+
+  const canShare = isShared;
   const [shareAnchor, setShareAnchor] = React.useState<null | HTMLElement>(null);
   const canUseWebShare =
     typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
-  const statusLabel = result.isShared ? 'Shared publicly' : 'Private result';
+  const statusLabel = isShared ? 'Shared publicly' : 'Private result';
 
   const formatNumberValue = (value: number | null | undefined, digits = 2) => {
     if (value === null || value === undefined || Number.isNaN(value)) {
@@ -276,6 +288,14 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
     setShareAnchor(null);
   };
 
+  React.useEffect(() => {
+    const nextShared = result.isShared === true;
+    setIsShared(nextShared);
+    if (!nextShared) {
+      closeShareMenu();
+    }
+  }, [result.isShared]);
+
   const handleNativeShare = async () => {
     closeShareMenu();
     if (!canUseWebShare) {
@@ -296,6 +316,40 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
   const handleCopyShareLink = () => {
     closeShareMenu();
     copyLinkToClipboard();
+  };
+
+  const handleToggleShareStatus = async () => {
+    if (isShareUpdating) {
+      return;
+    }
+
+    const nextShared = !isShared;
+    setIsShareUpdating(true);
+    try {
+      const headers: Record<string, string> = {};
+      if (csrfToken) {
+        headers['X-CSRF-Token'] = csrfToken;
+      }
+
+      await axios.patch(
+        '/api/results/share',
+        {id: result.id, share: nextShared},
+        {
+          withCredentials: true,
+          headers,
+        }
+      );
+
+      setIsShared(nextShared);
+      if (!nextShared) {
+        closeShareMenu();
+      }
+      onShareStatusChange?.(nextShared);
+    } catch (error) {
+      console.error('Unable to update sharing preference', error);
+    } finally {
+      setIsShareUpdating(false);
+    }
   };
 
   const mobileMetrics = [
@@ -382,22 +436,36 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
         <Typography variant="body2" className={classes.mobileSubtitle}>
           Result ID: {result.uid}
         </Typography>
-        {showShareStatus && (
-          <div className={classes.statusRow}>
-            <Tooltip title={statusLabel}>
-              {result.isShared ? (
-                <PublicIcon fontSize="small" />
-              ) : (
-                <LockIcon fontSize="small" />
-              )}
-            </Tooltip>
-            <Typography variant="body2" className={classes.statusText}>
-              {statusLabel}
-            </Typography>
-          </div>
-        )}
       </>
     );
+    const visibilityToggleLabel = isShared
+      ? 'Make result private'
+      : 'Share result publicly';
+    const visibilityControl = showShareStatus ? (
+      <div className={classes.visibilityToggleWrapper}>
+        {isShareUpdating ? (
+          <CircularProgress size={18} thickness={5} />
+        ) : (
+          <Tooltip title={statusLabel}>
+            <span>
+              <IconButton
+                size="small"
+                className={classes.visibilityToggleButton}
+                aria-label={visibilityToggleLabel}
+                aria-pressed={isShared}
+                onClick={handleToggleShareStatus}
+              >
+                {isShared ? (
+                  <PublicIcon color="primary" fontSize="small" />
+                ) : (
+                  <LockIcon color="disabled" fontSize="small" />
+                )}
+              </IconButton>
+            </span>
+          </Tooltip>
+        )}
+      </div>
+    ) : null;
 
     return (
       <div className={classes.root}>
@@ -437,9 +505,20 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
 
         <div className={classes.content}>
           <div className={classes.section}>
-            <Typography variant="subtitle2" className={classes.sectionTitle}>
-              Overview
-            </Typography>
+            <div className={classes.sectionHeaderRow}>
+              <Typography
+                variant="subtitle2"
+                className={classes.sectionTitle}
+                style={{marginBottom: 0}}
+              >
+                Overview
+              </Typography>
+              {visibilityControl}
+            </div>
+            <div className={classes.overviewRow}>
+              <span className={classes.overviewLabel}>Result ID</span>
+              <span className={classes.overviewValue}>{result.uid}</span>
+            </div>
             <div className={classes.overviewRow}>
               <span className={classes.overviewLabel}>Simulation Date</span>
               <span className={classes.overviewValue}>{dateString}</span>

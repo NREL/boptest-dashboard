@@ -27,6 +27,7 @@ export interface DashboardViewModel {
   selectedResult: Data | null;
   clearSelection: () => void;
   refresh: () => void;
+  updateResultShareStatus: (uid: string, isShared: boolean) => void;
 }
 
 export const useDashboardViewModel = (): DashboardViewModel => {
@@ -126,6 +127,31 @@ export const useDashboardViewModel = (): DashboardViewModel => {
     setSelectedResult(null);
   }, []);
 
+  const updateResultShareStatus = useCallback(
+    (uid: string, share: boolean) => {
+      setResults(prev =>
+        prev.map(item =>
+          item.uid === uid
+            ? {
+                ...item,
+                isShared: share,
+              }
+            : item
+        )
+      );
+      setSelectedResult(prev => {
+        if (!prev || prev.uid !== uid) {
+          return prev;
+        }
+        return {
+          ...prev,
+          isShared: share,
+        };
+      });
+    },
+    [setResults, setSelectedResult]
+  );
+
   return {
     results,
     buildingFacets,
@@ -146,6 +172,7 @@ export const useDashboardViewModel = (): DashboardViewModel => {
     selectedResult,
     clearSelection,
     refresh,
+    updateResultShareStatus,
   };
 };
   const isAxiosError = (error: unknown): error is AxiosError => {

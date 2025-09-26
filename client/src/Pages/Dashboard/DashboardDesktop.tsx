@@ -33,6 +33,7 @@ export const DashboardDesktop: React.FC = () => {
     selectedResult,
     clearSelection,
     refresh,
+    updateResultShareStatus,
   } = useDashboardViewModel();
 
   const handleSelect = (result: Data) => {
@@ -42,6 +43,16 @@ export const DashboardDesktop: React.FC = () => {
   const handleModalClose = () => {
     clearSelection();
   };
+
+  const handleShareStatusChange = React.useCallback(
+    (share: boolean) => {
+      if (!selectedResult) {
+        return;
+      }
+      updateResultShareStatus(selectedResult.uid, share);
+    },
+    [selectedResult, updateResultShareStatus]
+  );
 
   return (
     <div className={classes.root}>
@@ -102,7 +113,11 @@ export const DashboardDesktop: React.FC = () => {
               <Modal
                 closeModal={handleModalClose}
                 renderProp={
-                  <ResultDetails result={selectedResult} onClose={handleModalClose} />
+                  <ResultDetails
+                    result={selectedResult}
+                    onClose={handleModalClose}
+                    onShareStatusChange={handleShareStatusChange}
+                  />
                 }
               />
             )}
