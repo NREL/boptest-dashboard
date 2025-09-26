@@ -111,11 +111,11 @@ const useMobileStyles = makeStyles((theme: Theme) =>
       gap: theme.spacing(1),
     },
     shareButton: {
-      color: theme.palette.primary.contrastText,
-      borderColor: 'rgba(255, 255, 255, 0.45)',
+      color: theme.palette.primary.main,
+      borderColor: theme.palette.primary.main,
       '&:hover': {
-        borderColor: '#ffffff',
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        borderColor: theme.palette.primary.dark,
+        backgroundColor: 'rgba(0, 136, 169, 0.08)',
       },
     },
     headerBody: {
@@ -151,6 +151,11 @@ const useMobileStyles = makeStyles((theme: Theme) =>
       justifyContent: 'space-between',
       marginBottom: theme.spacing(1),
     },
+    sectionActions: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(1),
+    },
     sectionTitle: {
       fontWeight: 600,
       textTransform: 'uppercase',
@@ -163,6 +168,10 @@ const useMobileStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       alignItems: 'center',
       minHeight: 32,
+    },
+    shareButtonWrapper: {
+      display: 'flex',
+      alignItems: 'center',
     },
     visibilityToggleButton: {
       padding: theme.spacing(0.5),
@@ -466,6 +475,25 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
         )}
       </div>
     ) : null;
+    const shareAction = canShare ? (
+      <div className={classes.shareButtonWrapper}>
+        <Button
+          size="small"
+          variant="outlined"
+          onClick={openShareMenu}
+          className={classes.shareButton}
+        >
+          Share
+        </Button>
+        {shareMenu}
+      </div>
+    ) : null;
+    const sectionActions = shareAction || visibilityControl ? (
+      <div className={classes.sectionActions}>
+        {shareAction}
+        {visibilityControl}
+      </div>
+    ) : null;
 
     return (
       <div className={classes.root}>
@@ -474,19 +502,6 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
             <div className={classes.headerTop}>
               <img src={BoptestLogo} alt="BOPTEST" className={classes.logo} />
               <div className={classes.controls}>
-                {canShare && (
-                  <>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={openShareMenu}
-                      className={classes.shareButton}
-                    >
-                      Share
-                    </Button>
-                    {shareMenu}
-                  </>
-                )}
                 {onClose && (
                   <IconButton
                     aria-label="Close details"
@@ -513,7 +528,7 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
               >
                 Overview
               </Typography>
-              {visibilityControl}
+              {sectionActions}
             </div>
             <div className={classes.overviewRow}>
               <span className={classes.overviewLabel}>Result ID</span>

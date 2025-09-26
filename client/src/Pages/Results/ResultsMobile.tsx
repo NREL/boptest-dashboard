@@ -1,14 +1,7 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import clsx from 'clsx';
 import Paper from '@material-ui/core/Paper';
-import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ShareIcon from '@material-ui/icons/Share';
-import FileCopyIcon from '@material-ui/icons/FileCopy';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import AssessmentIcon from '@material-ui/icons/Assessment';
 import HomeIcon from '@material-ui/icons/Home';
@@ -33,9 +26,6 @@ export const ResultsMobile: React.FC = () => {
     closeModal,
   } = useResultsViewModel();
   const {setOptions, reset} = useMobileHeader();
-  const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
-  const canUseWebShare =
-    typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   const listIcon = useMemo(() => <HomeIcon fontSize="small" />, []);
   const detailIcon = useMemo(() => <AssessmentIcon fontSize="small" />, []);
 
@@ -46,51 +36,8 @@ export const ResultsMobile: React.FC = () => {
   }, [handleSelectResult]);
 
   const handleCloseDetails = useCallback(() => {
-    setShareAnchor(null);
     closeModal();
   }, [closeModal]);
-
-  const handleOpenShareMenu = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    setShareAnchor(event.currentTarget);
-  }, []);
-
-  const handleCloseShareMenu = useCallback(() => {
-    setShareAnchor(null);
-  }, []);
-
-  const formatShareUrl = useCallback((result: Data) => {
-    const {origin} = window.location;
-    return `${origin}/result/${result.uid}`;
-  }, []);
-
-  const handleCopyShareLink = useCallback(
-    (result: Data) => {
-      handleCloseShareMenu();
-      navigator.clipboard.writeText(formatShareUrl(result)).catch(() => {
-        /* ignore clipboard failures */
-      });
-    },
-    [formatShareUrl, handleCloseShareMenu]
-  );
-
-  const handleNativeShare = useCallback(
-    async (result: Data) => {
-      handleCloseShareMenu();
-      if (!canUseWebShare) {
-        return;
-      }
-      try {
-        await navigator.share({
-          title: 'BOPTEST Result',
-          text: `Check out this BOPTEST result for ${result.buildingTypeName}`,
-          url: formatShareUrl(result),
-        });
-      } catch (error) {
-        /* ignore share cancellation */
-      }
-    },
-    [canUseWebShare, formatShareUrl, handleCloseShareMenu]
-  );
 
   const headerRightExtras = useMemo(() => {
     if (!selectedResult) {
@@ -99,39 +46,6 @@ export const ResultsMobile: React.FC = () => {
 
     return (
       <div className={classes.detailHeaderActions}>
-        {selectedResult.isShared ? (
-          <>
-            <Button
-              size="small"
-              variant="outlined"
-              color="primary"
-              onClick={handleOpenShareMenu}
-            >
-              Share
-            </Button>
-            <Menu
-              anchorEl={shareAnchor}
-              keepMounted
-              open={Boolean(shareAnchor)}
-              onClose={handleCloseShareMenu}
-            >
-              {canUseWebShare ? (
-                <MenuItem onClick={() => handleNativeShare(selectedResult)}>
-                  <ListItemIcon>
-                    <ShareIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText primary="Share with device" />
-                </MenuItem>
-              ) : null}
-              <MenuItem onClick={() => handleCopyShareLink(selectedResult)}>
-                <ListItemIcon>
-                  <FileCopyIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary="Copy link" />
-              </MenuItem>
-            </Menu>
-          </>
-        ) : null}
         <IconButton
           color="inherit"
           aria-label="Go back"
@@ -142,17 +56,7 @@ export const ResultsMobile: React.FC = () => {
         </IconButton>
       </div>
     );
-  }, [
-    canUseWebShare,
-    classes.detailHeaderActions,
-    handleCloseDetails,
-    handleCloseShareMenu,
-    handleCopyShareLink,
-    handleNativeShare,
-    handleOpenShareMenu,
-    selectedResult,
-    shareAnchor,
-  ]);
+  }, [classes.detailHeaderActions, handleCloseDetails, selectedResult]);
 
   useEffect(() => {
     if (selectedResult) {
@@ -165,7 +69,6 @@ export const ResultsMobile: React.FC = () => {
       return;
     }
 
-    setShareAnchor(null);
     setOptions({
       leftAction: 'none',
       subtitle: 'Latest Results',

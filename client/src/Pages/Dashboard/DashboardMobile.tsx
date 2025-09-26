@@ -1,16 +1,10 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import clsx from 'clsx';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
 import IconButton from '@material-ui/core/IconButton';
-import ShareIcon from '@material-ui/icons/Share';
-import FileCopyIcon from '@material-ui/icons/FileCopy';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import AssignmentIcon from '@material-ui/icons/Assignment';
@@ -43,9 +37,6 @@ export const DashboardMobile: React.FC = () => {
     updateResultShareStatus,
   } = useDashboardViewModel();
   const {setOptions, reset} = useMobileHeader();
-  const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
-  const canUseWebShare =
-    typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   const listIcon = useMemo(() => <DashboardIcon fontSize="small" />, []);
   const detailIcon = useMemo(() => <AssignmentIcon fontSize="small" />, []);
 
@@ -57,50 +48,7 @@ export const DashboardMobile: React.FC = () => {
 
   const handleCloseDetails = useCallback(() => {
     clearSelection();
-    setShareAnchor(null);
   }, [clearSelection]);
-
-  const handleOpenShareMenu = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    setShareAnchor(event.currentTarget);
-  }, []);
-
-  const handleCloseShareMenu = useCallback(() => {
-    setShareAnchor(null);
-  }, []);
-
-  const formatShareUrl = useCallback((result: Data) => {
-    const {origin} = window.location;
-    return `${origin}/result/${result.uid}`;
-  }, []);
-
-  const handleCopyShareLink = useCallback(
-    (result: Data) => {
-      handleCloseShareMenu();
-      navigator.clipboard.writeText(formatShareUrl(result)).catch(() => {
-        /* ignore clipboard failures */
-      });
-    },
-    [formatShareUrl, handleCloseShareMenu]
-  );
-
-  const handleNativeShare = useCallback(
-    async (result: Data) => {
-      handleCloseShareMenu();
-      if (!canUseWebShare) {
-        return;
-      }
-      try {
-        await navigator.share({
-          title: 'BOPTEST Result',
-          text: `Check out this BOPTEST result for ${result.buildingTypeName}`,
-          url: formatShareUrl(result),
-        });
-      } catch (error) {
-        /* ignore share cancellation */
-      }
-    },
-    [canUseWebShare, formatShareUrl, handleCloseShareMenu]
-  );
 
   const headerRightExtras = useMemo(() => {
     if (!selectedResult) {
@@ -109,39 +57,6 @@ export const DashboardMobile: React.FC = () => {
 
     return (
       <div className={classes.detailHeaderActions}>
-        {selectedResult.isShared ? (
-          <>
-            <Button
-              size="small"
-              variant="outlined"
-              color="primary"
-              onClick={handleOpenShareMenu}
-            >
-              Share
-            </Button>
-            <Menu
-              anchorEl={shareAnchor}
-              keepMounted
-              open={Boolean(shareAnchor)}
-              onClose={handleCloseShareMenu}
-            >
-              {canUseWebShare ? (
-                <MenuItem onClick={() => handleNativeShare(selectedResult)}>
-                  <ListItemIcon>
-                    <ShareIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText primary="Share with device" />
-                </MenuItem>
-              ) : null}
-              <MenuItem onClick={() => handleCopyShareLink(selectedResult)}>
-                <ListItemIcon>
-                  <FileCopyIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary="Copy link" />
-              </MenuItem>
-            </Menu>
-          </>
-        ) : null}
         <IconButton
           color="inherit"
           aria-label="Go back"
@@ -152,17 +67,7 @@ export const DashboardMobile: React.FC = () => {
         </IconButton>
       </div>
     );
-  }, [
-    canUseWebShare,
-    classes.detailHeaderActions,
-    handleCloseDetails,
-    handleCloseShareMenu,
-    handleCopyShareLink,
-    handleNativeShare,
-    handleOpenShareMenu,
-    selectedResult,
-    shareAnchor,
-  ]);
+  }, [classes.detailHeaderActions, handleCloseDetails, selectedResult]);
 
   const handleShareStatusChange = useCallback(
     (share: boolean) => {
@@ -170,7 +75,6 @@ export const DashboardMobile: React.FC = () => {
         return;
       }
       updateResultShareStatus(selectedResult.uid, share);
-      setShareAnchor(null);
     },
     [selectedResult, updateResultShareStatus]
   );
@@ -186,7 +90,6 @@ export const DashboardMobile: React.FC = () => {
       return;
     }
 
-    setShareAnchor(null);
     setOptions({
       leftAction: 'none',
       subtitle: 'My Results',
