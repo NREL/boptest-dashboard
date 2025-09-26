@@ -11,6 +11,7 @@ import {
   Divider,
   Avatar,
   Button,
+  ButtonBase,
 } from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
@@ -104,6 +105,20 @@ const useStyles = makeStyles((theme: Theme) =>
       gap: theme.spacing(1.25),
       minWidth: 0,
       flex: 1,
+    },
+    logoButton: {
+      display: 'flex',
+      alignItems: 'center',
+      padding: 0,
+      borderRadius: theme.shape.borderRadius,
+      transition: 'opacity 120ms ease',
+      '&:hover': {
+        opacity: 0.85,
+      },
+      '&:focus-visible': {
+        outline: `2px solid ${theme.palette.common.white}`,
+        outlineOffset: 2,
+      },
     },
     logo: {
       height: 38,
@@ -265,6 +280,10 @@ export const MobileMainLayout: React.FC = () => {
     history.push(AppRoute.Login);
   };
 
+  const handleLogoClick = () => {
+    history.push(AppRoute.Results);
+  };
+
   const renderAuthControl = () => {
     if (loading) {
       return (
@@ -320,7 +339,13 @@ export const MobileMainLayout: React.FC = () => {
       <header className={classes.header}>
         <div className={classes.headerTop}>
           <div className={classes.headerStart}>
-            <Logo className={classes.logo} />
+            <ButtonBase
+              className={classes.logoButton}
+              onClick={handleLogoClick}
+              aria-label="Go to results"
+            >
+              <Logo className={classes.logo} />
+            </ButtonBase>
           </div>
           <div className={classes.controls}>
             {!headerOptions.hideAuthControl ? renderAuthControl() : null}
@@ -365,8 +390,8 @@ export const MobileMainLayout: React.FC = () => {
       >
         <div className={classes.drawerContent}>
           <div className={classes.drawerHeader}>
-            <Typography variant="subtitle1">Navigation</Typography>
-            <IconButton onClick={() => setDrawerOpen(false)} aria-label="close navigation">
+            <Typography variant="subtitle1">BOPTEST</Typography>
+            <IconButton onClick={() => setDrawerOpen(false)} aria-label="close BOPTEST menu">
               <CloseIcon />
             </IconButton>
           </div>

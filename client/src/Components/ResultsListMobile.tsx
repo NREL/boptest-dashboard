@@ -159,6 +159,15 @@ const formatNumber = (value: number | undefined | null, fractionDigits = 2) => {
   });
 };
 
+const formatWithUnit = (
+  value: number | undefined | null,
+  unit: string,
+  fractionDigits = 2
+) => {
+  const formatted = formatNumber(value, fractionDigits);
+  return formatted === '—' ? formatted : `${formatted} ${unit}`;
+};
+
 export const ResultsListMobile: React.FC<ResultsListMobileProps> = props => {
   const {
     results,
@@ -312,48 +321,49 @@ export const ResultsListMobile: React.FC<ResultsListMobileProps> = props => {
             </div>
 
             <div className={classes.metricScroll}>
-              <div className={classes.metricTile}>
-                <span className={classes.metricLabel}>Total Energy</span>
-                <span className={classes.metricValue}>
-                  {formatNumber(row.totalEnergy)} kWh/m²
-                </span>
-              </div>
-              <div className={classes.metricTile}>
-                <span className={classes.metricLabel}>Thermal Discomfort</span>
-                <span className={classes.metricValue}>
-                  {formatNumber(row.thermalDiscomfort)} Kh/zone
-                </span>
-              </div>
-              <div className={classes.metricTile}>
-                <span className={classes.metricLabel}>IAQ Discomfort</span>
-                <span className={classes.metricValue}>
-                  {formatNumber(row.aqDiscomfort)} ppmh/zone
-                </span>
-              </div>
-              <div className={classes.metricTile}>
-                <span className={classes.metricLabel}>Operations Cost</span>
-                <span className={classes.metricValue}>
-                  {formatNumber(row.cost)}
-                </span>
-              </div>
-              <div className={classes.metricTile}>
-                <span className={classes.metricLabel}>CO₂ Emissions</span>
-                <span className={classes.metricValue}>
-                  {formatNumber(row.emissions)} kgCO₂/m²
-                </span>
-              </div>
-              <div className={classes.metricTile}>
-                <span className={classes.metricLabel}>Peak Electricity</span>
-                <span className={classes.metricValue}>
-                  {formatNumber(row.peakElectricity)} kW/m²
-                </span>
-              </div>
-              <div className={classes.metricTile}>
-                <span className={classes.metricLabel}>Comp Time Ratio</span>
-                <span className={classes.metricValue}>
-                  {formatNumber(row.compTimeRatio)}
-                </span>
-              </div>
+              {[
+                {
+                  label: 'Total Energy',
+                  value: formatWithUnit(row.totalEnergy, 'kWh/m²'),
+                },
+                {
+                  label: 'Thermal Discomfort',
+                  value: formatWithUnit(row.thermalDiscomfort, 'Kh/zone'),
+                },
+                {
+                  label: 'IAQ Discomfort',
+                  value: formatWithUnit(row.aqDiscomfort, 'ppmh/zone'),
+                },
+                {
+                  label: 'Operations Cost',
+                  value: formatNumber(row.cost),
+                },
+                {
+                  label: 'CO₂ Emissions',
+                  value: formatWithUnit(row.emissions, 'kgCO₂/m²'),
+                },
+                {
+                  label: 'Time Ratio',
+                  value: formatNumber(row.compTimeRatio ?? row.timeRatio),
+                },
+                {
+                  label: 'Peak Electricity',
+                  value: formatWithUnit(row.peakElectricity, 'kW/m²'),
+                },
+                {
+                  label: 'Peak Gas',
+                  value: formatWithUnit(row.peakGas, 'kW/m²'),
+                },
+                {
+                  label: 'Peak District Heating',
+                  value: formatWithUnit(row.peakDistrictHeating, 'kW/m²'),
+                },
+              ].map(metric => (
+                <div className={classes.metricTile} key={metric.label}>
+                  <span className={classes.metricLabel}>{metric.label}</span>
+                  <span className={classes.metricValue}>{metric.value}</span>
+                </div>
+              ))}
             </div>
           </Paper>
         );
