@@ -215,6 +215,7 @@ export interface SharedResultFilters {
   aqDiscomfort?: RangeFilter;
   emissions?: RangeFilter;
   accountId?: number;
+  boptestVersion?: string;
 }
 
 export interface SharedResultQueryOptions {
@@ -272,6 +273,11 @@ function applyFilterConditions(
   if (filters.tags && filters.tags.length > 0) {
     params.push(JSON.stringify(filters.tags));
     conditions.push(`(data->'tags') @> $${params.length}::jsonb`);
+  }
+
+  if (filters.boptestVersion) {
+    params.push(filters.boptestVersion.toLowerCase());
+    conditions.push(`LOWER(data->>'boptestVersion') = $${params.length}`);
   }
 
   if (typeof filters.accountId === 'number' && Number.isFinite(filters.accountId)) {

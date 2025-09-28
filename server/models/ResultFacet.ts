@@ -8,6 +8,7 @@ export interface ResultFacetDocument {
   buildingTypeName: string;
   scenario: Record<string, string[]>;
   tags: string[];
+  versions: string[];
 }
 
 const COLLECTION = 'resultFacets';
@@ -19,6 +20,7 @@ function mapRecordToFacet(record: DocumentRecord<JsonObject>): ResultFacet {
     buildingTypeName: data.buildingTypeName,
     scenario: data.scenario || {},
     tags: data.tags || [],
+    versions: data.versions || [],
   };
 }
 
@@ -72,6 +74,17 @@ function normalizeTags(value: string[] | undefined): string[] {
     .map(item => String(item));
 }
 
+function normalizeVersions(value: string[] | undefined): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter(item => item !== undefined && item !== null)
+    .map(item => String(item).trim())
+    .filter(item => item.length > 0);
+}
+
 function mapRow(row: Record<string, unknown>): DocumentRecord<JsonObject> {
   const typed = row as {
     doc_id: string;
@@ -106,15 +119,18 @@ async function insertFacet(
   buildingTypeUid: string,
   buildingTypeName: string,
   scenario: Record<string, string[]>,
-  tags: string[]
+  tags: string[],
+  versions: string[]
 ): Promise<DocumentRecord<JsonObject> | null> {
   const sanitizedScenario = mergeScenario({}, scenario);
   const sanitizedTags = unionStrings([], tags);
+  const sanitizedVersions = unionStrings([], versions);
   const document: ResultFacetDocument = {
     buildingTypeUid,
     buildingTypeName,
     scenario: sanitizedScenario,
     tags: sanitizedTags,
+    versions: sanitizedVersions,
   };
 
   const result = await client.query(
@@ -172,12 +188,14 @@ export async function upsertResultFacet(
   buildingTypeUid: string,
   buildingTypeName: string,
   scenario: Record<string, string[]>,
-  tags: string[]
+  tags: string[],
+  version?: string
 ): Promise<ResultFacet> {
   const store = await getDocumentStore();
   const pool = store.getPool();
   const normalizedScenario = normalizeScenario(scenario);
   const normalizedTags = normalizeTags(tags);
+  const normalizedVersions = normalizeVersions(version ? [version] : []);
 
   const client = await pool.connect();
 
@@ -189,7 +207,8 @@ export async function upsertResultFacet(
       buildingTypeUid,
       buildingTypeName,
       normalizedScenario,
-      normalizedTags
+      normalizedTags,
+      normalizedVersions
     );
 
     if (inserted) {
@@ -207,7 +226,8 @@ export async function upsertResultFacet(
         buildingTypeUid,
         buildingTypeName,
         normalizedScenario,
-        normalizedTags
+        normalizedTags,
+        normalizedVersions
       );
 
       await client.query('COMMIT');
@@ -224,6 +244,10 @@ export async function upsertResultFacet(
       normalizedScenario
     );
     const mergedTags = unionStrings(normalizeTags(existingData?.tags), normalizedTags);
+    const mergedVersions = unionStrings(
+      normalizeVersions(existingData?.versions),
+      normalizedVersions
+    );
     const resolvedBuildingTypeName =
       buildingTypeName || existingData?.buildingTypeName || buildingTypeUid;
     const mergedDocument: ResultFacetDocument = {
@@ -231,6 +255,7 @@ export async function upsertResultFacet(
       buildingTypeName: resolvedBuildingTypeName,
       scenario: mergedScenario,
       tags: mergedTags,
+      versions: mergedVersions,
     };
 
     const updated = await updateFacet(client, existing.docId, mergedDocument);

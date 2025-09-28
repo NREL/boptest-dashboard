@@ -41,6 +41,7 @@ import type {SelectProps} from '@material-ui/core/Select';
 import {
   createRows,
   createTagOptions,
+  createVersionOptions,
   Data,
   filterRows,
   getBuildingScenarios,
@@ -564,6 +565,7 @@ const useFilterToolbarStyles = makeStyles((theme: Theme) =>
 interface FilterToolbarProps {
   scenarioOptions?: Record<string, string[]>;
   tagOptions: string[];
+  versionOptions: string[];
   filterRanges: FilterRanges;
   filterValues: FilterValues;
   updateFilters: (requestedFilters: FilterValues) => void;
@@ -576,6 +578,7 @@ const FilterToolbar = (props: FilterToolbarProps) => {
     filterValues,
     scenarioOptions,
     tagOptions,
+    versionOptions,
     updateFilters,
   } = props;
 
@@ -591,6 +594,7 @@ const FilterToolbar = (props: FilterToolbarProps) => {
         onRequestFilters={onRequestUpdateFilters}
         scenarioOptions={scenarioOptions}
         tagOptions={tagOptions}
+        versionOptions={versionOptions}
       />
     </Toolbar>
   );
@@ -861,6 +865,14 @@ export default function ResultsTable(props: ResultsTableProps) {
   const [filterRanges, setFilterRanges] = useState<FilterRanges>(emptyFilterRanges);
   const [isUpdatingShare, setIsUpdatingShare] = useState(false);
 
+  const normalizeFilters = useCallback(
+    (value: FilterValues): FilterValues => ({
+      ...value,
+      boptestVersion: value.boptestVersion ?? '',
+    }),
+    []
+  );
+
   const formatMetric = (
     value: number | null | undefined,
     fractionDigits = 4
@@ -896,13 +908,13 @@ export default function ResultsTable(props: ResultsTableProps) {
     if (!initialFilters) {
       return;
     }
-    setFilters(initialFilters);
+    setFilters(normalizeFilters(initialFilters));
     if (initialFilterRanges) {
       setFilterRanges(initialFilterRanges);
     }
     filtersInitialized.current = true;
     setAreFiltersReady(true);
-  }, [initialFilters, initialFilterRanges, onFiltersChange]);
+  }, [initialFilters, initialFilterRanges, onFiltersChange, normalizeFilters]);
   const xAxisOption = useMemo(() => {
     return numericColumnOptions.find(option => option.id === xAxisId) ?? fallbackAxisOption;
   }, [xAxisId]);
@@ -962,6 +974,11 @@ export default function ResultsTable(props: ResultsTableProps) {
     );
   }, [onFiltersChange, fallbackTagOptions, buildingFacets, buildingTypeFilter]);
 
+  const versionOptions = useMemo(() => {
+    const sourceRows = filteredRows.length > 0 ? filteredRows : rows;
+    return createVersionOptions(sourceRows);
+  }, [filteredRows, rows]);
+
   useEffect(() => {
     if (rows.length === 0) {
       return;
@@ -999,7 +1016,11 @@ export default function ResultsTable(props: ResultsTableProps) {
         const scenarioKeys = buildingTypeFilter
           ? Object.keys(buildingScenarios[buildingTypeFilter] || {})
           : [];
-        setFilters(setupFilters(computedFilterRanges, scenarioKeys));
+        setFilters(
+          normalizeFilters(
+            setupFilters(computedFilterRanges, scenarioKeys)
+          )
+        );
         filtersInitialized.current = true;
         setAreFiltersReady(true);
       }
@@ -1058,6 +1079,7 @@ export default function ResultsTable(props: ResultsTableProps) {
     buildingFacets,
     onFiltersChange,
     filters,
+    normalizeFilters,
   ]);
 
   useEffect(() => {
@@ -1086,10 +1108,11 @@ export default function ResultsTable(props: ResultsTableProps) {
   }, [filteredRows]);
 
   const handleUpdateFilters = (requestedFilters: FilterValues) => {
-    setFilters(requestedFilters);
+    const normalized = normalizeFilters(requestedFilters);
+    setFilters(normalized);
     filtersInitialized.current = true;
     setAreFiltersReady(true);
-    onFiltersChange?.({buildingTypeName: buildingTypeFilter, filters: requestedFilters});
+    onFiltersChange?.({buildingTypeName: buildingTypeFilter, filters: normalized});
   };
 
   const handleViewModeChange = (
@@ -1117,7 +1140,9 @@ export default function ResultsTable(props: ResultsTableProps) {
   const handleClearFilters = () => {
     setBuildingTypeFilter('');
     setDisplayFilters(false);
-    const nextFilters = setupFilters(computedFilterRanges, []);
+    const nextFilters = normalizeFilters(
+      setupFilters(computedFilterRanges, [])
+    );
     setFilters(nextFilters);
     setFilterRanges(computedFilterRanges);
     filtersInitialized.current = true;
@@ -1134,9 +1159,11 @@ export default function ResultsTable(props: ResultsTableProps) {
     setBuildingTypeFilter(requestedBuilding);
     const scenarioKeys = Object.keys(buildingScenarios[requestedBuilding] || {});
     setDisplayFilters(true);
-    const nextFilters = setupFilters(
-      computedFilterRanges,
-      requestedBuilding === '' ? [] : scenarioKeys
+    const nextFilters = normalizeFilters(
+      setupFilters(
+        computedFilterRanges,
+        requestedBuilding === '' ? [] : scenarioKeys
+      )
     );
     setFilters(nextFilters);
     if (requestedBuilding === '') {
@@ -1435,6 +1462,7 @@ export default function ResultsTable(props: ResultsTableProps) {
                     : undefined
             }
             tagOptions={tagOptions}
+            versionOptions={versionOptions}
             filterRanges={filterRanges}
             filterValues={filters}
             updateFilters={handleUpdateFilters}

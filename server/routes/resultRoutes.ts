@@ -69,6 +69,17 @@ const buildSharedResultFilters = (query: express.Request['query']): SharedResult
     filters.scenario = scenarioFilters;
   }
 
+  if (typeof query.boptestVersion === 'string' && query.boptestVersion.trim().length > 0) {
+    filters.boptestVersion = query.boptestVersion.trim();
+  } else if (Array.isArray(query.boptestVersion)) {
+    const value = (query.boptestVersion as unknown[])
+      .map(item => (typeof item === 'string' ? item.trim() : ''))
+      .find(item => item.length > 0);
+    if (value) {
+      filters.boptestVersion = value;
+    }
+  }
+
   const assignRange = (
     targetKey: 'cost' | 'energy' | 'thermalDiscomfort' | 'aqDiscomfort' | 'emissions',
     minKey: string,

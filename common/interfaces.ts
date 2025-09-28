@@ -97,6 +97,7 @@ export interface ResultFacet {
     [key: string]: string[];
   };
   tags: string[];
+  versions: string[];
 }
 
 // Filter Interfaces
@@ -124,6 +125,7 @@ export interface FilterValues {
     [key: string]: string;
   };
   tags: string[];
+  boptestVersion: string;
   cost: {
     min: number;
     max: number;

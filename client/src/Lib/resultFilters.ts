@@ -5,6 +5,7 @@ export interface ResultFilterRequest {
   buildingTypeName?: string;
   tags?: string[];
   scenario?: Record<string, string>;
+  boptestVersion?: string;
   costMin?: number;
   costMax?: number;
   energyMin?: number;
@@ -51,6 +52,10 @@ export const buildFilterRequest = (
 
   if (payload.filters.tags && payload.filters.tags.length > 0) {
     request.tags = payload.filters.tags;
+  }
+
+  if (payload.filters.boptestVersion) {
+    request.boptestVersion = payload.filters.boptestVersion;
   }
 
   const assignRange = (

@@ -213,6 +213,7 @@ export const setupFilters = (
   return {
     scenario: {...scenarioFilters},
     tags: [],
+    boptestVersion: '',
     cost: {
       min: 0,
       max:
@@ -258,6 +259,7 @@ export const filterRows = (
     aqDiscomfort,
     scenario: scenarioFilter,
     tags: tagFilter,
+    boptestVersion,
   } = filters;
 
   return rows.filter(row => {
@@ -304,6 +306,13 @@ export const filterRows = (
       }
     }
 
+    if (boptestVersion && boptestVersion.trim()) {
+      const normalizedRowVersion = (row.boptestVersion || '').trim().toLowerCase();
+      if (normalizedRowVersion !== boptestVersion.trim().toLowerCase()) {
+        return false;
+      }
+    }
+
     if (tagFilter && tagFilter.length > 0) {
       for (const tag of tagFilter) {
         if (!row.tags.includes(tag)) {
@@ -326,4 +335,24 @@ export const createTagOptions = (rows: Data[]): string[] => {
     });
   });
   return tagOptions.sort();
+};
+
+export const createVersionOptions = (rows: Data[]): string[] => {
+  const store = new Map<string, string>();
+  rows.forEach(row => {
+    if (!row.boptestVersion) {
+      return;
+    }
+    const normalized = row.boptestVersion.trim();
+    if (!normalized) {
+      return;
+    }
+    const key = normalized.toLowerCase();
+    if (!store.has(key)) {
+      store.set(key, normalized);
+    }
+  });
+  return Array.from(store.values()).sort((a, b) =>
+    a.localeCompare(b, undefined, {sensitivity: 'base', numeric: true})
+  );
 };

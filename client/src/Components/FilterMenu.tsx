@@ -171,6 +171,7 @@ interface FilterMenuProps {
   onRequestFilters: (requestedFilters: FilterValues) => void;
   scenarioOptions?: Record<string, string[]>;
   tagOptions: string[];
+  versionOptions?: string[];
 }
 
 export const FilterMenu: React.FC<FilterMenuProps> = props => {
@@ -183,6 +184,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
     onRequestFilters,
     scenarioOptions,
     tagOptions,
+    versionOptions = [],
   } = props;
   const [anchorEl, setAnchorEl] = React.useState<PopperProps['anchorEl']>(
     null
@@ -304,19 +306,30 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
     onRequestFilters(newFilter);
   };
 
+  const onVersionFilterChange = (
+    event: React.ChangeEvent<{value: unknown}>
+  ) => {
+    const selected = typeof event.target.value === 'string' ? event.target.value : '';
+    const newFilter: FilterValues = {
+      ...filterValues,
+      boptestVersion: selected,
+    };
+    onRequestFilters(newFilter);
+  };
+
   const onTagFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const {name, checked} = event.target as {
       name: string;
       checked: boolean;
     };
-    const newFilter = {
+    const nextTags = checked
+      ? Array.from(new Set([...(filterValues.tags || []), name]))
+      : (filterValues.tags || []).filter((tag: string) => tag !== name);
+
+    const newFilter: FilterValues = {
       ...filterValues,
+      tags: nextTags,
     };
-    checked
-      ? newFilter.tags.push(name)
-      : (newFilter.tags = newFilter.tags.filter(
-          (tag: string) => tag !== name
-        ));
     onRequestFilters(newFilter);
   };
 
@@ -554,6 +567,57 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
 
     return (
       <div className={menuClasses.selectContainer}>
+        {versionOptions.length > 0 && (
+          <ColorTextField
+            className={menuClasses.select}
+            label="BOPTEST Version"
+            name="boptestVersion"
+            onChange={onVersionFilterChange}
+            select
+            value={filterValues?.boptestVersion ?? ''}
+            defaultValue=""
+            variant="outlined"
+            SelectProps={{
+              ...baseSelectProps,
+              displayEmpty: true,
+              renderValue: (value: unknown): React.ReactNode => {
+                if (!value || value === '') {
+                  return 'All Versions';
+                }
+                return String(value);
+              },
+            }}
+            size="small"
+            InputProps={{
+              style: {
+                whiteSpace: 'normal',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: 'flex',
+                alignItems: 'center',
+                height: '40px',
+              },
+            }}
+            InputLabelProps={{
+              style: {
+                whiteSpace: 'nowrap',
+                display: 'block',
+                width: '100%',
+                transform: 'translate(14px, -6px) scale(0.75)',
+              },
+              shrink: true,
+            }}
+          >
+            <MenuItem key="boptestVersion-all-option" value="">
+              All Versions
+            </MenuItem>
+            {versionOptions.map(option => (
+              <MenuItem key={`${option}-version-option`} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </ColorTextField>
+        )}
         {scenarioKeys.map(key => {
           return (
             <React.Fragment key={key}>

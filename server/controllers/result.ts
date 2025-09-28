@@ -316,7 +316,8 @@ async function createResultAndAssociatedModels(result: any) {
     buildingTypeUid,
     buildingTypeName,
     scenarioValues,
-    Array.isArray(result.tags) ? result.tags.map((tag: any) => String(tag)) : []
+    Array.isArray(result.tags) ? result.tags.map((tag: any) => String(tag)) : [],
+    typeof result.boptestVersion === 'string' ? result.boptestVersion : undefined
   );
 }
 

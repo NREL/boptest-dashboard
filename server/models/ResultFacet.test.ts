@@ -33,6 +33,7 @@ describe('upsertResultFacet', () => {
                 timePeriod: ['heating peak'],
               },
               tags: ['comfort', 'optimized'],
+              versions: ['0.1.0'],
             },
             created_at: '2024-01-01T00:00:00.000Z',
             updated_at: '2024-02-01T00:00:00.000Z',
@@ -55,6 +56,7 @@ describe('upsertResultFacet', () => {
                 weatherForecastUncertainty: ['deterministic'],
               },
               tags: ['comfort', 'optimized', 'weekend'],
+              versions: ['0.1.0', '0.2.0'],
             },
             created_at: '2024-01-01T00:00:00.000Z',
             updated_at: '2024-02-02T00:00:00.000Z',
@@ -77,7 +79,8 @@ describe('upsertResultFacet', () => {
       {
         weatherForecastUncertainty: ['deterministic'],
       },
-      ['comfort', 'weekend']
+      ['comfort', 'weekend'],
+      '0.2.0'
     );
 
     expect(result).toEqual({
@@ -89,6 +92,7 @@ describe('upsertResultFacet', () => {
         weatherForecastUncertainty: ['deterministic'],
       },
       tags: ['comfort', 'optimized', 'weekend'],
+      versions: ['0.1.0', '0.2.0'],
     });
 
     expect(queryMock).toHaveBeenNthCalledWith(1, 'BEGIN');
@@ -111,6 +115,7 @@ describe('upsertResultFacet', () => {
           timePeriod: ['cooling peak'],
         },
         tags: ['comfort'],
+        versions: ['0.3.0'],
       },
       created_at: '2024-01-05T00:00:00.000Z',
       updated_at: '2024-01-05T00:00:00.000Z',
@@ -136,7 +141,8 @@ describe('upsertResultFacet', () => {
       {
         timePeriod: ['cooling peak'],
       },
-      ['comfort']
+      ['comfort'],
+      '0.3.0'
     );
 
     expect(result).toEqual({
@@ -146,6 +152,7 @@ describe('upsertResultFacet', () => {
         timePeriod: ['cooling peak'],
       },
       tags: ['comfort'],
+      versions: ['0.3.0'],
     });
 
     expect(queryMock).toHaveBeenNthCalledWith(1, 'BEGIN');

@@ -41,6 +41,10 @@ const serializeFilters = (filters: ResultFilterRequest) => {
     params.tags = filters.tags.join(',');
   }
 
+  if (filters.boptestVersion) {
+    params.boptestVersion = filters.boptestVersion;
+  }
+
   if (filters.scenario) {
     Object.entries(filters.scenario).forEach(([key, value]) => {
       if (value) {
