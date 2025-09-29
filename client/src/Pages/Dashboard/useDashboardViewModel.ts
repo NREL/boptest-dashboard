@@ -7,6 +7,14 @@ import {Data} from '../../Lib/TableHelpers';
 import {useResultsApi} from '../../Lib/useResultsApi';
 import {buildFilterRequest, FilterChangePayload} from '../../Lib/resultFilters';
 
+const isAxiosError = (error: unknown): error is AxiosError => {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'isAxiosError' in error
+  );
+};
+
 export interface DashboardViewModel {
   results: Result[];
   buildingFacets: ResultFacet[];
@@ -36,6 +44,17 @@ export const useDashboardViewModel = (): DashboardViewModel => {
   const [selectedResult, setSelectedResult] = useState<Data | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const handleResultsError = useCallback(
+    (err: unknown) => {
+      if (isAxiosError(err) && err.response?.status === 401) {
+        setError('You must be logged in to view your results.');
+        return;
+      }
+      setError('Unable to load your results. Please try again.');
+    },
+    [setError]
+  );
+
   const {
     results,
     setResults,
@@ -50,13 +69,7 @@ export const useDashboardViewModel = (): DashboardViewModel => {
     endpoint: '/api/results/my-results',
     pageSize: 200,
     withCredentials: true,
-    onError: err => {
-      if (isAxiosError(err) && err.response?.status === 401) {
-        setError('You must be logged in to view your results.');
-        return;
-      }
-      setError('Unable to load your results. Please try again.');
-    },
+    onError: handleResultsError,
   });
 
   useEffect(() => {
@@ -175,10 +188,3 @@ export const useDashboardViewModel = (): DashboardViewModel => {
     updateResultShareStatus,
   };
 };
-  const isAxiosError = (error: unknown): error is AxiosError => {
-    return (
-      typeof error === 'object' &&
-      error !== null &&
-      'isAxiosError' in error
-    );
-  };

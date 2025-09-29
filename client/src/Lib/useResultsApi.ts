@@ -94,24 +94,42 @@ export const useResultsApi = (options: UseResultsApiOptions) => {
   const {endpoint, pageSize = defaultPageSize, withCredentials = false, onError} = options;
 
   const [results, setResults] = useState<Result[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isLoading, setIsLoadingState] = useState(false);
+  const [isLoadingMore, setIsLoadingMoreState] = useState(false);
   const [hasNext, setHasNext] = useState(false);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
 
   const filtersRef = useRef<ResultFilterRequest>({});
   const requestIdRef = useRef(0);
   const cancelSourceRef = useRef<CancelTokenSource | null>(null);
+  const isLoadingRef = useRef(false);
+  const isLoadingMoreRef = useRef(false);
+
+  const setIsLoading = useCallback(
+    (value: boolean) => {
+      isLoadingRef.current = value;
+      setIsLoadingState(value);
+    },
+    [setIsLoadingState]
+  );
+
+  const setIsLoadingMore = useCallback(
+    (value: boolean) => {
+      isLoadingMoreRef.current = value;
+      setIsLoadingMoreState(value);
+    },
+    [setIsLoadingMoreState]
+  );
 
   const fetchResults = useCallback(
     async (fetchParams: FetchParams = {}) => {
       const {cursor, append = false, filters} = fetchParams;
 
       if (append) {
-        if (isLoadingMore) {
+        if (isLoadingMoreRef.current) {
           return;
         }
-      } else if (isLoading && !filters) {
+      } else if (isLoadingRef.current && !filters) {
         return;
       }
 
@@ -181,7 +199,7 @@ export const useResultsApi = (options: UseResultsApiOptions) => {
         append ? setIsLoadingMore(false) : setIsLoading(false);
       }
     },
-    [endpoint, isLoading, isLoadingMore, onError, pageSize, withCredentials]
+    [endpoint, onError, pageSize, setIsLoading, setIsLoadingMore, withCredentials]
   );
 
   const loadMore = useCallback(() => {
