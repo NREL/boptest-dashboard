@@ -76,7 +76,6 @@ const serializeFilters = (filters: ResultFilterRequest) => {
     'thermalDiscomfortMax'
   );
   assignRange(filters.aqDiscomfortMin, filters.aqDiscomfortMax, 'aqDiscomfortMin', 'aqDiscomfortMax');
-  assignRange(filters.emissionsMin, filters.emissionsMax, 'emissionsMin', 'emissionsMax');
 
   return params;
 };

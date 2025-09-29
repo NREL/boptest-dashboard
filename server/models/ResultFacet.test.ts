@@ -53,7 +53,7 @@ describe('upsertResultFacet', () => {
               scenario: {
                 electricityPrice: ['dynamic', 'highly dynamic'],
                 timePeriod: ['cooling peak', 'heating peak'],
-                weatherForecastUncertainty: ['deterministic'],
+                temperature_uncertainty: ['low', 'high'],
               },
               tags: ['comfort', 'optimized', 'weekend'],
               versions: ['0.1.0', '0.2.0'],
@@ -77,7 +77,8 @@ describe('upsertResultFacet', () => {
       'buildingType-1',
       'BIG building',
       {
-        weatherForecastUncertainty: ['deterministic'],
+        temperature_uncertainty: ['medium'],
+        solar_uncertainty: ['low'],
       },
       ['comfort', 'weekend'],
       '0.2.0'
@@ -89,7 +90,8 @@ describe('upsertResultFacet', () => {
       scenario: {
         electricityPrice: ['dynamic', 'highly dynamic'],
         timePeriod: ['cooling peak', 'heating peak'],
-        weatherForecastUncertainty: ['deterministic'],
+        temperature_uncertainty: ['low', 'medium', 'high'],
+        solar_uncertainty: ['low', 'high'],
       },
       tags: ['comfort', 'optimized', 'weekend'],
       versions: ['0.1.0', '0.2.0'],
@@ -113,6 +115,7 @@ describe('upsertResultFacet', () => {
         buildingTypeName: 'Medium building',
         scenario: {
           timePeriod: ['cooling peak'],
+          temperature_uncertainty: ['low'],
         },
         tags: ['comfort'],
         versions: ['0.3.0'],

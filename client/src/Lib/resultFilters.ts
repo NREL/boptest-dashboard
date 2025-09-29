@@ -14,8 +14,6 @@ export interface ResultFilterRequest {
   thermalDiscomfortMax?: number;
   aqDiscomfortMin?: number;
   aqDiscomfortMax?: number;
-  emissionsMin?: number;
-  emissionsMax?: number;
 }
 
 export interface FilterChangePayload {

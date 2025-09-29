@@ -339,10 +339,6 @@ export const ResultsListMobile: React.FC<ResultsListMobileProps> = props => {
                   value: formatNumber(row.cost),
                 },
                 {
-                  label: 'CO₂ Emissions',
-                  value: formatWithUnit(row.emissions, 'kgCO₂/m²'),
-                },
-                {
                   label: 'Time Ratio',
                   value: formatNumber(row.compTimeRatio ?? row.timeRatio),
                 },

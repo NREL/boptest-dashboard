@@ -34,15 +34,13 @@ POST: `api/results`
         "tdis_tot": 79,
         "time_rat": 1460,
       },
-      "forecastParameters": {
-        "horizon": 21600.0,
-        "interval": 3600.0
-      },
       // each scenario key (ex: timePeriod) should match the keys you plan to filter on
       "scenario": {
         "timePeriod": "heating peak",
         "electricityPrice": "highly dynamic",
-        "weatherForecastUncertainty": "deterministic"
+        "temperature_uncertainty": "low",
+        "solar_uncertainty": "medium",
+        "seed": 42
       },
       "buildingType": {
         "uid": "buildingType-1",

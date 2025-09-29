@@ -80,6 +80,9 @@ const clampFiltersToRanges = (values: FilterValues, ranges: FilterRanges): Filte
     ),
     aqDiscomfort: clampRange(values.aqDiscomfort, ranges.aqDiscomfortRange),
     energy: clampRange(values.energy, ranges.energyRange),
+    scenario: {...values.scenario},
+    tags: [...values.tags],
+    boptestVersion: values.boptestVersion ?? '',
   };
 };
 
@@ -116,12 +119,6 @@ const baseHeadCells: HeadCell[] = [
     label: 'Total Operations Cost [$ or Euro/m^2]',
   },
   {
-    id: 'emissions',
-    numeric: true,
-    disablePadding: false,
-    label: 'Total CO2 emissions [kgCO2/m^2]',
-  },
-  {
     id: 'peakElectricity',
     numeric: true,
     disablePadding: false,
@@ -154,7 +151,6 @@ const columnWidths: Partial<Record<keyof Data, string>> = {
   thermalDiscomfort: '180px',
   aqDiscomfort: '220px',
   cost: '180px',
-  emissions: '200px',
   peakElectricity: '200px',
   peakGas: '180px',
   peakDistrictHeating: '200px',
@@ -167,7 +163,6 @@ const numericColumnIds = [
   'thermalDiscomfort',
   'aqDiscomfort',
   'cost',
-  'emissions',
   'peakElectricity',
   'peakGas',
   'peakDistrictHeating',
@@ -1026,10 +1021,10 @@ export default function ResultsTable(props: ResultsTableProps) {
       }
     } else {
       const addScenarioValue = (bucket: Map<string, string>, rawValue: unknown) => {
-        if (typeof rawValue !== 'string') {
+        if (rawValue === undefined || rawValue === null) {
           return;
         }
-        const normalized = rawValue.trim();
+        const normalized = String(rawValue).trim();
         if (!normalized) {
           return;
         }
@@ -1318,7 +1313,6 @@ export default function ResultsTable(props: ResultsTableProps) {
       'Thermal Discomfort',
       'IAQ Discomfort',
       'Cost',
-      'Emissions',
       'Peak Electricity',
       'Peak Gas',
       'Peak District Heating',
@@ -1334,7 +1328,6 @@ export default function ResultsTable(props: ResultsTableProps) {
       row.thermalDiscomfort,
       row.aqDiscomfort,
       row.cost,
-      row.emissions,
       row.peakElectricity,
       row.peakGas ?? '',
       row.peakDistrictHeating ?? '',
@@ -1645,14 +1638,6 @@ export default function ResultsTable(props: ResultsTableProps) {
                     >
                       <Typography variant="body1">
                         {formatMetric(row.cost, 2)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell
-                      align="center"
-                      style={{width: getColumnWidth('emissions')}}
-                    >
-                      <Typography variant="body1">
-                        {formatMetric(row.emissions)}
                       </Typography>
                     </TableCell>
                     <TableCell

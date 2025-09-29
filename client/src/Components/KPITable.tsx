@@ -163,13 +163,6 @@ export const KPITable: React.FC<KPITableProps> = props => {
       range: details.cost,
     },
     {
-      key: 'emissions',
-      label: 'Total CO₂ Emissions [kgCO₂/m²]',
-      value: props.result.emissions,
-      digits: 2,
-      range: details.emissions,
-    },
-    {
       key: 'aqDiscomfort',
       label: 'Indoor Air Quality Discomfort [ppmh/zone]',
       value: props.result.aqDiscomfort,

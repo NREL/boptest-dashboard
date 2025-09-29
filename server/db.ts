@@ -24,7 +24,8 @@ interface SeedBuildingType {
   scenarios: {
     timePeriod: string[];
     electricityPrice: string[];
-    weatherForecastUncertainty: string[];
+    temperature_uncertainty: string[];
+    solar_uncertainty: string[];
   };
 }
 
@@ -72,7 +73,6 @@ function generateSeedResults(
     'v1',
   ];
   const controlSteps = ['180.0', '300.0', '360.0', '600.0'];
-  const forecastIntervals = [900, 1800, 3600];
   const baseDate = new Date('2024-01-01T00:00:00.000Z').getTime();
   const dayMs = 24 * 60 * 60 * 1000;
 
@@ -82,20 +82,17 @@ function generateSeedResults(
     const seed = index + 1;
     const account = combinedAccounts[index % combinedAccounts.length];
     const buildingType = pickFrom(seed + 5, buildingTypes);
+    const temperatureOptions = buildingType.scenarios.temperature_uncertainty;
+    const solarOptions = buildingType.scenarios.solar_uncertainty;
+
     const scenario = {
       timePeriod: pickFrom(seed + 10, buildingType.scenarios.timePeriod),
-      electricityPrice: pickFrom(
-        seed + 11,
-        buildingType.scenarios.electricityPrice
-      ),
-      weatherForecastUncertainty: pickFrom(
-        seed + 12,
-        buildingType.scenarios.weatherForecastUncertainty
-      ),
+      electricityPrice: pickFrom(seed + 11, buildingType.scenarios.electricityPrice),
+      temperature_uncertainty: pickFrom(seed + 12, temperatureOptions),
+      solar_uncertainty: pickFrom(seed + 13, solarOptions),
+      seed: randomInt(seed + 14, 1, 50),
     };
 
-    const horizonSteps = randomInt(seed + 13, 6, 24);
-    const interval = pickFrom(seed + 14, forecastIntervals);
     const baseEnergy = randomInt(seed + 15, 40, 120) / 10;
     const energySpread = randomInt(seed + 16, -10, 10) / 10;
     const thermal = randomInt(seed + 17, 30, 120) / 10;
@@ -137,10 +134,6 @@ function generateSeedResults(
           peakDistrictHeating === 0
             ? null
             : Number((peakDistrictHeating / 2).toFixed(2)),
-      },
-      forecastParameters: {
-        horizon: horizonSteps * 3600,
-        interval,
       },
       scenario,
       buildingType: {
@@ -184,7 +177,8 @@ export async function seedTestData(apiKey: string): Promise<void> {
       scenarios: {
         timePeriod: ['cooling peak', 'heating peak'],
         electricityPrice: ['constant', 'dynamic', 'highly dynamic'],
-        weatherForecastUncertainty: ['deterministic'],
+        temperature_uncertainty: ['low', 'medium', 'high', 'none'],
+        solar_uncertainty: ['low', 'medium', 'high', 'none'],
       },
     },
     {
@@ -193,7 +187,8 @@ export async function seedTestData(apiKey: string): Promise<void> {
       scenarios: {
         timePeriod: ['heating peak', 'heating typical'],
         electricityPrice: ['constant', 'dynamic'],
-        weatherForecastUncertainty: ['deterministic', 'unknown'],
+        temperature_uncertainty: ['low', 'medium', 'none'],
+        solar_uncertainty: ['low', 'medium', 'high', 'none'],
       },
     },
   ];

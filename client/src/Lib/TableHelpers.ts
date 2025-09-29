@@ -28,7 +28,6 @@ export interface Data {
   timePeriod: string;
   electricityPrice: string;
   weatherForecastUncertainty: string;
-  forecastParameters: Record<string, any>;
   scenario: Record<string, any>;
   tags: string[];
   boptestVersion: string;
@@ -60,7 +59,6 @@ export const createDataFromResult = (result: Result): Data => {
     timePeriod: result.timePeriod,
     electricityPrice: result.electricityPrice,
     weatherForecastUncertainty: result.weatherForecastUncertainty,
-    forecastParameters: result.forecastParameters,
     scenario: result.scenario,
     tags: result.tags,
     boptestVersion: result.boptestVersion,
@@ -301,7 +299,13 @@ export const filterRows = (
       for (const key of Object.keys(scenarioFilter)) {
         const value = scenarioFilter[key];
         if (value && row.scenario?.[key] !== value) {
-          return false;
+          const rowValue = row.scenario?.[key];
+          if (rowValue === undefined || rowValue === null) {
+            return false;
+          }
+          if (String(rowValue) !== value) {
+            return false;
+          }
         }
       }
     }

@@ -91,12 +91,32 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
     weatherForecastUncertainty: 'Weather Forecast Uncertainty',
   };
 
-  const scenarioRows = Object.entries({
+  const baseScenario =
+    props.result.scenario &&
+    typeof props.result.scenario === 'object' &&
+    !Array.isArray(props.result.scenario)
+      ? props.result.scenario
+      : {};
+
+  const weatherKeys = ['temperature_uncertainty', 'solar_uncertainty', 'seed', 'weatherForecastUncertainty'];
+  const weatherLabelMap: Record<string, string> = {
+    temperature_uncertainty: 'Outdoor Temperature',
+    solar_uncertainty: 'Solar GHI',
+    seed: 'Uncertainty Seed',
+    weatherForecastUncertainty: 'Weather Forecast Uncertainty',
+  };
+
+  const normalizedScenario = {...baseScenario};
+
+  const combinedScenario = {
+    ...baseScenario,
     timePeriod: props.result.timePeriod,
     electricityPrice: props.result.electricityPrice,
     weatherForecastUncertainty: props.result.weatherForecastUncertainty,
-    ...props.result.scenario,
-  })
+  };
+
+  const scenarioRows = Object.entries(combinedScenario)
+    .filter(([key]) => !weatherKeys.includes(key))
     .filter(([, value]) => value !== undefined && value !== null && value !== '')
     .map(([key, value]) => {
       const label = scenarioLabels[key] || toTitleCase(key);
@@ -109,13 +129,20 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
       return acc;
     }, []);
 
-  const forecastParameters = props.result.forecastParameters || {};
-  const forecastRows = Object.entries(forecastParameters)
-    .filter(([, value]) => value !== undefined && value !== null && value !== '')
-    .map(([key, value]) => ({
-      label: toTitleCase(key),
-      value: formatValue(value),
-    }));
+  const weatherRows = weatherKeys
+    .map(key => {
+      const value =
+        key === 'weatherForecastUncertainty'
+          ? props.result.weatherForecastUncertainty
+          : normalizedScenario?.[key];
+      if (value === undefined || value === null || value === '') {
+        return undefined;
+      }
+      delete normalizedScenario[key];
+      const label = weatherLabelMap[key] || toTitleCase(key);
+      return {label, value: formatValue(value)};
+    })
+    .filter((row): row is {label: string; value: string} => Boolean(row));
 
   const sections: Array<{
     title: string;
@@ -138,8 +165,11 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
     },
   ];
 
-  if (forecastRows.length > 0) {
-    sections.push({title: 'Forecast Settings', rows: forecastRows});
+  if (weatherRows.length > 0) {
+    sections.splice(2, 0, {
+      title: 'Weather Forecast Uncertainty',
+      rows: weatherRows,
+    });
   }
 
   const hasTags = props.result.tags && props.result.tags.length > 0;

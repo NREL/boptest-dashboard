@@ -28,22 +28,26 @@ const useMenuStyles = makeStyles((theme: Theme) =>
       justifyContent: 'flex-start',
       flexWrap: 'wrap',
       flex: '1 1 auto',
-      marginRight: theme.spacing(2),
       gap: theme.spacing(2), /* Match spacing with Building Type row */
       alignItems: 'center', /* Center items vertically */
       minHeight: '56px',
       height: 'auto',
       [theme.breakpoints.down('sm')]: {
-        width: '100%'
+        width: '100%',
+        marginBottom: theme.spacing(1),
       },
     },
     buttonContainer: {
       display: 'flex',
-      justifyContent: 'flex-end',
+      justifyContent: 'flex-start',
       flexWrap: 'wrap',
       flex: '0 0 auto',
       alignItems: 'center', /* Align with other elements */
       gap: theme.spacing(1.5),
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        marginTop: theme.spacing(1),
+      },
     },
     popper: {
       zIndex: theme.zIndex.modal,
@@ -80,7 +84,7 @@ const ColorButton = withStyles(theme => ({
   root: {
     color: theme.palette.primary.main,
     borderColor: theme.palette.primary.main,
-    margin: theme.spacing(2, 0, 1, 2),
+    margin: theme.spacing(2, 0, 1, 0),
     height: '40px',
     alignSelf: 'flex-start',
   },
@@ -121,6 +125,46 @@ const ColorTextField = withStyles(theme => ({
     /* Remove custom icon positioning to use standard Material-UI dropdown arrow */
   },
 }))(TextField);
+
+const scenarioLabelMap: Record<string, {label: string; allLabel: string}> = {
+  weatherForecastUncertainty: {
+    label: 'Weather Forecast Uncertainty',
+    allLabel: 'All Weather Forecasts',
+  },
+  temperature_uncertainty: {
+    label: 'Outdoor Temperature Forecast Uncertainty',
+    allLabel: 'All Temperature Levels',
+  },
+  solar_uncertainty: {
+    label: 'Solar GHI Forecast Uncertainty',
+    allLabel: 'All Solar GHI Levels',
+  },
+  seed: {
+    label: 'Uncertainty Seed',
+    allLabel: 'All Seeds',
+  },
+};
+
+const humanizeScenarioKey = (key: string): string => {
+  if (scenarioLabelMap[key]?.label) {
+    return scenarioLabelMap[key].label;
+  }
+  if (key.includes('_')) {
+    return key
+      .split('_')
+      .filter(Boolean)
+      .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
+      .join(' ');
+  }
+  return key.split(/(?=[A-Z])/).join(' ');
+};
+
+const humanizeScenarioAllLabel = (key: string): string => {
+  if (scenarioLabelMap[key]?.allLabel) {
+    return scenarioLabelMap[key].allLabel;
+  }
+  return `All ${humanizeScenarioKey(key)}s`;
+};
 
 const usePopperStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -619,11 +663,13 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
           </ColorTextField>
         )}
         {scenarioKeys.map(key => {
+          const label = humanizeScenarioKey(key);
+          const allLabel = humanizeScenarioAllLabel(key);
           return (
             <React.Fragment key={key}>
               <ColorTextField
                 className={menuClasses.select}
-                label={key === 'weatherForecastUncertainty' ? 'Weather Forecast' : key.split(/(?=[A-Z])/).join(' ')}
+                label={label}
                 name={key}
                 onChange={onScenarioFilterChange}
                 select
@@ -641,10 +687,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                   displayEmpty: true,
                   renderValue: (value: unknown): React.ReactNode => {
                     if (!value || value === '') {
-                      if (key === 'weatherForecastUncertainty') {
-                        return 'All Weather Forecasts';
-                      }
-                      return `All ${key.split(/(?=[A-Z])/).join(' ')}s`;
+                      return allLabel;
                     }
                     return String(value);
                   }
@@ -670,8 +713,8 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                   shrink: true /* Keep label shrunk like Building Type */
                 }}
               >
-                <MenuItem key="buildingType-none-option" value="">
-                  {key === 'weatherForecastUncertainty' ? 'All Weather Forecasts' : `All ${key.split(/(?=[A-Z])/).join(' ')}s`}
+                <MenuItem key={`${key}-all-option`} value="">
+                  {allLabel}
                 </MenuItem>
                 {(scenarioOptions?.[key] || []).map(option => {
                   return (

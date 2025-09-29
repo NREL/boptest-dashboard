@@ -2,8 +2,8 @@ import {DocumentRecord, JsonObject, JsonValue, getDocumentStore} from '../datast
 import {listAccounts} from './Account';
 
 function toJsonValue(value: unknown): JsonValue {
-  if (value === null) {
-    return null;
+  if (value === null || value === undefined) {
+    return {} as JsonObject;
   }
   switch (typeof value) {
     case "string":
@@ -45,7 +45,6 @@ export interface ResultDocument {
   controlStep: string;
   electricityPrice: string;
   weatherForecastUncertainty: string;
-  forecastParameters: JsonObject;
   scenario: JsonObject;
   accountId: number;
   buildingTypeUid: string;
@@ -87,7 +86,6 @@ function mapRecordToDocument(record: DocumentRecord<JsonObject>): ResultDocument
     controlStep: data.controlStep,
     electricityPrice: data.electricityPrice,
     weatherForecastUncertainty: data.weatherForecastUncertainty,
-    forecastParameters: data.forecastParameters,
     scenario: data.scenario,
     accountId: data.accountId,
     buildingTypeUid,
@@ -118,7 +116,6 @@ export async function createResult(data: ResultData): Promise<DocumentRecord<Res
     controlStep: data.controlStep,
     electricityPrice: data.electricityPrice,
     weatherForecastUncertainty: data.weatherForecastUncertainty,
-    forecastParameters: toJsonValue(data.forecastParameters),
     scenario: toJsonValue(data.scenario),
     accountId: data.accountId,
     buildingTypeUid: data.buildingTypeUid ?? 'unknown-building',
@@ -182,7 +179,6 @@ export async function replaceResult(record: DocumentRecord<ResultDocument>): Pro
     controlStep: record.data.controlStep,
     electricityPrice: record.data.electricityPrice,
     weatherForecastUncertainty: record.data.weatherForecastUncertainty,
-    forecastParameters: toJsonValue(record.data.forecastParameters),
     scenario: toJsonValue(record.data.scenario),
     accountId: record.data.accountId,
     buildingTypeUid: record.data.buildingTypeUid ?? 'unknown-building',

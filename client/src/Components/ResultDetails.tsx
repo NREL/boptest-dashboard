@@ -379,10 +379,6 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
       value: formatNumberValue(result.cost),
     },
     {
-      label: 'Total CO₂ Emissions [kgCO₂/m²]',
-      value: formatWithUnit(result.emissions, 'kgCO₂/m²'),
-    },
-    {
       label: 'Time Ratio',
       value: formatNumberValue(result.compTimeRatio ?? result.timeRatio),
     },
@@ -404,8 +400,16 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
     {label: 'Time Period', value: result.timePeriod},
     {label: 'Electricity Price', value: result.electricityPrice},
     {
-      label: 'Forecast Uncertainty',
-      value: result.weatherForecastUncertainty,
+      label: 'Outdoor Temperature Forecast Uncertainty',
+      value: result.scenario?.temperature_uncertainty,
+    },
+    {
+      label: 'Solar GHI Forecast Uncertainty',
+      value: result.scenario?.solar_uncertainty,
+    },
+    {
+      label: 'Uncertainty Seed',
+      value: result.scenario?.seed,
     },
   ].filter(entry => entry.value);
 

@@ -45,14 +45,12 @@ const baseValidResult = {
     pgas_tot: 5.0,
     pdih_tot: 0.0
   },
-  forecastParameters: {
-    horizon: 21600.0,
-    interval: 3600.0
-  },
   scenario: {
     timePeriod: 'cooling peak',
     electricityPrice: 'highly dynamic',
-    weatherForecastUncertainty: 'deterministic',
+    temperature_uncertainty: 'low',
+    solar_uncertainty: 'medium',
+    seed: 7,
   },
   buildingType: {
     uid: 'buildingType-2',
@@ -94,14 +92,12 @@ export const mockResult4 = {
     pgas_tot: 5.0,
     pdih_tot: 0.0
   },
-  forecastParameters: {
-    horizon: 21600.0,
-    interval: 3600.0
-  },
   scenario: {
     time: 'cooling peak',
     electricityPrice: 'dynamic',
-    weatherForecastUncertainty: 'deterministic',
+    temperature_uncertainty: 'none',
+    solar_uncertainty: 'high',
+    seed: 11,
   },
   buildingType: {
     uid: 'buildingType-2',
@@ -128,14 +124,12 @@ export const mockResult5 = {
     pgas_tot: 5.0,
     pdih_tot: 0.0
   },
-  forecastParameters: {
-    horizon: 21600.0,
-    interval: 3600.0
-  },
   scenario: {
     timePeriod: 'peak',
     electricityPrice: 'dynamic',
-    weatherForecastUncertainty: 'deterministic',
+    temperature_uncertainty: 'medium',
+    solar_uncertainty: 'low',
+    seed: 12,
   },
   buildingType: {
     uid: 'buildingType-2',

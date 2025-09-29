@@ -83,7 +83,6 @@ export interface Result {
   controlStep: string;
   electricityPrice: string;
   weatherForecastUncertainty: string;
-  forecastParameters: Record<string, any>;
   scenario: Record<string, any>;
 
   account: Account;

@@ -12,7 +12,6 @@ export type NumericColumnKey =
   | 'thermalDiscomfort'
   | 'aqDiscomfort'
   | 'cost'
-  | 'emissions'
   | 'peakElectricity'
   | 'peakGas'
   | 'peakDistrictHeating'

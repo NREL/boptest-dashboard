@@ -25,7 +25,10 @@ import {
 import {upsertResultFacet} from '../models/ResultFacet';
 import {DocumentRecord, JsonObject} from '../datastore/documentStore';
 
-function jsonObjectToPlain(value: JsonObject): Record<string, any> {
+function jsonObjectToPlain(value: JsonObject | undefined | null): Record<string, any> {
+  if (!value || typeof value !== 'object') {
+    return {};
+  }
   return value as unknown as Record<string, any>;
 }
 
@@ -79,7 +82,6 @@ function toResult(
     controlStep: data.controlStep,
     electricityPrice: data.electricityPrice,
     weatherForecastUncertainty: data.weatherForecastUncertainty,
-    forecastParameters: jsonObjectToPlain(data.forecastParameters),
     scenario: jsonObjectToPlain(data.scenario),
     account: sanitizeAccountForResult(account),
     buildingType,
@@ -258,6 +260,17 @@ function buildResultDocument(
   buildingTypeUid: string,
   buildingTypeName: string
 ): ResultDocument {
+  const tempUncertainty = result.scenario?.temperature_uncertainty;
+  const solarUncertainty = result.scenario?.solar_uncertainty;
+  const weatherForecastUncertainty =
+    result.scenario?.weatherForecastUncertainty ??
+    [
+      tempUncertainty ? `Temperature: ${tempUncertainty}` : null,
+      solarUncertainty ? `Solar GHI: ${solarUncertainty}` : null,
+    ]
+      .filter(Boolean)
+      .join(', ');
+
   return {
     uid: result.uid,
     deleted: false,
@@ -277,8 +290,7 @@ function buildResultDocument(
     timePeriod: result.scenario.timePeriod,
     controlStep: result.controlStep,
     electricityPrice: result.scenario.electricityPrice,
-    weatherForecastUncertainty: result.scenario.weatherForecastUncertainty,
-    forecastParameters: toJsonObject(result.forecastParameters),
+    weatherForecastUncertainty,
     scenario: toJsonObject(result.scenario),
     accountId: account.id,
     buildingTypeUid,
