@@ -369,6 +369,25 @@ function stableStringify(value: any): string {
   return `{${entries.join(',')}}`;
 }
 
+function scenarioWithoutSeed(value: JsonObject | undefined | null): Record<string, any> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+
+  const result: Record<string, any> = {};
+  Object.keys(value as Record<string, any>).forEach(key => {
+    if (key === 'seed') {
+      return;
+    }
+    result[key] = (value as Record<string, any>)[key];
+  });
+  return result;
+}
+
+function getScenarioSignature(value: JsonObject | undefined | null): string {
+  return stableStringify(scenarioWithoutSeed(value));
+}
+
 export async function getSignatureDetailsForResult(id: string): Promise<SignatureDetails> {
   const targetRecord = await findResultByUid(id);
   if (!targetRecord) {
@@ -376,8 +395,10 @@ export async function getSignatureDetailsForResult(id: string): Promise<Signatur
   }
 
   const records = await listResults();
-  const targetSignature = stableStringify(targetRecord.data.scenario);
-  const matching = records.filter(record => stableStringify(record.data.scenario) === targetSignature);
+  const targetSignature = getScenarioSignature(targetRecord.data.scenario);
+  const matching = records.filter(
+    record => getScenarioSignature(record.data.scenario) === targetSignature
+  );
 
   const hydratedResults = await hydrateResults(matching);
   const targetResult = hydratedResults.find(result => result.uid === id);
