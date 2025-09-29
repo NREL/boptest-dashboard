@@ -34,77 +34,19 @@ POST: `api/results`
         "tdis_tot": 79,
         "time_rat": 1460,
       },
-      "forecastParameters": {
-        "horizon": 21600.0,
-        "interval": 3600.0
-      },
-      // each scenario key (ex: timePeriod) should be identical to the key for the scenarios object on the results given buildingType
+      // each scenario key (ex: timePeriod) should match the keys you plan to filter on
       "scenario": {
         "timePeriod": "heating peak",
         "electricityPrice": "highly dynamic",
-        "weatherForecastUncertainty": "deterministic"
+        "temperature_uncertainty": "low",
+        "solar_uncertainty": "medium",
+        "seed": 42
       },
       "buildingType": {
-        "uid": "buildingType-1"
+        "uid": "buildingType-1",
+        "name": "Small Office"
       }
     }
   ]
-}
-```
-
-## Add Testcase
-
-POST `api/buildingTypes`
-
-- This endpoint accepts an array of testcase types. So it can be used to create a single testcase type or a batch of them depending on how many objects are in the array.
-- A list of the currently valid testcases, and corresponding scenario values is available here https://github.com/ibpsa/project1-boptest/blob/master/testcases/README.md
-
-### Example Payload:
-
-#### Note: the API Key must be one associated with a SUPER_USER email as defined in your environment file.
-
-```json
-{
-  "buildingTypes": [
-    {
-      "uid": "buildingType-1",
-      "name": "BIG building",
-      "markdownURL": "URL_TO_PUBLIC_MARKDOWN_FILE",
-      "pdfURL": "URL_TO_PULIC_PDF",
-      // these exact scenarios keys should be the keys for a scenario on a result for this buildingType
-      "scenarios": {
-        "timePeriod": ["cooling peak", "heating peak", "heating typical"],
-        "electricityPrice": ["constant", "dynamic", "highly dynamic"],
-        "weatherForecastUncertainty": ["deterministic"]
-      }
-    }
-  ],
-  "apiKey": "API_KEY_FROM_WEB_APP"
-}
-```
-
-## Update Testcase
-
-PUT `/api/buildingTypes?uid={your_buildingType_uid}`
-
-- Though like the `POST` request, the testcase is wrapped in an array of `buildingTypes`, you may only PUT one testcase at a time. The `uid` is specified as a query parameter.
-
-```json
-{
-  "buildingTypes": [
-    {
-      "name": "BIG building",
-      "markdownURL": "URL_TO_PUBLIC_MARKDOWN_FILE",
-      "pdfURL": "URL_TO_PULIC_PDF",
-      "scenarios": {
-        "timePeriod": ["cooling peak", "heating peak", "heating typical"],
-        "electricityPrice": ["constant", "dynamic", "highly dynamic"],
-        "weatherForecastUncertainty": ["deterministic"],
-        // new keys can be added, old results will not be affected, but new results will require that key in it's scenario
-        "airQuality": ["smoky"]
-      }
-    }
-  ],
-  "apiKey": "API_KEY_FROM_WEB_APP"
 }
 ```

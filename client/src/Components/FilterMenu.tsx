@@ -7,8 +7,10 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import Popper from '@material-ui/core/Popper';
+import type {PopperProps} from '@material-ui/core/Popper';
 import TextField from '@material-ui/core/TextField';
-import {FilterRanges, FilterValues} from '../../common/interfaces';
+import type {SelectProps} from '@material-ui/core/Select';
+import {FilterRanges, FilterValues} from '../../../common/interfaces';
 
 const useMenuStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -26,20 +28,29 @@ const useMenuStyles = makeStyles((theme: Theme) =>
       justifyContent: 'flex-start',
       flexWrap: 'wrap',
       flex: '1 1 auto',
-      marginRight: theme.spacing(2),
       gap: theme.spacing(2), /* Match spacing with Building Type row */
       alignItems: 'center', /* Center items vertically */
-      height: '56px', /* Fixed height */
+      minHeight: '56px',
+      height: 'auto',
       [theme.breakpoints.down('sm')]: {
-        width: '100%'
+        width: '100%',
+        marginBottom: theme.spacing(1),
       },
     },
     buttonContainer: {
       display: 'flex',
-      justifyContent: 'flex-end',
-      flexWrap: 'nowrap', /* Prevent wrapping */
+      justifyContent: 'flex-start',
+      flexWrap: 'wrap',
       flex: '0 0 auto',
       alignItems: 'center', /* Align with other elements */
+      gap: theme.spacing(1.5),
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        marginTop: theme.spacing(1),
+      },
+    },
+    popper: {
+      zIndex: theme.zIndex.modal,
     },
     select: {
       margin: theme.spacing(0, 2, 0, 0), /* Match margin with Building Type row */
@@ -73,7 +84,7 @@ const ColorButton = withStyles(theme => ({
   root: {
     color: theme.palette.primary.main,
     borderColor: theme.palette.primary.main,
-    margin: theme.spacing(2, 0, 1, 2),
+    margin: theme.spacing(2, 0, 1, 0),
     height: '40px',
     alignSelf: 'flex-start',
   },
@@ -114,6 +125,46 @@ const ColorTextField = withStyles(theme => ({
     /* Remove custom icon positioning to use standard Material-UI dropdown arrow */
   },
 }))(TextField);
+
+const scenarioLabelMap: Record<string, {label: string; allLabel: string}> = {
+  weatherForecastUncertainty: {
+    label: 'Weather Forecast Uncertainty',
+    allLabel: 'All Weather Forecasts',
+  },
+  temperature_uncertainty: {
+    label: 'Outdoor Temperature Forecast Uncertainty',
+    allLabel: 'All Temperature Levels',
+  },
+  solar_uncertainty: {
+    label: 'Solar GHI Forecast Uncertainty',
+    allLabel: 'All Solar GHI Levels',
+  },
+  seed: {
+    label: 'Uncertainty Seed',
+    allLabel: 'All Seeds',
+  },
+};
+
+const humanizeScenarioKey = (key: string): string => {
+  if (scenarioLabelMap[key]?.label) {
+    return scenarioLabelMap[key].label;
+  }
+  if (key.includes('_')) {
+    return key
+      .split('_')
+      .filter(Boolean)
+      .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
+      .join(' ');
+  }
+  return key.split(/(?=[A-Z])/).join(' ');
+};
+
+const humanizeScenarioAllLabel = (key: string): string => {
+  if (scenarioLabelMap[key]?.allLabel) {
+    return scenarioLabelMap[key].allLabel;
+  }
+  return `All ${humanizeScenarioKey(key)}s`;
+};
 
 const usePopperStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -162,8 +213,9 @@ interface FilterMenuProps {
   filterRanges: FilterRanges;
   filterValues: FilterValues;
   onRequestFilters: (requestedFilters: FilterValues) => void;
-  scenarioOptions: string[];
+  scenarioOptions?: Record<string, string[]>;
   tagOptions: string[];
+  versionOptions?: string[];
 }
 
 export const FilterMenu: React.FC<FilterMenuProps> = props => {
@@ -176,8 +228,9 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
     onRequestFilters,
     scenarioOptions,
     tagOptions,
+    versionOptions = [],
   } = props;
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
+  const [anchorEl, setAnchorEl] = React.useState<PopperProps['anchorEl']>(
     null
   );
   const [open, setOpen] = React.useState({
@@ -187,59 +240,146 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
     tags: false,
   });
 
-  const filters = Object.keys(open);
+  type NumericFilterKey = 'cost' | 'thermalDiscomfort' | 'aqDiscomfort' | 'energy';
+
+  const formatDraftValue = (value: number | undefined): string =>
+    value === undefined || value === null ? '' : `${value}`;
+
+  const buildNumericDraft = (values: FilterValues) => ({
+    cost: {
+      min: formatDraftValue(values.cost?.min ?? filterRanges.costRange.min),
+      max: formatDraftValue(values.cost?.max ?? filterRanges.costRange.max),
+    },
+    thermalDiscomfort: {
+      min: formatDraftValue(
+        values.thermalDiscomfort?.min ?? filterRanges.thermalDiscomfortRange.min
+      ),
+      max: formatDraftValue(
+        values.thermalDiscomfort?.max ?? filterRanges.thermalDiscomfortRange.max
+      ),
+    },
+    aqDiscomfort: {
+      min: formatDraftValue(
+        values.aqDiscomfort?.min ?? filterRanges.aqDiscomfortRange.min
+      ),
+      max: formatDraftValue(
+        values.aqDiscomfort?.max ?? filterRanges.aqDiscomfortRange.max
+      ),
+    },
+    energy: {
+      min: formatDraftValue(values.energy?.min ?? filterRanges.energyRange.min),
+      max: formatDraftValue(values.energy?.max ?? filterRanges.energyRange.max),
+    },
+  });
+
+  const [numericDraft, setNumericDraft] = React.useState(() =>
+    buildNumericDraft(filterValues)
+  );
+
+  React.useEffect(() => {
+    setNumericDraft(buildNumericDraft(filterValues));
+  }, [filterValues, filterRanges]);
+
+  type FilterKey = keyof typeof open;
+  const filters = Object.keys(open) as FilterKey[];
   const scenarioKeys = scenarioOptions ? Object.keys(scenarioOptions) : [];
 
   // EVENTS
 
   const handleOpenPopper =
-    filter => (event: React.MouseEvent<HTMLButtonElement>) => {
-      setAnchorEl(event.currentTarget);
+    (filter: FilterKey) => (event: React.MouseEvent<HTMLButtonElement>) => {
+      setAnchorEl(event.currentTarget as PopperProps['anchorEl']);
       setOpen({...open, [filter]: true});
     };
 
-  const handleClosePopper = filter => () => {
+  const handleClosePopper = (filter: FilterKey) => () => {
     setOpen({...open, [filter]: false});
   };
 
   const onFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const filterType = event.target.id.split('-');
+    const {name, value} = event.target as {name: string; value: string};
+    const [filterKey, bound] = name.split('-') as [
+      NumericFilterKey,
+      'min' | 'max'
+    ];
+
+    setNumericDraft(prev => ({
+      ...prev,
+      [filterKey]: {
+        ...prev[filterKey],
+        [bound]: value,
+      },
+    }));
+
+    if (value === '') {
+      return;
+    }
+
+    const parsedValue = Number(value);
+    if (Number.isNaN(parsedValue)) {
+      return;
+    }
+
+    const nextFilters = {
+      ...filterValues,
+      [filterKey]: {
+        ...filterValues[filterKey],
+        [bound]: parsedValue,
+      },
+    };
+    onRequestFilters(nextFilters);
+  };
+
+  const onScenarioFilterChange = (
+    event: React.ChangeEvent<{name?: string; value: unknown}>
+  ) => {
+    const {name, value} = event.target;
+    if (!name) {
+      return;
+    }
+
+    const nextValue = typeof value === 'string' ? value : '';
+
     const newFilter = {
       ...filterValues,
-      [filterType[0]]: {
-        ...filterValues[filterType[0]],
-        [filterType[1]]: Number(event.target.value),
+      scenario: {
+        ...filterValues.scenario,
+        [name]: nextValue,
       },
     };
     onRequestFilters(newFilter);
   };
 
-  const onScenarioFilterChange = event => {
-    const newFilter = {
+  const onVersionFilterChange = (
+    event: React.ChangeEvent<{value: unknown}>
+  ) => {
+    const selected = typeof event.target.value === 'string' ? event.target.value : '';
+    const newFilter: FilterValues = {
       ...filterValues,
-      scenario: {
-        ...filterValues.scenario,
-        [event.target.name]: event.target.value,
-      },
+      boptestVersion: selected,
     };
     onRequestFilters(newFilter);
   };
 
   const onTagFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newFilter = {
-      ...filterValues,
+    const {name, checked} = event.target as {
+      name: string;
+      checked: boolean;
     };
-    event.target.checked
-      ? newFilter.tags.push(event.target.name)
-      : (newFilter.tags = newFilter.tags.filter(
-          tag => tag !== event.target.name
-        ));
+    const nextTags = checked
+      ? Array.from(new Set([...(filterValues.tags || []), name]))
+      : (filterValues.tags || []).filter((tag: string) => tag !== name);
+
+    const newFilter: FilterValues = {
+      ...filterValues,
+      tags: nextTags,
+    };
     onRequestFilters(newFilter);
   };
 
   // RENDERS
 
-  const renderPopperContents = filter => {
+  const renderPopperContents = (filter: FilterKey) => {
     switch (filter) {
       case 'cost': {
         const costInputProps = {
@@ -258,25 +398,21 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
             <div className={popperClasses.rangeContainer}>
               <ColorTextField
                 className={popperClasses.textInput}
-                id="cost-min"
+                name="cost-min"
                 label="Min"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues && filterValues.cost && filterValues.cost.min
-                }
+                value={numericDraft.cost.min}
                 inputProps={costInputProps}
                 onChange={onFilterChange}
               />
               <ColorTextField
                 className={popperClasses.textInput}
-                id="cost-max"
+                name="cost-max"
                 label="Max"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues && filterValues.cost && filterValues.cost.max
-                }
+                value={numericDraft.cost.max}
                 inputProps={costInputProps}
                 onChange={onFilterChange}
               />
@@ -309,29 +445,21 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
             <div className={popperClasses.rangeContainer}>
               <ColorTextField
                 className={popperClasses.textInput}
-                id="thermalDiscomfort-min"
+                name="thermalDiscomfort-min"
                 label="Min"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues &&
-                  filterValues.thermalDiscomfort &&
-                  filterValues.thermalDiscomfort.min
-                }
+                value={numericDraft.thermalDiscomfort.min}
                 inputProps={thermalDiscomfortInputProps}
                 onChange={onFilterChange}
               />
               <ColorTextField
                 className={popperClasses.textInput}
-                id="thermalDiscomfort-max"
+                name="thermalDiscomfort-max"
                 label="Max"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues &&
-                  filterValues.thermalDiscomfort &&
-                  filterValues.thermalDiscomfort.max
-                }
+                value={numericDraft.thermalDiscomfort.max}
                 inputProps={thermalDiscomfortInputProps}
                 onChange={onFilterChange}
               />
@@ -342,29 +470,21 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
             <div className={popperClasses.rangeContainer}>
               <ColorTextField
                 className={popperClasses.textInput}
-                id="aqDiscomfort-min"
+                name="aqDiscomfort-min"
                 label="Min"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues &&
-                  filterValues.aqDiscomfort &&
-                  filterValues.aqDiscomfort.min
-                }
+                value={numericDraft.aqDiscomfort.min}
                 inputProps={aqDiscomfortInputProps}
                 onChange={onFilterChange}
               />
               <ColorTextField
                 className={popperClasses.textInput}
-                id="aqDiscomfort-max"
+                name="aqDiscomfort-max"
                 label="Max"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues &&
-                  filterValues.aqDiscomfort &&
-                  filterValues.aqDiscomfort.max
-                }
+                value={numericDraft.aqDiscomfort.max}
                 inputProps={aqDiscomfortInputProps}
                 onChange={onFilterChange}
               />
@@ -387,25 +507,21 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
             <div className={popperClasses.rangeContainer}>
               <ColorTextField
                 className={popperClasses.textInput}
-                id="energy-min"
+                name="energy-min"
                 label="Min"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues && filterValues.energy && filterValues.energy.min
-                }
+                value={numericDraft.energy.min}
                 inputProps={energyInputProps}
                 onChange={onFilterChange}
               />
               <ColorTextField
                 className={popperClasses.textInput}
-                id="energy-max"
+                name="energy-max"
                 label="Max"
                 type="number"
                 variant="outlined"
-                defaultValue={
-                  filterValues && filterValues.energy && filterValues.energy.max
-                }
+                value={numericDraft.energy.max}
                 inputProps={energyInputProps}
                 onChange={onFilterChange}
               />
@@ -465,6 +581,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                 open={open[filter]}
                 anchorEl={anchorEl}
                 placement={'bottom'}
+                className={menuClasses.popper}
               >
                 <ClickAwayListener onClickAway={handleClosePopper(filter)}>
                   <Paper elevation={3}>{renderPopperContents(filter)}</Paper>
@@ -478,30 +595,81 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
   };
 
   const renderScenarioFilters = () => {
-    const selectProps = {
+    const baseSelectProps: Partial<SelectProps> = {
       classes: {icon: menuClasses.selectIcon},
       MenuProps: {
         anchorOrigin: {
-          vertical: 'bottom',
-          horizontal: 'left',
+          vertical: 'bottom' as const,
+          horizontal: 'left' as const,
         },
         getContentAnchorEl: null,
         PaperProps: {
-          style: { 
-            maxWidth: '400px' 
-          }
-        }
-      }
+          style: {maxWidth: '400px'},
+        },
+      },
     };
 
     return (
       <div className={menuClasses.selectContainer}>
+        {versionOptions.length > 0 && (
+          <ColorTextField
+            className={menuClasses.select}
+            label="BOPTEST Version"
+            name="boptestVersion"
+            onChange={onVersionFilterChange}
+            select
+            value={filterValues?.boptestVersion ?? ''}
+            defaultValue=""
+            variant="outlined"
+            SelectProps={{
+              ...baseSelectProps,
+              displayEmpty: true,
+              renderValue: (value: unknown): React.ReactNode => {
+                if (!value || value === '') {
+                  return 'All Versions';
+                }
+                return String(value);
+              },
+            }}
+            size="small"
+            InputProps={{
+              style: {
+                whiteSpace: 'normal',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: 'flex',
+                alignItems: 'center',
+                height: '40px',
+              },
+            }}
+            InputLabelProps={{
+              style: {
+                whiteSpace: 'nowrap',
+                display: 'block',
+                width: '100%',
+                transform: 'translate(14px, -6px) scale(0.75)',
+              },
+              shrink: true,
+            }}
+          >
+            <MenuItem key="boptestVersion-all-option" value="">
+              All Versions
+            </MenuItem>
+            {versionOptions.map(option => (
+              <MenuItem key={`${option}-version-option`} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </ColorTextField>
+        )}
         {scenarioKeys.map(key => {
+          const label = humanizeScenarioKey(key);
+          const allLabel = humanizeScenarioAllLabel(key);
           return (
             <React.Fragment key={key}>
               <ColorTextField
                 className={menuClasses.select}
-                label={key === 'weatherForecastUncertainty' ? 'Weather Forecast' : key.split(/(?=[A-Z])/).join(' ')}
+                label={label}
                 name={key}
                 onChange={onScenarioFilterChange}
                 select
@@ -515,14 +683,13 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                 defaultValue="" /* Always show "All" option by default */
                 variant="outlined"
                 SelectProps={{
-                  ...selectProps,
+                  ...baseSelectProps,
                   displayEmpty: true,
-                  renderValue: (value) => {
+                  renderValue: (value: unknown): React.ReactNode => {
                     if (!value || value === '') {
-                      if (key === 'weatherForecastUncertainty') return 'All Weather Forecasts';
-                      return `All ${key.split(/(?=[A-Z])/).join(' ')}s`;
+                      return allLabel;
                     }
-                    return value;
+                    return String(value);
                   }
                 }}
                 size="small"
@@ -546,14 +713,13 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                   shrink: true /* Keep label shrunk like Building Type */
                 }}
               >
-                <MenuItem key="buildingType-none-option" value="">
-                  {key === 'weatherForecastUncertainty' ? 'All Weather Forecasts' : `All ${key.split(/(?=[A-Z])/).join(' ')}s`}
+                <MenuItem key={`${key}-all-option`} value="">
+                  {allLabel}
                 </MenuItem>
-                {scenarioOptions[key].map(option => {
+                {(scenarioOptions?.[key] || []).map(option => {
                   return (
                     <MenuItem
                       key={`${option}-option`}
-                      size="small"
                       value={option}
                     >
                       {option}

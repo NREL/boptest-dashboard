@@ -1,10 +1,12 @@
 import React from 'react';
 import {BrowserRouter, Route, Switch} from 'react-router-dom';
 import {createStyles, makeStyles, ThemeProvider} from '@material-ui/core/styles';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 import CssBaseline from '@material-ui/core/CssBaseline';
 
 import {AppRoute} from './enums';
-import {MainLayout} from './NavBar/MainLayout';
+import {DesktopMainLayout} from './NavBar/DesktopMainLayout';
+import {MobileMainLayout} from './NavBar/MobileMainLayout';
 import {Login} from './Pages/Auth/Login';
 import {Confirm} from './Pages/Auth/Confirm';
 import {ConfirmPassword} from './Pages/Auth/ConfirmPassword';
@@ -25,6 +27,7 @@ const useStyles = makeStyles(() =>
 
 export const Layout: React.FC = () => {
   const classes = useStyles();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
     <ThemeProvider theme={theme}>
@@ -49,7 +52,7 @@ export const Layout: React.FC = () => {
                 <ConfirmPassword />
               </Route>
               <Route>
-                <MainLayout />
+                {isMobile ? <MobileMainLayout /> : <DesktopMainLayout />}
               </Route>
             </Switch>
           </div>

@@ -10,9 +10,8 @@
     "lib": ["es5", "es6", "ES2020.Promise"],
     "moduleResolution": "node",
     "outDir": "./build",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "noImplicitReturns": false
   },
-  "include": ["./**/*.ts", "tests/**/*.ts"]
+  "include": ["./**/*.ts", "tests/**/*.ts"],
+  "exclude": ["build", "node_modules"]
 }

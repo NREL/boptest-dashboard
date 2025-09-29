@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom';
 import {Box, Button, Grid, Typography} from '@material-ui/core';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
 import {ResultsQuickView} from './../Components/ResultsQuickView';
+import {AppRoute} from '../enums';
 
 import {ReactComponent as WorkflowDiagram} from '../static/assets/workflow-diagram.svg';
 
@@ -12,7 +13,7 @@ const virtualBuildings =
   'The BOPTEST (Building Operation Testing) Framework consists of a set of expertly designed Modelica models that span a range of building types, HVAC system configurations, and climate zones. BOPTEST exposes the "control points" of these models using a simple web based API that allows control algorithms to interact with the models as if they are physical buildings.';
 const resultsDesc =
   'BOPTEST generates standard key performance indicators (KPIs) and provides a interface to share results, which enables comparisons, benchmarking, and debugging of ACS. BOPTEST is an open and level playing field on which different control algorithms can be quantitatively evaluated. In addition, BOPTEST is a virtual environment that supports meaningful experiments with control algorithms without the need for physical installations in buildings.';
-const docsButtonText = 'Get Started With The Docs';
+const exploreButtonText = 'Explore Shared Results';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -75,13 +76,13 @@ export const Home: React.FC = () => {
                 <Typography variant="h6">CONTROLS ALGORITHM</Typography>
               </Box>
               <Typography variant="body1">{controlsAlgorithm}</Typography>
-              <Link to={'/documentation'} className={classes.link}>
+              <Link to={AppRoute.Results} className={classes.link}>
                 <Button
                   className={classes.docsButton}
                   variant="contained"
                   size="large"
                 >
-                  {docsButtonText}
+                  {exploreButtonText}
                 </Button>
               </Link>
             </Grid>

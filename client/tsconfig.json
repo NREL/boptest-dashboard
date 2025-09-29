@@ -1,7 +1,7 @@
 {
   "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
-    "rootDir": ".",
+    "rootDir": "../",
     "outDir": "build",
     "allowJs": true,
     "skipLibCheck": true,
@@ -13,10 +13,13 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react",
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "typeRoots": ["./src/types", "./node_modules/@types"]
   },
   "include": [
     "src/**/*.ts",
-    "common/**/*.ts",
-    "test/**/*.ts"
+    "../common/**/*.ts",
+    "test/**/*.ts",
+    "src/**/*.tsx"
   ]
 }

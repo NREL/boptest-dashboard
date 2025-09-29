@@ -10,26 +10,69 @@ import {
   IconButton,
   Tooltip,
   Paper,
+  InputAdornment,
 } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import {useUser} from '../Context/user-context';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
+import {AlertProps} from '@material-ui/lab/Alert';
 import RefreshIcon from '@material-ui/icons/Refresh';
+import {SettingsMobileHeader} from './Settings/SettingsMobileHeader';
 
-const Alert = props => <MuiAlert elevation={6} variant="filled" {...props} />;
+const Alert = (props: AlertProps) => (
+  <MuiAlert elevation={6} variant="filled" {...props} />
+);
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       padding: theme.spacing(3),
+      flex: 1,
+      minHeight: 0,
+      overflow: 'hidden',
+      [theme.breakpoints.down('sm')]: {
+        paddingTop: theme.spacing(0.25),
+        paddingRight: theme.spacing(1.25),
+        paddingBottom: theme.spacing(2),
+        paddingLeft: theme.spacing(1.25),
+      },
     },
     paper: {
       padding: theme.spacing(3),
       width: '100%',
       maxWidth: 800,
       margin: '0 auto',
+      height: '100%',
+      boxSizing: 'border-box',
+      display: 'flex',
+      flexDirection: 'column',
+      [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(2),
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        margin: 0,
+        borderRadius: 0,
+        border: 'none',
+      },
+    },
+    scrollArea: {
+      flex: 1,
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      paddingRight: theme.spacing(3),
+      paddingBottom: theme.spacing(3),
+      boxSizing: 'border-box',
+      [theme.breakpoints.down('sm')]: {
+        paddingRight: 0,
+      },
+    },
+    pageTitle: {
+      marginBottom: theme.spacing(3),
+      [theme.breakpoints.down('sm')]: {
+        display: 'none',
+      },
     },
     bold: {
       fontWeight: 'inherit',
@@ -38,9 +81,19 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       margin: '0 64px 0 0',
       justifyContent: 'space-between',
+      alignItems: 'center',
+      [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+        margin: 0,
+        gap: theme.spacing(1.5),
+        alignItems: 'stretch',
+      },
     },
     field: {
       flexGrow: 2,
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+      },
     },
     validatedField: {
       width: '100%',
@@ -58,10 +111,16 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     applyButton: {
       flexGrow: 1,
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+      },
     },
     item: {
       padding: '32px 0 0 0',
       fontWeight: 'inherit',
+      [theme.breakpoints.down('sm')]: {
+        paddingTop: theme.spacing(3),
+      },
     },
     subItem: {
       padding: '16px 0 0 0',
@@ -76,6 +135,65 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     checked: {},
+    fieldActions: {
+      display: 'flex',
+      gap: theme.spacing(1),
+      marginLeft: theme.spacing(1.5),
+      [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+        gap: theme.spacing(1),
+        width: '100%',
+        marginLeft: 0,
+      },
+    },
+    apiKeyRow: {
+      display: 'flex',
+      width: '100%',
+      alignItems: 'center',
+      [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+        alignItems: 'stretch',
+        gap: theme.spacing(1.5),
+      },
+    },
+    apiKeyActions: {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      gap: theme.spacing(1),
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        flexDirection: 'column',
+        gap: theme.spacing(1),
+      },
+    },
+    apiKeyInput: {
+      flexGrow: 1,
+      marginRight: theme.spacing(2),
+      [theme.breakpoints.down('sm')]: {
+        marginRight: 0,
+      },
+    },
+    identifierCard: {
+      marginTop: theme.spacing(2),
+      padding: theme.spacing(2),
+      backgroundColor: '#f5f5f5',
+      borderRadius: 4,
+    },
+    identifierRow: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(2),
+      [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+        alignItems: 'stretch',
+      },
+    },
+    identifierButton: {
+      whiteSpace: 'nowrap',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+      },
+    },
   })
 );
 
@@ -106,7 +224,7 @@ const generateQuirkyName = (): string => {
 };
 
 export const Settings: React.FC = () => {
-  const { displayName, hashedIdentifier, authedId, shareAllResults, setDisplayName, refreshAuthStatus, isAdmin } = useUser();
+  const { displayName, hashedIdentifier, authedId, shareAllResults, setDisplayName, setShareAllResults, refreshAuthStatus, isAdmin, csrfToken } = useUser();
 
   const classes = useStyles();
 
@@ -114,12 +232,19 @@ export const Settings: React.FC = () => {
   const [isCheckingName, setIsCheckingName] = useState(false);
   const [nameError, setNameError] = useState('');
   const [snackMessageOpen, setSnackMessageOpen] = React.useState(false);
-  const [snackMessage, setSnackMessage] = React.useState(['msg', 'success']);
+  const [snackMessage, setSnackMessage] = React.useState<[
+    string,
+    AlertProps['severity']
+  ]>(['', 'success']);
   
   // API Key section states
   const [apiKey, setApiKey] = React.useState('');
   const [apiKeyLoading, setApiKeyLoading] = React.useState(true);
   const [apiKeyError, setApiKeyError] = React.useState('');
+
+  const sessionHeaders = React.useMemo(() => (
+    csrfToken ? {'X-CSRF-Token': csrfToken} : {}
+  ), [csrfToken]);
 
   // Initialize username field with current display name
   useEffect(() => {
@@ -132,14 +257,21 @@ export const Settings: React.FC = () => {
   const fetchApiKey = (retryCount = 0) => {
     setApiKeyLoading(true);
     setApiKeyError('');
+
+    if (!csrfToken) {
+      setApiKeyLoading(false);
+      setApiKeyError('Authentication token unavailable. Please refresh and try again.');
+      return;
+    }
     
-    axios.get('/api/accounts/key', { 
+    axios.get('/api/accounts/key', {
       withCredentials: true,
       headers: {
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache',
-        'Expires': '0'
-      }
+        'Expires': '0',
+        ...sessionHeaders,
+      },
     })
       .then(res => {
         if (res.data && res.data.apiKey) {
@@ -167,34 +299,31 @@ export const Settings: React.FC = () => {
   
   // Fetch API key when component loads
   useEffect(() => {
-    if (hashedIdentifier) {
+    if (hashedIdentifier && csrfToken) {
       fetchApiKey();
     }
-  }, [hashedIdentifier]);
+  }, [hashedIdentifier, csrfToken]);
 
-  const handleUserNameChange = event => {
+  const handleUserNameChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setUsername(event.target.value);
     setNameError(''); // Clear error when user types
   };
 
-  const handleSnackMessageClose = (_, reason) => {
+  const handleSnackMessageClose = (
+    _: React.SyntheticEvent,
+    reason?: string
+  ) => {
     if (reason === 'clickaway') {
       return;
     }
     setSnackMessageOpen(false);
   };
 
-  const getShareResults = () => {
-    if (shareAllResults === true) {
-      return 'yes';
-    } else if (shareAllResults === false) {
-      return 'no';
-    } else {
-      return 'default';
-    }
-  };
+  const getShareResults = () => shareAllResults || 'default';
 
-  const setShareResults = event => {
+  const setShareResults = (event: React.ChangeEvent<HTMLInputElement>) => {
     let shareValue: boolean | null;
     if (event.target.value === 'yes') {
       shareValue = true;
@@ -205,11 +334,17 @@ export const Settings: React.FC = () => {
     }
     
     axios
-      .patch(changeGlobalShareSettingsEndpoint, {shareAllResults: shareValue}, { withCredentials: true })
+      .patch(changeGlobalShareSettingsEndpoint, {shareAllResults: shareValue}, { withCredentials: true, headers: { ...sessionHeaders } })
       .then(() => {
         // Update UI state
         if (setShareAllResults) {
-          setShareAllResults(shareValue ? 'yes' : (shareValue === false ? 'no' : 'default'));
+          if (shareValue === true) {
+            setShareAllResults('yes');
+          } else if (shareValue === false) {
+            setShareAllResults('no');
+          } else {
+            setShareAllResults('default');
+          }
         }
         
         // Refresh auth status
@@ -259,39 +394,20 @@ export const Settings: React.FC = () => {
     
     try {
       // Send the update request
-      const response = await axios.patch('/api/accounts/display-name', 
-        { newDisplayName: username }, 
-        { 
+      const response = await axios.patch('/api/accounts/display-name',
+        { newDisplayName: username },
+        {
           withCredentials: true,
           headers: {
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+            ...sessionHeaders,
+          },
         }
       );
       
       if (response.data && response.data.success) {
         // Update the local state
         setDisplayName(username);
-        
-        // Update auth_user cookie directly as well
-        try {
-          const cookieStr = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('auth_user='));
-            
-          if (cookieStr) {
-            const cookieValue = decodeURIComponent(cookieStr.split('=')[1]);
-            const userData = JSON.parse(cookieValue);
-            
-            // Update the display name in the cookie
-            userData.displayName = username;
-            
-            // Set the updated cookie with same expiration time as the original
-            document.cookie = `auth_user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=${8*60*60}`;
-          }
-        } catch (e) {
-          // Silent fail on cookie update - server-side update still worked
-        }
         
         // Refresh the user context to ensure all UI components are updated
         refreshAuthStatus();
@@ -335,11 +451,12 @@ export const Settings: React.FC = () => {
     setApiKeyLoading(true);
     setApiKeyError('');
     
-    axios.post('/api/accounts/regenerate-key', {}, { 
+    axios.post('/api/accounts/regenerate-key', {}, {
       withCredentials: true,
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+        ...sessionHeaders,
+      },
     })
       .then(res => {
         if (res.data && res.data.apiKey) {
@@ -366,10 +483,12 @@ export const Settings: React.FC = () => {
   
   return (
     <div className={classes.root}>
+      <SettingsMobileHeader />
       <Paper className={classes.paper}>
-        <Typography variant="h5" gutterBottom>
-          Account Settings
-        </Typography>
+        <div className={classes.scrollArea}>
+          <Typography variant="h5" gutterBottom className={classes.pageTitle}>
+            Account Settings
+          </Typography>
         
         <Box fontWeight="fontWeightBold" mt={3}>
           <Typography variant="h6" className={classes.bold}>
@@ -392,19 +511,25 @@ export const Settings: React.FC = () => {
             error={!!nameError}
             helperText={nameError}
             disabled={isCheckingName}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Tooltip title="Generate a random fun name">
+                    <span>
+                      <IconButton
+                        onClick={generateNewQuirkyName}
+                        disabled={isCheckingName}
+                        size="small"
+                      >
+                        <RefreshIcon />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                </InputAdornment>
+              ),
+            }}
           />
-          <div style={{ display: 'flex' }}>
-            <Tooltip title="Generate a random fun name">
-              <span>
-                <IconButton 
-                  onClick={generateNewQuirkyName}
-                  disabled={isCheckingName}
-                  style={{ marginRight: '8px' }}
-                >
-                  <RefreshIcon />
-                </IconButton>
-              </span>
-            </Tooltip>
+          <div className={classes.fieldActions}>
             <Button 
               className={classes.applyButton} 
               onClick={changeUserName}
@@ -503,26 +628,21 @@ export const Settings: React.FC = () => {
             </Button>
           </div>
         ) : (
-          <div style={{ 
-            display: 'flex',
-            width: '100%',
-            justifyContent: 'space-between'
-          }}>
+          <div className={classes.apiKeyRow}>
             <TextField
               id={apiKeySelector}
-              style={{ flexGrow: 1, marginRight: '16px' }}
               value={apiKey}
               variant="outlined"
               inputProps={{ maxLength: 128 }}
               disabled={!apiKey}
+              className={classes.apiKeyInput}
             />
-            <div style={{ display: 'flex' }}>
+            <div className={classes.apiKeyActions}>
               <Button
                 onClick={copyApiKeyToClipboard}
                 variant="contained"
                 color="primary"
                 disabled={!apiKey}
-                style={{ marginRight: '8px' }}
               >
                 Copy to Clipboard
               </Button>
@@ -552,11 +672,11 @@ export const Settings: React.FC = () => {
         linked to your OAuth provider with a private identifier.
       </Typography>
       
-      <div style={{ marginTop: '16px', padding: '16px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+      <div className={classes.identifierCard}>
         <Typography variant="subtitle2" style={{ fontWeight: 600, marginBottom: '8px' }}>
           Your Hashed Identifier:
         </Typography>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div className={classes.identifierRow}>
           <TextField
             value={hashedIdentifier}
             variant="outlined"
@@ -564,13 +684,13 @@ export const Settings: React.FC = () => {
             fullWidth
             InputProps={{
               readOnly: true,
-              style: { fontFamily: 'monospace', fontSize: '0.9rem' }
+              style: { fontFamily: 'monospace', fontSize: '0.9rem' },
             }}
           />
           <Button
             variant="outlined"
             color="primary"
-            style={{ marginLeft: '16px', whiteSpace: 'nowrap' }}
+            className={classes.identifierButton}
             onClick={() => {
               navigator.clipboard.writeText(hashedIdentifier);
               setSnackMessage(['Hashed identifier copied to clipboard', 'success']);
@@ -583,23 +703,26 @@ export const Settings: React.FC = () => {
         <Typography variant="caption" style={{ display: 'block', marginTop: '8px' }}>
           This is your unique identifier in the system. Administrators may need this to grant you special permissions.
         </Typography>
-        
+
         {isAdmin && (
-          <div style={{ 
-            marginTop: '16px', 
-            padding: '8px 16px', 
-            backgroundColor: '#e3f2fd', 
-            borderRadius: '4px',
-            border: '1px solid #90caf9'
-          }}>
+          <div
+            style={{
+              marginTop: '16px',
+              padding: '8px 16px',
+              backgroundColor: '#e3f2fd',
+              borderRadius: '4px',
+              border: '1px solid #90caf9',
+            }}
+          >
             <Typography variant="subtitle2" style={{ fontWeight: 600, color: '#0d47a1' }}>
               Admin Status: You have administrator privileges
             </Typography>
           </div>
         )}
       </div>
-      
-      <Snackbar
+        </div>
+      </Paper>
+      <Snackbar 
         open={snackMessageOpen}
         autoHideDuration={6000}
         onClose={handleSnackMessageClose}
@@ -608,7 +731,6 @@ export const Settings: React.FC = () => {
           {snackMessage[0]}
         </Alert>
       </Snackbar>
-      </Paper>
     </div>
   );
 };

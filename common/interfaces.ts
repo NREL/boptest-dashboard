@@ -42,14 +42,8 @@ export interface SignatureDetails {
 }
 
 export interface BuildingType {
-  id: number;
   uid: string;
   name: string;
-  markdown: string | null;
-  markdownURL: string;
-  pdfURL: string;
-  results: Result[];
-  scenarios: JSON;
 }
 
 export interface Account {
@@ -62,11 +56,6 @@ export interface Account {
   shareAllResults: boolean | null;
   oauthProvider: string;     // "google" or "github" only
 }
-
-export type Signature = Pick<
-  Result,
-  | "scenario"
->;
 
 export interface Result {
   id: number;
@@ -94,11 +83,20 @@ export interface Result {
   controlStep: string;
   electricityPrice: string;
   weatherForecastUncertainty: string;
-  forecastParameters: JSON;
-  scenario: JSON;
+  scenario: Record<string, any>;
 
   account: Account;
   buildingType: BuildingType;
+}
+
+export interface ResultFacet {
+  buildingTypeUid: string;
+  buildingTypeName: string;
+  scenario: {
+    [key: string]: string[];
+  };
+  tags: string[];
+  versions: string[];
 }
 
 // Filter Interfaces
@@ -126,6 +124,7 @@ export interface FilterValues {
     [key: string]: string;
   };
   tags: string[];
+  boptestVersion: string;
   cost: {
     min: number;
     max: number;
@@ -145,7 +144,9 @@ export interface FilterValues {
 }
 
 export interface BuildingScenarios {
-  [key: string]: string[];
+  [key: string]: {
+    [scenarioKey: string]: string[];
+  };
 }
 
 export interface Scenario {

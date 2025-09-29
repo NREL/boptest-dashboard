@@ -65,6 +65,8 @@ cp /pg/database.env.configure-me /pg/database.env
 
 Open that file and choose solid credentials for your db server.
 You will need to choose a username, a [strong password](https://www.random.org/passwords/), and a sensible name for the db.
+These values are used to create the PostgreSQL role and database the first time the container starts. If you ever delete the `pg/db_data` volume, re-creating the user and database requires either reapplying this env file or manually running the equivalent `CREATE ROLE`/`CREATE DATABASE` statements inside the container.
+Make sure `DATABASE_URL` in `server/.env` (and the value wired through `docker-compose.yml`) matches the same user/password/database combination; otherwise the API will fail to connect even if the database is created.
 
 Copy the file `/server/.env.configure-me` to `/server/.env`
 
@@ -73,6 +75,12 @@ cp /server/.env.configure-me /server/.env
 ```
 
 Open that file and fill in your OAuth credentials for Google and GitHub as described in the Auth section. Then choose a unique and memorable session name, and a secure [session secret](https://randomkeygen.com/).
+
+Add any frontend hosts that should be allowed to call the API (beyond the value in `CALLBACK_URL_BASE`) to `CORS_ORIGINS`. For local work, this typically looks like:
+
+```
+CORS_ORIGINS=http://localhost:8080,http://localhost:3000
+```
 
 The `SUPER_USERS` environment variable is a comma-separated list of hashed identifiers that gain administrative permissions within the app. Since we no longer store email addresses, you'll need to get the hashed identifier for a user after they've logged in. You can find this in the database or server logs.
 
@@ -93,7 +101,7 @@ The entire app will build and run off a single docker-compose command:
 docker-compose up
 ```
 
-It'll take a while that first time, but that should be it. Any changes you make in the code should show up when you reload the site.
+It'll take a while that first time, but that should be it. Any changes you make in the code should show up when you reload the site. If the UI fails to load with `index.html` missing, rebuild the client image (`docker compose build client`) or run `npm run build` inside `client/` to refresh the static bundle.
 
 When you're done working on the site, do a `Ctrl-C` in the window with docker-compose running and then do:
 
@@ -163,6 +171,10 @@ Notice the `up` instead of `run` at the end. This shows output for all the conta
 ```bash
 docker-compose -f test-conf.yml down
 ```
+
+### Development Seed Data
+
+For local demos you can seed sample building types and results via `POST /api/setup/db` (the UI exposes a *Sync Test Data* button). Make sure you have logged in at least once so your account exists, and ensure your API key belongs to a super user listed in `SUPER_USERS`.
 
 ### API Payload Documentation:
 

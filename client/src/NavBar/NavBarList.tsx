@@ -1,20 +1,11 @@
-import React, {useEffect} from 'react';
-import axios from 'axios';
-
+import React from 'react';
 import {makeStyles, Theme, createStyles} from '@material-ui/core/styles';
-import Collapse from '@material-ui/core/Collapse';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
-import HomeIcon from '@material-ui/icons/Home';
-import InfoIcon from '@material-ui/icons/Info';
-import DocsIcon from '@material-ui/icons/LibraryBooks';
 import PersonIcon from '@material-ui/icons/Person';
 import SettingsIcon from '@material-ui/icons/Settings';
-import LockIcon from '@material-ui/icons/Lock';
 import ChartIcon from '@material-ui/icons/ShowChart';
 import {Link} from 'react-router-dom';
 
@@ -42,40 +33,11 @@ interface NavBarListProps {
   drawerOpen: boolean;
 }
 
-export const NavBarList: React.FC<NavBarListProps> = props => {
+export const NavBarList: React.FC<NavBarListProps> = _props => {
   const classes = useStyles();
 
   const { hashedIdentifier } = useUser();
   const loggedIn = hashedIdentifier && hashedIdentifier !== '';
-
-  const [openDash, setOpenDash] = React.useState(false);
-  const [openDocs, setOpenDocs] = React.useState(false);
-
-  const [buildingTypes, setBuildingTypes] = React.useState([]);
-  const buildingTypesEndpoint = '/api/buildingTypes';
-
-  useEffect(() => {
-    axios.get(buildingTypesEndpoint).then(result => {
-      setBuildingTypes(result.data);
-    });
-  }, []);
-
-  const handleDashClick = () => {
-    if (props.drawerOpen) {
-      setOpenDash(!openDash);
-    } else {
-      setOpenDash(true);
-    }
-  };
-
-  const handleDocsClick = () => {
-    console.log('BuildingType DOCS:', buildingTypes);
-    if (props.drawerOpen) {
-      setOpenDocs(!openDocs);
-    } else {
-      setOpenDocs(true);
-    }
-  };
 
   return (
     <List
@@ -93,7 +55,6 @@ export const NavBarList: React.FC<NavBarListProps> = props => {
         <div>
           <ListItem
             button
-            onClick={handleDashClick}
             component={Link}
             to={AppRoute.Dashboard}
           >

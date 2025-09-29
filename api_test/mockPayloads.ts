@@ -1,4 +1,4 @@
-import { LoginData, SignupData, BuildingType, Result } from '../common/interfaces';
+import { LoginData, SignupData } from '../common/interfaces';
 
 export const suSignup: SignupData = {
   username: 'user1',
@@ -27,59 +27,6 @@ export const nnonexistentUserLogin: LoginData = {
   password: `doesn't matter.`
 }
 
-type BuildingTypePayload = Omit<BuildingType, 'id' | 'markdown' | 'results'>;
-type BuildingTypeUpdatePayload = Omit<BuildingType, 'id' | 'uid' | 'markdown' | 'results'>;
-
-const scenario1: JSON = <JSON><unknown> {
-  "timePeriod": ["cooling peak", "heating peak", "heating typical"],
-  "electricityPrice": ["constant", "dynamic", "highly dynamic"],
-  "weatherForecastUncertainty": ["deterministic"]
-};
-
-const scenario2: JSON = <JSON><unknown> {
-  "timePeriod": ["cooling peak", "heating typical"],
-  "electricityPrice": ["dynamic", "highly dynamic"],
-  "weatherForecastUncertainty": ["deterministic"]
-};
-
-const scenario3: JSON = <JSON><unknown> {
-  "timePeriod": ["cooling peak", "heating typical", "freezing peak"],
-  "electricityPrice": ["dynamic", "highly dynamic"],
-  "weatherForecastUncertainty": ["deterministic"],
-  "airQuality": ["smoky"]
-};
-
-export const mockBuilding1: BuildingTypePayload = {
-  uid: 'one',
-  name: 'this is a building',
-  pdfURL: 'https://www.ikea.com/us/en/assembly_instructions/kallax-shelving-unit__AA-1009445-5_pub.pdf',
-  markdownURL: 'https://raw.githubusercontent.com/danmar/cppcheck/main/readme.md',
-  scenarios: scenario1
-};
-
-export const mockBuilding2: BuildingTypePayload = {
-  uid: 'two',
-  name: 'this is a building',
-  pdfURL: 'https://www.ikea.com/us/en/assembly_instructions/kallax-shelving-unit__AA-1009445-5_pub.pdf',
-  markdownURL: 'https://raw.githubusercontent.com/danmar/cppcheck/main/readme.md',
-  scenarios: scenario2
-};
-
-export const mockBuilding3: BuildingTypePayload = {
-  uid: 'three',
-  name: 'this is a building',
-  pdfURL: 'https://www.ikea.com/us/en/assembly_instructions/kallax-shelving-unit__AA-1009445-5_pub.pdf',
-  markdownURL: 'https://raw.githubusercontent.com/danmar/cppcheck/main/readme.md',
-  scenarios: scenario2
-};
-
-export const mockBuilding4: BuildingTypeUpdatePayload = {
-  name: 'this is a building that got updated',
-  pdfURL: 'https://www.ikea.com/us/en/assembly_instructions/kallax-shelving-unit__AA-1009445-5_pub.pdf',
-  markdownURL: 'https://raw.githubusercontent.com/danmar/cppcheck/main/readme.md',
-  scenarios: scenario3
-};
-
 const baseValidResult = {
   dateRun: '2020-08-04T23:00:00.000Z',
   boptestVersion: '0.1.0',
@@ -98,17 +45,16 @@ const baseValidResult = {
     pgas_tot: 5.0,
     pdih_tot: 0.0
   },
-  forecastParameters: {
-    horizon: 21600.0,
-    interval: 3600.0
-  },
   scenario: {
     timePeriod: 'cooling peak',
     electricityPrice: 'highly dynamic',
-    weatherForecastUncertainty: 'deterministic',
+    temperature_uncertainty: 'low',
+    solar_uncertainty: 'medium',
+    seed: 7,
   },
   buildingType: {
-    uid: 'two',
+    uid: 'buildingType-2',
+    name: 'Small Building',
   },
 }
 
@@ -146,17 +92,16 @@ export const mockResult4 = {
     pgas_tot: 5.0,
     pdih_tot: 0.0
   },
-  forecastParameters: {
-    horizon: 21600.0,
-    interval: 3600.0
-  },
   scenario: {
     time: 'cooling peak',
     electricityPrice: 'dynamic',
-    weatherForecastUncertainty: 'deterministic',
+    temperature_uncertainty: 'none',
+    solar_uncertainty: 'high',
+    seed: 11,
   },
   buildingType: {
-    uid: 'two',
+    uid: 'buildingType-2',
+    name: 'Small Building',
   },
 };
 
@@ -179,17 +124,16 @@ export const mockResult5 = {
     pgas_tot: 5.0,
     pdih_tot: 0.0
   },
-  forecastParameters: {
-    horizon: 21600.0,
-    interval: 3600.0
-  },
   scenario: {
     timePeriod: 'peak',
     electricityPrice: 'dynamic',
-    weatherForecastUncertainty: 'deterministic',
+    temperature_uncertainty: 'medium',
+    solar_uncertainty: 'low',
+    seed: 12,
   },
   buildingType: {
-    uid: 'two',
+    uid: 'buildingType-2',
+    name: 'Small Building',
   },
 };
 

@@ -11,7 +11,7 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 
 import {AuthInfo} from './AuthInfo';
-import {Content} from '../Content';
+import {ContentDesktop} from '../Content';
 import {AppRoute, Title} from '../enums';
 import {NavBarList} from './NavBarList';
 
@@ -90,14 +90,12 @@ const getTitleFromPath = (path: string): string => {
       return Title.ApiKey;
     case AppRoute.Dashboard:
       return Title.Dashboard;
-    case AppRoute.Docs:
-      return Title.Docs;
     case AppRoute.Results:
       return Title.Results;
     case AppRoute.Settings:
       return Title.Settings;
     default:
-      'Path not recognized';
+      return 'BOPTest';
   }
 };
 
@@ -157,7 +155,7 @@ export const MiniDrawer: React.FC = () => {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-        <Content />
+        <ContentDesktop />
       </main>
     </div>
   );

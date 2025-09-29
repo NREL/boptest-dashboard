@@ -15,6 +15,7 @@ declare global {
       userId?: string;
       hashedIdentifier?: string;
       shareAllResults?: boolean | null;
+      csrfToken?: string;
     }
   }
 }

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useHistory } from 'react-router-dom';
-import { createStyles, makeStyles, useTheme, Theme } from '@material-ui/core/styles';
+import React, {useState} from 'react';
+import {useHistory} from 'react-router-dom';
+import {createStyles, makeStyles, useTheme, Theme} from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -11,16 +11,15 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Divider from '@material-ui/core/Divider';
 import Box from '@material-ui/core/Box';
 import Avatar from '@material-ui/core/Avatar';
-import SettingsIcon from '@material-ui/icons/Settings';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import DashboardIcon from '@material-ui/icons/Dashboard';
-import HomeIcon from '@material-ui/icons/Home';
 // FormControlLabel and Switch removed
-import { useUser } from '../Context/user-context';
-import { Content } from '../Content';
-import { AppRoute, Title } from '../enums';
-import { ReactComponent as Logo } from '../static/assets/boptest-logo.svg';
-import axios from 'axios';
+import {useUser} from '../Context/user-context';
+import {ContentDesktop} from '../Content';
+import {AppRoute} from '../enums';
+import {ReactComponent as Logo} from '../static/assets/boptest-logo.svg';
+import {useLogout} from './useLogout';
+import {navLinks} from './navLinks';
+import {getAvatarInitials} from './userDisplay';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -29,6 +28,7 @@ const useStyles = makeStyles((theme: Theme) =>
       flexDirection: 'column',
       width: '100%',
       minHeight: '100vh',
+      overflow: 'hidden',
     },
     appBar: {
       zIndex: theme.zIndex.drawer + 1,
@@ -94,8 +94,14 @@ const useStyles = makeStyles((theme: Theme) =>
     content: {
       flexGrow: 1,
       padding: 0,
-      marginTop: 70, // Match the toolbar height
-      backgroundColor: theme.palette.background.default, // Use theme background color
+      backgroundColor: theme.palette.background.default,
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: 0,
+      overflow: 'hidden',
+      height: '100vh',
+      paddingTop: 70, // Match the toolbar height
+      boxSizing: 'border-box',
     },
     // viewToggle removed
     loginButton: {
@@ -113,23 +119,22 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export const MainLayout: React.FC = () => {
+export const DesktopMainLayout: React.FC = () => {
   const classes = useStyles();
   const theme = useTheme();
-  const location = useLocation();
   const history = useHistory();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   
-  const { 
-    displayName, 
-    setDisplayName, 
-    hashedIdentifier, 
-    loading, 
-    refreshAuthStatus 
+  const {
+    displayName,
+    hashedIdentifier,
+    loading,
   } = useUser();
+  const logout = useLogout();
 
   // Check if user is logged in
   const loggedIn = Boolean(hashedIdentifier && hashedIdentifier.length > 0);
+  const navigationLinks = navLinks.filter(link => !link.requiresAuth || loggedIn);
 
   // No longer needed - toggle removed
 
@@ -144,43 +149,10 @@ export const MainLayout: React.FC = () => {
     setAnchorEl(null);
   };
 
-  // Generate avatar text from display name
-  const getAvatarText = (name: string) => {
-    if (!name) return '?';
-    const parts = name.split(' ');
-    if (parts.length === 1) return name.substring(0, 1).toUpperCase();
-    return (parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1)).toUpperCase();
-  };
-
-  // Helper function to delete a cookie
-  const deleteCookie = (name: string) => {
-    document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-  };
-
   // Handle logout
   const handleLogout = () => {
     handleMenuClose();
-
-    // Delete all auth cookies manually
-    deleteCookie('auth_status');
-    deleteCookie('auth_user');
-    deleteCookie('connect.sid');
-    deleteCookie('boptest-session');
-    
-    axios
-      .post('/api/auth/logout')
-      .then(() => {
-        console.log('Server logout successful');
-      })
-      .catch(err => {
-        console.log('Server logout failed:', err);
-      })
-      .finally(() => {
-        // Always clear local state and reload
-        setDisplayName('');
-        // Hard redirect to home page with cache busting parameter
-        window.location.href = '/?logged_out=' + new Date().getTime();
-      });
+    logout();
   };
 
   // Handle navigation from menu
@@ -216,7 +188,7 @@ export const MainLayout: React.FC = () => {
                     aria-controls="user-menu"
                     aria-haspopup="true"
                   >
-                    {getAvatarText(displayName)}
+                    {getAvatarInitials(displayName)}
                   </Avatar>
                 </Box>
                 <Menu
@@ -241,27 +213,16 @@ export const MainLayout: React.FC = () => {
                     </Typography>
                   </MenuItem>
                   <Divider />
-                  <MenuItem 
-                    onClick={() => handleNavigate(AppRoute.Results)} 
-                    className={classes.menuItem}
-                  >
-                    <HomeIcon fontSize="small" className={classes.menuIcon} />
-                    Home
-                  </MenuItem>
-                  <MenuItem 
-                    onClick={() => handleNavigate(AppRoute.Dashboard)} 
-                    className={classes.menuItem}
-                  >
-                    <DashboardIcon fontSize="small" className={classes.menuIcon} />
-                    My Results
-                  </MenuItem>
-                  <MenuItem 
-                    onClick={() => handleNavigate(AppRoute.Settings)} 
-                    className={classes.menuItem}
-                  >
-                    <SettingsIcon fontSize="small" className={classes.menuIcon} />
-                    Account Settings
-                  </MenuItem>
+                  {navigationLinks.map(({Icon, label, path}) => (
+                    <MenuItem
+                      key={path}
+                      onClick={() => handleNavigate(path)}
+                      className={classes.menuItem}
+                    >
+                      <Icon fontSize="small" className={classes.menuIcon} />
+                      {label}
+                    </MenuItem>
+                  ))}
                   <MenuItem 
                     onClick={handleLogout} 
                     className={classes.menuItem}
@@ -290,7 +251,7 @@ export const MainLayout: React.FC = () => {
       </AppBar>
       
       <main className={classes.content}>
-        <Content />
+        <ContentDesktop />
       </main>
     </div>
   );

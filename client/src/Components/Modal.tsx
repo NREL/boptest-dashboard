@@ -1,8 +1,10 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import ReactModal from 'react-modal';
-import {createStyles, makeStyles} from '@material-ui/core/styles';
+import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
+import {useTheme} from '@material-ui/core/styles';
 
-const useStyles = makeStyles(() =>
+const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     modal: {
       position: 'absolute',
@@ -10,14 +12,39 @@ const useStyles = makeStyles(() =>
       left: '50%',
       transform: 'translate(-50%, -50%)',
       maxWidth: '90%',
-      maxHeight: '90%',
       width: '1200px',
-      backgroundColor: 'white',
-      border: '1px solid rgba(0, 0, 0, 0.08)',
-      overflow: 'auto',
-      WebkitOverflowScrolling: 'touch',
+      height: '90vh',
+      maxHeight: '90vh',
+      backgroundColor: theme.palette.background.paper,
+      border: 'none',
       outline: 'none',
-      padding: '24px',
+      padding: theme.spacing(3),
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      boxSizing: 'border-box',
+      borderRadius: theme.spacing(1.5),
+    },
+    modalMobile: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      transform: 'none',
+      width: '100%',
+      height: '100%',
+      maxWidth: '100%',
+      maxHeight: '100%',
+      backgroundColor: theme.palette.background.paper,
+      border: 'none',
+      outline: 'none',
+      padding: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      boxSizing: 'border-box',
+      borderRadius: 0,
     },
     overlay: {
       position: 'fixed',
@@ -27,23 +54,52 @@ const useStyles = makeStyles(() =>
       bottom: 0,
       zIndex: 1202,
       backgroundColor: 'rgba(0, 0, 0, .75)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
   })
 );
 
 interface ModalProps {
   renderProp: React.ReactElement;
-  closeModal: boolean;
+  closeModal: () => void;
 }
 
 export const Modal: React.FC<ModalProps> = props => {
   const classes = useStyles();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const getDocument = (): {getElementById(id: string): HTMLElement | null} | null => {
+    if (typeof globalThis !== 'object' || !globalThis || !('document' in globalThis)) {
+      return null;
+    }
+    const maybeDoc = (globalThis as Record<string, unknown>).document;
+    if (
+      maybeDoc &&
+      typeof maybeDoc === 'object' &&
+      'getElementById' in maybeDoc &&
+      typeof (maybeDoc as {getElementById: unknown}).getElementById === 'function'
+    ) {
+      return maybeDoc as {getElementById(id: string): HTMLElement | null};
+    }
+    return null;
+  };
+
+  const doc = getDocument();
+  const appElement = doc ? doc.getElementById('app') : null;
+
+  useEffect(() => {
+    if (doc) {
+      ReactModal.setAppElement('#app');
+    }
+  }, [doc]);
 
   return (
     <ReactModal
-      className={classes.modal}
+      className={isMobile ? classes.modalMobile : classes.modal}
       isOpen
-      appElement={document.getElementById('app')}
+      appElement={appElement || undefined}
       onRequestClose={props.closeModal}
       overlayClassName={classes.overlay}
     >

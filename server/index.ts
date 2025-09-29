@@ -4,10 +4,11 @@ import path from 'path';
 import bodyParser from 'body-parser';
 import session from 'express-session';
 import passport from 'passport';
+import {URL} from 'url';
 import {Account} from '../common/interfaces';
+import {resolveClientBuildDir} from './utils/paths';
 
 import {accountRouter} from './routes/accountRoutes';
-import {buildingTypeRouter} from './routes/buildingTypeRoutes';
 import {appRouter} from './routes/appRoutes';
 import {setupRouter} from './routes/setupRoutes';
 import {authRouter} from './routes/authRoutes';
@@ -18,9 +19,62 @@ import {getAccountById} from './controllers/account';
 const app: express.Application = express();
 
 // Configure CORS to allow credentials
+const rawOrigins = process.env.CORS_ORIGINS || '';
+const parsedOrigins = rawOrigins
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(origin => origin.length > 0);
+
+const defaultOrigins = new Set<string>();
+const callbackBase = process.env.CALLBACK_URL_BASE;
+
+
+const parseOrigin = (value: string): string | null => {
+  if (!value) {
+    return null;
+  }
+  try {
+    const parsed = new URL(value);
+    return `${parsed.protocol}//${parsed.host}`;
+  } catch (err) {
+    try {
+      const parsedFallback = new URL(`https://${value}`);
+      return `${parsedFallback.protocol}//${parsedFallback.host}`;
+    } catch (_) {
+      return null;
+    }
+  }
+};
+
+if (callbackBase) {
+  const parsed = parseOrigin(callbackBase);
+  if (parsed) {
+    defaultOrigins.add(parsed);
+  }
+}
+
+['http://localhost:3000', 'http://127.0.0.1:3000'].forEach(origin => defaultOrigins.add(origin));
+parsedOrigins.forEach(origin => {
+  const parsed = parseOrigin(origin);
+  if (parsed) {
+    defaultOrigins.add(parsed);
+  }
+});
+
+const allowedOrigins = Array.from(defaultOrigins).filter(origin => origin.length > 0);
+
 app.use(cors({
-  origin: true, // Allow all origins that include credentials
-  credentials: true // Allow cookies to be sent with requests
+  origin: (origin, callback) => {
+    if (!origin) {
+      return callback(null, true);
+    }
+    if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    console.warn(`Blocked CORS request from origin ${origin}`);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true, // Allow cookies to be sent with requests
 }));
 
 // Parse request body
@@ -80,18 +134,19 @@ passport.deserializeUser((id: any, done: any) => {
 
 // serve static files from the React app
 console.log('ENV:', process.env.NODE_ENV);
+const clientBuildDir = resolveClientBuildDir();
+
 if (!IN_PROD) {
-  console.log("Serving static files from APP");
-  app.use(express.static(path.join(__dirname, '/usr/client/build')));
+  console.log(`Serving static files from ${clientBuildDir}`);
+  app.use(express.static(clientBuildDir));
 } else {
-  console.log("Serving static files from nginx");
+  console.log('Serving static files from nginx');
 }
 
 // define routes
 app.use('/api/auth', authRouter);
 app.use('/api/setup', setupRouter);
 app.use('/api/accounts', accountRouter);
-app.use('/api/buildingTypes', buildingTypeRouter);
 app.use('/api/results', resultRouter);
 app.use('/', appRouter);
 
@@ -100,7 +155,7 @@ const {PORT = 8080} = process.env;
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log('server started at http://localhost:' + PORT);
-    connectToDb(true);
+    connectToDb();
   });
 }
 
