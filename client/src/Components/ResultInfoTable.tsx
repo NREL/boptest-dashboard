@@ -87,7 +87,7 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
 
   const scenarioLabels: Record<string, string> = {
     timePeriod: 'Time Period',
-    electricityPrice: 'Electricity Price Scenario',
+    electricityPrice: 'Electricity Price',
     weatherForecastUncertainty: 'Weather Forecast Uncertainty',
   };
 
