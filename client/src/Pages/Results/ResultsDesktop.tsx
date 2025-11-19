@@ -32,6 +32,8 @@ export const ResultsDesktop: React.FC = () => {
             results={results}
             buildingFacets={buildingFacets}
             setSelectedResult={handleSelectResult}
+            enableSelection
+            showDownloadButton
             isLoading={isInitialLoading}
             onFiltersChange={onFiltersChange}
             hasMoreResults={hasNext}
