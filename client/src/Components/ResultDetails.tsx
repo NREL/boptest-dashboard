@@ -28,6 +28,7 @@ import BoptestLogo from '../static/assets/boptest-logo.svg';
 import {KPITable} from './KPITable';
 import {ResultInfoTable} from './ResultInfoTable';
 import {Data} from '../Lib/TableHelpers';
+import {buildScenarioEntries} from '../Lib/scenarioDisplay';
 import {useUser} from '../Context/user-context';
 
 const useDesktopStyles = makeStyles((theme: Theme) =>
@@ -396,22 +397,8 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
     },
   ];
 
-  const mobileScenarioEntries = [
-    {label: 'Time Period', value: result.timePeriod},
-    {label: 'Electricity Price', value: result.electricityPrice},
-    {
-      label: 'Outdoor Temperature Forecast Uncertainty',
-      value: result.scenario?.temperature_uncertainty,
-    },
-    {
-      label: 'Solar GHI Forecast Uncertainty',
-      value: result.scenario?.solar_uncertainty,
-    },
-    {
-      label: 'Uncertainty Seed',
-      value: result.scenario?.seed,
-    },
-  ].filter(entry => entry.value);
+  const scenarioEntries = buildScenarioEntries(result.scenario);
+  const mobileScenarioEntries = scenarioEntries;
 
   const shareMenu = canShare ? (
     <Menu
@@ -577,7 +564,7 @@ export const ResultDetails: React.FC<ResultDetailsProps> = props => {
               </Typography>
               <div className={classes.scenarioList}>
                 {mobileScenarioEntries.map(entry => (
-                  <div className={classes.overviewRow} key={entry.label}>
+                  <div className={classes.overviewRow} key={entry.key}>
                     <span className={classes.overviewLabel}>{entry.label}</span>
                     <span className={classes.overviewValue}>{entry.value}</span>
                   </div>

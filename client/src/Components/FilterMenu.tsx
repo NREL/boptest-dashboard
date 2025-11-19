@@ -11,6 +11,7 @@ import type {PopperProps} from '@material-ui/core/Popper';
 import TextField from '@material-ui/core/TextField';
 import type {SelectProps} from '@material-ui/core/Select';
 import {FilterRanges, FilterValues} from '../../../common/interfaces';
+import {getScenarioAllLabel, getScenarioLabel} from '../Lib/scenarioDisplay';
 
 const useMenuStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -125,46 +126,6 @@ const ColorTextField = withStyles(theme => ({
     /* Remove custom icon positioning to use standard Material-UI dropdown arrow */
   },
 }))(TextField);
-
-const scenarioLabelMap: Record<string, {label: string; allLabel: string}> = {
-  weatherForecastUncertainty: {
-    label: 'Weather Forecast Uncertainty',
-    allLabel: 'All Weather Forecasts',
-  },
-  temperature_uncertainty: {
-    label: 'Outdoor Temperature Forecast Uncertainty',
-    allLabel: 'All Temperature Levels',
-  },
-  solar_uncertainty: {
-    label: 'Solar GHI Forecast Uncertainty',
-    allLabel: 'All Solar GHI Levels',
-  },
-  seed: {
-    label: 'Uncertainty Seed',
-    allLabel: 'All Seeds',
-  },
-};
-
-const humanizeScenarioKey = (key: string): string => {
-  if (scenarioLabelMap[key]?.label) {
-    return scenarioLabelMap[key].label;
-  }
-  if (key.includes('_')) {
-    return key
-      .split('_')
-      .filter(Boolean)
-      .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
-      .join(' ');
-  }
-  return key.split(/(?=[A-Z])/).join(' ');
-};
-
-const humanizeScenarioAllLabel = (key: string): string => {
-  if (scenarioLabelMap[key]?.allLabel) {
-    return scenarioLabelMap[key].allLabel;
-  }
-  return `All ${humanizeScenarioKey(key)}s`;
-};
 
 const usePopperStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -663,8 +624,8 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
           </ColorTextField>
         )}
         {scenarioKeys.map(key => {
-          const label = humanizeScenarioKey(key);
-          const allLabel = humanizeScenarioAllLabel(key);
+          const label = getScenarioLabel(key);
+          const allLabel = getScenarioAllLabel(key);
           return (
             <React.Fragment key={key}>
               <ColorTextField

@@ -111,13 +111,6 @@ resultRouter.get('/', async (req: express.Request, res: express.Response) => {
   const parsedCursor = typeof cursor === 'string' ? parseInt(cursor, 10) : undefined;
 
   const sanitizedFilters = buildSharedResultFilters(req.query);
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('My results filters', sanitizedFilters);
-  }
-  if (process.env.NODE_ENV !== 'production' && sanitizedFilters?.buildingTypeUid) {
-    console.log('Shared results filter buildingTypeUid', sanitizedFilters.buildingTypeUid);
-  }
-
   try {
     const page = await getSharedResultsPage({
       limit: parsedLimit && !Number.isNaN(parsedLimit) ? parsedLimit : 25,

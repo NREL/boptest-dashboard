@@ -11,6 +11,7 @@ import {
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import {Data} from '../Lib/TableHelpers';
+import {buildScenarioEntries} from '../Lib/scenarioDisplay';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -71,78 +72,9 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
     return String(value);
   };
 
-  const toTitleCase = (key: string): string => {
-    const normalized = key
-      .replace(/[_-]/g, ' ')
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    if (!normalized) {
-      return key;
-    }
-
-    return normalized.replace(/\b\w/g, match => match.toUpperCase());
-  };
-
-  const scenarioLabels: Record<string, string> = {
-    timePeriod: 'Time Period',
-    electricityPrice: 'Electricity Price',
-    weatherForecastUncertainty: 'Weather Forecast Uncertainty',
-  };
-
-  const baseScenario =
-    props.result.scenario &&
-    typeof props.result.scenario === 'object' &&
-    !Array.isArray(props.result.scenario)
-      ? props.result.scenario
-      : {};
-
-  const weatherKeys = ['temperature_uncertainty', 'solar_uncertainty', 'seed', 'weatherForecastUncertainty'];
-  const weatherLabelMap: Record<string, string> = {
-    temperature_uncertainty: 'Outdoor Temperature',
-    solar_uncertainty: 'Solar GHI',
-    seed: 'Uncertainty Seed',
-    weatherForecastUncertainty: 'Weather Forecast Uncertainty',
-  };
-
-  const normalizedScenario = {...baseScenario};
-
-  const combinedScenario = {
-    ...baseScenario,
-    timePeriod: props.result.timePeriod,
-    electricityPrice: props.result.electricityPrice,
-    weatherForecastUncertainty: props.result.weatherForecastUncertainty,
-  };
-
-  const scenarioRows = Object.entries(combinedScenario)
-    .filter(([key]) => !weatherKeys.includes(key))
-    .filter(([, value]) => value !== undefined && value !== null && value !== '')
-    .map(([key, value]) => {
-      const label = scenarioLabels[key] || toTitleCase(key);
-      return {label, value: formatValue(value)};
-    })
-    .reduce((acc: Array<{label: string; value: string}>, current) => {
-      if (!acc.find(item => item.label === current.label && item.value === current.value)) {
-        acc.push(current);
-      }
-      return acc;
-    }, []);
-
-  const weatherRows = weatherKeys
-    .map(key => {
-      const value =
-        key === 'weatherForecastUncertainty'
-          ? props.result.weatherForecastUncertainty
-          : normalizedScenario?.[key];
-      if (value === undefined || value === null || value === '') {
-        return undefined;
-      }
-      delete normalizedScenario[key];
-      const label = weatherLabelMap[key] || toTitleCase(key);
-      return {label, value: formatValue(value)};
-    })
-    .filter((row): row is {label: string; value: string} => Boolean(row));
+  const scenarioEntries = buildScenarioEntries(props.result.scenario).map(
+    entry => ({label: entry.label, value: entry.value})
+  );
 
   const sections: Array<{
     title: string;
@@ -159,17 +91,12 @@ export const ResultInfoTable: React.FC<ResultInfoTableProps> = props => {
     },
     {
       title: 'Scenario',
-      rows: [
-        ...scenarioRows,
-      ],
+      rows: scenarioEntries,
     },
   ];
 
-  if (weatherRows.length > 0) {
-    sections.splice(2, 0, {
-      title: 'Weather Forecast Uncertainty',
-      rows: weatherRows,
-    });
+  if (scenarioEntries.length === 0) {
+    sections.splice(1, 1);
   }
 
   const hasTags = props.result.tags && props.result.tags.length > 0;

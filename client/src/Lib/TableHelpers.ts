@@ -25,9 +25,6 @@ export interface Data {
   peakElectricity: number;
   peakGas?: number;
   peakDistrictHeating?: number;
-  timePeriod: string;
-  electricityPrice: string;
-  weatherForecastUncertainty: string;
   scenario: Record<string, any>;
   tags: string[];
   boptestVersion: string;
@@ -56,9 +53,6 @@ export const createDataFromResult = (result: Result): Data => {
     peakElectricity: result.peakElectricity,
     peakGas: result.peakGas,
     peakDistrictHeating: result.peakDistrictHeating,
-    timePeriod: result.timePeriod,
-    electricityPrice: result.electricityPrice,
-    weatherForecastUncertainty: result.weatherForecastUncertainty,
     scenario: result.scenario,
     tags: result.tags,
     boptestVersion: result.boptestVersion,
