@@ -55,14 +55,13 @@ const useMenuStyles = makeStyles((theme: Theme) =>
     },
     select: {
       margin: theme.spacing(0, 2, 0, 0), /* Match margin with Building Type row */
-      width: '320px', /* Slightly smaller to fit with wider gaps */
+      width: '380px', /* Provide more room for longer labels */
       maxWidth: '100%',
-      textTransform: 'capitalize',
       '& .MuiInputLabel-outlined': {
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
-        maxWidth: 'calc(100% - 60px)' /* Give more space for arrow */
+        maxWidth: 'calc(100% - 72px)',
       },
       '& .MuiSelect-select': {
         whiteSpace: 'nowrap',
@@ -70,7 +69,11 @@ const useMenuStyles = makeStyles((theme: Theme) =>
         textOverflow: 'ellipsis',
         display: 'flex',
         alignItems: 'center',
-        paddingRight: '60px' /* Increased space for the dropdown arrow */
+        paddingRight: '72px', /* More space before dropdown arrow */
+        minHeight: '40px',
+      },
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
       },
       /* Use standard Material-UI padding */
     },
@@ -655,17 +658,17 @@ export const FilterMenu: React.FC<FilterMenuProps> = props => {
                 }}
                 size="small"
                 InputProps={{
-                  style: { 
-                    whiteSpace: 'normal', 
-                    overflow: 'hidden', 
+                  style: {
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     display: 'flex',
                     alignItems: 'center',
-                    height: '40px' /* Match height with Building Type */
+                    minHeight: '40px', /* Match height with Building Type */
                   }
                 }}
                 InputLabelProps={{
-                  style: { 
+                  style: {
                     whiteSpace: 'nowrap',
                     display: 'block',
                     width: '100%',
