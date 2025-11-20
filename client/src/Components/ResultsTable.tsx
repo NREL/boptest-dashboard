@@ -254,14 +254,20 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     <TableHead style={{borderSpacing: '0 !important'}}>
       <TableRow style={{borderCollapse: 'collapse'}}>
         {enableSelection && (
-          <TableCell padding="checkbox" style={{width: '52px'}}>
-            <Checkbox
-              checked={allSelected}
-              indeterminate={numSelected > 0 && numSelected < rowCount}
-              onChange={onSelectAllClick}
-              inputProps={{'aria-label': 'select all results'}}
-              color="primary"
-            />
+          <TableCell
+            padding="checkbox"
+            style={{width: '52px'}}
+            className={`${classes.headerCell} ${classes.stickyHeader}`}
+          >
+            <div className={classes.checkboxWrapper}>
+              <Checkbox
+                checked={allSelected}
+                indeterminate={numSelected > 0 && numSelected < rowCount}
+                onChange={onSelectAllClick}
+                inputProps={{'aria-label': 'select all results'}}
+                color="primary"
+              />
+            </div>
           </TableCell>
         )}
         {headCells.map(headCell => {
@@ -637,6 +643,13 @@ const useStyles = makeStyles((theme: Theme) =>
       color: 'rgba(0, 0, 0, 0.6)',
       marginTop: theme.spacing(0.5),
       whiteSpace: 'nowrap',
+    },
+    checkboxWrapper: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: '100%',
+      height: '100%',
     },
     table: {
       minWidth: 750,
